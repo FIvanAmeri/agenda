@@ -63,25 +63,29 @@ export default function Principal() {
     router.push("/");
   };
 
-
   const addPatient = (newPatient: Patient) => {
     setPatients((prevPatients) => [...prevPatients, newPatient]);
   };
-
 
   const filteredPatients = selectedDate
     ? patients.filter((patient) => format(new Date(patient.dia), "yyyy-MM-dd") === selectedDate)
     : patients;
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime()) ? format(date, "dd/MM/yyyy") : dateString;
+  };
+
   return (
     <div className="min-h-screen flex flex-col relative">
-      <h1 className="text-2xl font-bold mt-10 mb-6 text-center">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-10 mb-6 text-center">
         Espero que estés teniendo un lindo día, {user}
       </h1>
 
+     
       <button
         onClick={handleLogout}
-        className="absolute top-4 right-4 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+        className="absolute top-6 right-4 sm:top-6 sm:right-6 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
       >
         Salir
       </button>
@@ -120,7 +124,7 @@ export default function Principal() {
                       key={index}
                       className="border-b border-gray-300 hover:bg-gray-50"
                     >
-                      <td className="px-4 py-2 text-black">{format(new Date(patient.dia), "dd/MM/yyyy")}</td>
+                      <td className="px-4 py-2 text-black">{formatDate(patient.dia)}</td>
                       <td className="px-4 py-2 text-black">{patient.paciente}</td>
                       <td className="px-4 py-2 text-black">{patient.practicas}</td>
                       <td className="px-4 py-2 text-black">{patient.obraSocial}</td>
@@ -137,12 +141,13 @@ export default function Principal() {
             </table>
           )}
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="absolute bottom-4 right-4 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-200"
-          >
-            <Plus size={24} />
-          </button>
+      
+<button
+  onClick={() => setShowAddModal(true)}
+  className="absolute bottom-2 right-8 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-200"
+>
+  <Plus size={24} />
+</button>
         </div>
       </div>
 

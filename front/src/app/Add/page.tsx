@@ -19,7 +19,7 @@ interface Patient {
 }
 
 export default function Add({ onClose, onAdd }: AddProps) {
-  const [dia, setDia] = useState<string | null>(null);
+  const [dia, setDia] = useState<Date | null>(null);
   const [paciente, setPaciente] = useState("");
   const [practica, setPractica] = useState("");
   const [obraSocial, setObraSocial] = useState("");
@@ -67,7 +67,7 @@ export default function Add({ onClose, onAdd }: AddProps) {
     if (!validateForm()) return;
 
     const nuevoPaciente = {
-      dia: dia ?? "",
+      dia: dia ? format(dia, "dd/MM/yyyy") : "",
       paciente,
       practicas: practica,
       obraSocial,
@@ -99,8 +99,8 @@ export default function Add({ onClose, onAdd }: AddProps) {
 
         <label className="block mb-2 text-black">Día:</label>
         <DatePicker
-          selected={dia ? new Date(dia) : null}
-          onChange={(date) => setDia(date ? format(date, "dd/MM/yyyy") : null)}
+          selected={dia}
+          onChange={(date: Date | null) => setDia(date)}
           className="w-full p-2 border rounded-md text-black"
           dateFormat="dd/MM/yyyy"
           placeholderText="Selecciona una fecha"
