@@ -4,13 +4,22 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useObrasSociales } from "../context/ObrasSocialesContext";
+import { format } from "date-fns";
 
 interface AddProps {
   onClose: () => void;
+  onAdd: (newPatient: Patient) => void;
 }
 
-export default function Add({ onClose }: AddProps) {
-  const [dia, setDia] = useState<number | null>(null);
+interface Patient {
+  dia: string;
+  paciente: string;
+  practicas: string;
+  obraSocial: string;
+}
+
+export default function Add({ onClose, onAdd }: AddProps) {
+  const [dia, setDia] = useState<string | null>(null);
   const [paciente, setPaciente] = useState("");
   const [practica, setPractica] = useState("");
   const [obraSocial, setObraSocial] = useState("");
@@ -42,7 +51,6 @@ export default function Add({ onClose }: AddProps) {
     }
   };
 
-
   const handleSubmit = async () => {
     let missingFields = [];
 
@@ -59,16 +67,14 @@ export default function Add({ onClose }: AddProps) {
     if (!validateForm()) return;
 
     const nuevoPaciente = {
-      dia: dia ?? 0,
+      dia: dia ?? "",
       paciente,
-      practicas: practica,  
+      practicas: practica,
       obraSocial,
     };
 
-    console.log(nuevoPaciente);
-
     try {
-      const response = await fetch("http://localhost:3001/api/pacientes", {
+      const response = await fetch("http://localhost:3001/api/paciente", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevoPaciente),
@@ -76,6 +82,7 @@ export default function Add({ onClose }: AddProps) {
 
       if (response.ok) {
         alert("Paciente agregado con éxito");
+        onAdd(nuevoPaciente);
         onClose();
       } else {
         alert("Error al agregar paciente");
@@ -93,7 +100,7 @@ export default function Add({ onClose }: AddProps) {
         <label className="block mb-2 text-black">Día:</label>
         <DatePicker
           selected={dia ? new Date(dia) : null}
-          onChange={(date) => setDia(date ? date.getTime() : null)}
+          onChange={(date) => setDia(date ? format(date, "dd/MM/yyyy") : null)}
           className="w-full p-2 border rounded-md text-black"
           dateFormat="dd/MM/yyyy"
           placeholderText="Selecciona una fecha"
@@ -123,7 +130,6 @@ export default function Add({ onClose }: AddProps) {
           onChange={(e) => setObraSocial(e.target.value)}
           className="w-full p-2 border rounded-md text-black"
         >
-          <option value="">Selecciona una obra social</option>
           {obrasSociales.map((obra, index) => (
             <option key={index} value={obra}>
               {obra}

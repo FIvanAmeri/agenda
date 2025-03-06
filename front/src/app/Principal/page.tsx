@@ -1,20 +1,31 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import Add from "../Add/page";
-import Patient from "../interfaz";
+import { format } from "date-fns";
+
+interface Patient {
+  dia: string;
+  paciente: string;
+  practicas: string;
+  obraSocial: string;
+}
 
 export default function Principal() {
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (!token) {
+      router.push("/");
+    } else {
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
       if (storedUser?.usuario) {
         const formattedUser = storedUser.usuario.trim();
@@ -23,16 +34,20 @@ export default function Principal() {
           setUser(userName);
         }
       }
-    } else {
-      router.push("/");
     }
 
     const fetchPatients = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/pacientes");
+        const response = await fetch("http://localhost:3001/api/paciente");
+        if (!response.ok) {
+          throw new Error("No se pudo obtener los pacientes");
+        }
         const data = await response.json();
         setPatients(data);
-      } catch (error) {
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setError(error.message);
+        }
         console.error("Error al obtener pacientes:", error);
       } finally {
         setLoading(false);
@@ -47,6 +62,16 @@ export default function Principal() {
     localStorage.removeItem("user");
     router.push("/");
   };
+
+
+  const addPatient = (newPatient: Patient) => {
+    setPatients((prevPatients) => [...prevPatients, newPatient]);
+  };
+
+
+  const filteredPatients = selectedDate
+    ? patients.filter((patient) => format(new Date(patient.dia), "yyyy-MM-dd") === selectedDate)
+    : patients;
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -63,12 +88,25 @@ export default function Principal() {
 
       <div className="w-full px-10">
         <div className="bg-gray-100 p-4 rounded-lg shadow-md transition-all duration-300 relative">
-          {loading ? (
+          <div className="mb-4">
+            <label htmlFor="date" className="text-black font-bold">Selecciona una fecha:</label>
+            <input
+              id="date"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="mt-2 p-2 border rounded text-black"
+            />
+          </div>
+
+          {loading && !error ? (
             <div className="text-center text-lg text-gray-500">Cargando pacientes...</div>
+          ) : error ? (
+            <div className="text-center text-lg text-red-500">Hubo un error al cargar los pacientes</div>
           ) : (
             <table className="w-full text-left table-auto">
               <thead>
-                <tr>
+                <tr className="bg-lime-200">
                   <th className="px-4 py-2 font-bold text-black">Día</th>
                   <th className="px-4 py-2 font-bold text-black">Paciente</th>
                   <th className="px-4 py-2 font-bold text-black">Prácticas</th>
@@ -76,13 +114,16 @@ export default function Principal() {
                 </tr>
               </thead>
               <tbody>
-                {patients.length > 0 ? (
-                  patients.map((patient, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2">{patient.dia}</td>
-                      <td className="px-4 py-2">{patient.paciente}</td>
-                      <td className="px-4 py-2">{patient.practicas}</td>
-                      <td className="px-4 py-2">{patient.obraSocial}</td>
+                {filteredPatients.length > 0 ? (
+                  filteredPatients.map((patient, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-gray-300 hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-2 text-black">{format(new Date(patient.dia), "dd/MM/yyyy")}</td>
+                      <td className="px-4 py-2 text-black">{patient.paciente}</td>
+                      <td className="px-4 py-2 text-black">{patient.practicas}</td>
+                      <td className="px-4 py-2 text-black">{patient.obraSocial}</td>
                     </tr>
                   ))
                 ) : (
@@ -105,7 +146,7 @@ export default function Principal() {
         </div>
       </div>
 
-      {showAddModal && <Add onClose={() => setShowAddModal(false)} />}
+      {showAddModal && <Add onClose={() => setShowAddModal(false)} onAdd={addPatient} />}
     </div>
   );
 }

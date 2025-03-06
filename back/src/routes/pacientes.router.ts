@@ -1,38 +1,11 @@
-import { Router } from 'express';
-import { getRepository } from 'typeorm';
-import { Paciente } from '../entities/paciente.entity';
+import express from 'express';
+import { PacientesController } from '../controllers/pacientes.controller';
 
-const pacientesRouter = Router();
+const pacientesRouter = express.Router();
+const pacientesController = new PacientesController();
 
+pacientesRouter.get('/paciente', pacientesController.obtenerPacientes.bind(pacientesController));
 
-pacientesRouter.get('/pacientes', async (req, res) => {
-  try {
-    const pacienteRepository = getRepository(Paciente);
-    const pacientes = await pacienteRepository.find();
-    res.json(pacientes);
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener pacientes' });
-  }
-});
-
-
-pacientesRouter.post('/pacientes', async (req, res) => {
-  try {
-    const { dia, paciente, practicas, obraSocial } = req.body;
-    const pacienteRepository = getRepository(Paciente);
-
-    const nuevoPaciente = pacienteRepository.create({
-      dia,
-      paciente,
-      practicas,
-      obraSocial,
-    });
-
-    await pacienteRepository.save(nuevoPaciente);
-    res.status(201).json(nuevoPaciente);
-  } catch (error) {
-    res.status(500).json({ message: 'Error al agregar paciente' });
-  }
-});
+pacientesRouter.post('/paciente', pacientesController.crearPaciente.bind(pacientesController));
 
 export default pacientesRouter;

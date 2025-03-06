@@ -1,13 +1,9 @@
-
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity()
+@Entity('paciente')
 export class Paciente {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  dia: number;
 
   @Column()
   paciente: string;
@@ -17,4 +13,7 @@ export class Paciente {
 
   @Column()
   obraSocial: string;
+
+  @Column({ type: 'varchar', length: 10 })
+  dia: string;
 }
