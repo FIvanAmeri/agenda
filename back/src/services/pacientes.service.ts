@@ -1,41 +1,43 @@
-import AppDataSource from '../data-source';
+import  AppDataSource  from '../data-source';
 import { Paciente } from '../entities/paciente.entity';
 
 export class PacientesService {
-  async crearPaciente(dia: string, paciente: string, practicas: string, obraSocial: string): Promise<Paciente> {
-    try {
-      const pacienteRepository = AppDataSource.getRepository(Paciente);
+  async crearPaciente(dia: string, paciente: string, practicas: string, obraSocial: string, institucion: string) {
+    const pacienteRepository = AppDataSource.getRepository(Paciente);
 
-      const nuevoPaciente = new Paciente();
-      nuevoPaciente.dia = dia;
-      nuevoPaciente.paciente = paciente;
-      nuevoPaciente.practicas = practicas;
-      nuevoPaciente.obraSocial = obraSocial;
+    const nuevoPaciente = pacienteRepository.create({
+      dia,
+      paciente,
+      practicas,
+      obraSocial,
+      institucion,
+    });
 
-      await pacienteRepository.save(nuevoPaciente);
-
-      return nuevoPaciente;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(`Error al guardar el paciente: ${error.message}`);
-      } else {
-        throw new Error('Error desconocido al guardar el paciente');
-      }
-    }
+    await pacienteRepository.save(nuevoPaciente);
+    return nuevoPaciente;
+  }
+  async obtenerPacientes() {
+    const pacienteRepository = AppDataSource.getRepository(Paciente);
+    return pacienteRepository.find();
   }
 
 
-  async obtenerPacientes(): Promise<Paciente[]> {
-    try {
-      const pacienteRepository = AppDataSource.getRepository(Paciente);
-      const pacientes = await pacienteRepository.find();
-      return pacientes;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(`Error al obtener los pacientes: ${error.message}`);
-      } else {
-        throw new Error('Error desconocido al obtener los pacientes');
-      }
+  async actualizarPaciente(id: string, dia: string, paciente: string, practicas: string, obraSocial: string, institucion: string) {
+    const pacienteRepository = AppDataSource.getRepository(Paciente);
+    const pacienteExistente = await pacienteRepository.findOne({
+      where: { id: parseInt(id, 10) },
+    });
+
+    if (!pacienteExistente) {
+      return null;
     }
+
+    pacienteExistente.dia = dia;
+    pacienteExistente.paciente = paciente;
+    pacienteExistente.practicas = practicas;
+    pacienteExistente.obraSocial = obraSocial;
+    pacienteExistente.institucion = institucion;
+    await pacienteRepository.save(pacienteExistente);
+    return pacienteExistente;
   }
 }

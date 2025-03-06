@@ -16,4 +16,7 @@ export class Paciente {
 
   @Column({ type: 'varchar', length: 10 })
   dia: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  institucion: string;
 }
