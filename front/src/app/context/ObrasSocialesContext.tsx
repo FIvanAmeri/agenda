@@ -41,7 +41,9 @@ export const ObrasSocialesProvider = ({ children }: { children: ReactNode }) => 
     "Ospe",
     "Ospit",
     "Osam",
-    "Federación Médica"
+    "Federación Médica",
+    "Consolidar",
+    "Grupo San Nicolas"
   ]);
 
   return (
