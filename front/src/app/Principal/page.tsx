@@ -202,7 +202,7 @@ export default function Principal() {
                 onChange={(e) => setSelectedPatientName(e.target.value)}
                 className="mt-2 p-2 border rounded text-black w-full"
               >
-                <option value="">Selecciona paciente</option>
+                <option value="">Selecciona Paciente</option>
                 {Array.from(new Set(patients.map((patient) => patient.paciente))).map((patientName, index) => (
                   <option key={index} value={patientName}>
                     {patientName}
@@ -218,7 +218,7 @@ export default function Principal() {
                 onChange={(e) => setSelectedPractice(e.target.value)}
                 className="mt-2 p-2 border rounded text-black w-full"
               >
-                <option value="">Selecciona práctica</option>
+                <option value="">Selecciona Práctica</option>
                 {Array.from(new Set(patients.map((patient) => patient.practicas))).map((practice, index) => (
                   <option key={index} value={practice}>
                     {practice}
@@ -234,7 +234,7 @@ export default function Principal() {
                 onChange={(e) => setSelectedObraSocial(e.target.value)}
                 className="mt-2 p-2 border rounded text-black w-full"
               >
-                <option value="">Selecciona obra social</option>
+                <option value="">Selecciona Obra social</option>
                 {Array.from(new Set(patients.map((patient) => patient.obraSocial))).map((obraSocial, index) => (
                   <option key={index} value={obraSocial}>
                     {obraSocial}
@@ -250,7 +250,7 @@ export default function Principal() {
                 onChange={(e) => setSelectedInstitucion(e.target.value)}
                 className="mt-2 p-2 border rounded text-black w-full"
               >
-                <option value="">Selecciona institución</option>
+                <option value="">Selecciona Institución</option>
                 {Array.from(new Set(patients.map((patient) => patient.institucion))).map((institucion, index) => (
                   <option key={index} value={institucion}>
                     {institucion}
