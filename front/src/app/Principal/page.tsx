@@ -305,7 +305,8 @@ export default function Principal() {
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="fixed bottom-10 right-4 sm:bottom-12 sm:right-6 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-200 z-10"
+            className="fixed bottom-10 right-4 mr-12 sm:bottom-12 sm:right-6 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-200 z-10"
+            title="Agregar pacientes"
           >
             <Plus size={24} />
           </button>

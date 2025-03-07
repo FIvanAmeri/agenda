@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
+import { useObrasSociales } from "../context/ObrasSocialesContext";
 
 interface AddProps {
   onClose: () => void;
@@ -16,6 +17,7 @@ interface Patient {
 }
 
 export default function Add({ onClose, onAdd }: AddProps) {
+  const { obrasSociales } = useObrasSociales();
   const [dia, setDia] = useState<string>("");
   const [paciente, setPaciente] = useState("");
   const [practica, setPractica] = useState("");
@@ -66,7 +68,7 @@ export default function Add({ onClose, onAdd }: AddProps) {
           type="date"
           value={dia}
           onChange={(e) => setDia(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
+          className="w-full p-2 border rounded mb-2 text-black"
         />
 
         <label className="block mb-2 text-black">Paciente:</label>
@@ -74,7 +76,7 @@ export default function Add({ onClose, onAdd }: AddProps) {
           type="text"
           value={paciente}
           onChange={(e) => setPaciente(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
+          className="w-full p-2 border rounded mb-2 text-black"
         />
 
         <label className="block mb-2 text-black">Práctica:</label>
@@ -82,23 +84,28 @@ export default function Add({ onClose, onAdd }: AddProps) {
           type="text"
           value={practica}
           onChange={(e) => setPractica(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
+          className="w-full p-2 border rounded mb-2 text-black"
         />
 
         <label className="block mb-2 text-black">Obra Social:</label>
-        <input
-          type="text"
+        <select
           value={obraSocial}
           onChange={(e) => setObraSocial(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
-        />
+          className="w-full p-2 border rounded mb-2 text-black"
+        >
+          {obrasSociales.map((obra, index) => (
+            <option key={index} value={obra}>
+              {obra}
+            </option>
+          ))}
+        </select>
 
         <label className="block mb-2 text-black">Institución:</label>
         <input
           type="text"
           value={institucion}
           onChange={(e) => setInstitucion(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
+          className="w-full p-2 border rounded mb-2 text-black"
         />
 
         <div className="flex justify-between mt-4">
