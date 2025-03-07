@@ -1,4 +1,3 @@
-// Add.tsx
 import React, { useState } from "react";
 import { format } from "date-fns";
 
@@ -48,7 +47,7 @@ export default function Add({ onClose, onAdd }: AddProps) {
       if (response.ok) {
         alert("Paciente agregado con éxito");
         onAdd(nuevoPaciente);
-        onClose();  // Esto cerrará el modal
+        onClose();
       } else {
         alert("Error al agregar paciente");
       }
