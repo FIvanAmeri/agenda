@@ -133,16 +133,14 @@ export default function Principal() {
         if (arrayBuffer) {
           const byteArray = new Uint8Array(arrayBuffer);
           const binaryStr = new TextDecoder().decode(byteArray);
-          const workbook = XLSX.read(binaryStr, { type: "binary" });
+          const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
+
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-  
-          // Declara explícitamente que headerRow es un arreglo de strings
-          const headerRow: string[] = excelData[0] as string[]; // Esto es para asegurar que se trata como un arreglo de strings
-  
+
+
+          const headerRow: string[] = excelData[0] as string[];
           let nameColumnIndex = -1;
-  
-          // Buscar la columna "concepto" (o similar) para identificar el nombre del paciente
           const possibleNameColumns = ["concepto", "nombre", "paciente", "nombre_paciente"];
           possibleNameColumns.forEach((col, index) => {
             const columnIndex = headerRow.findIndex((header: string) => header.toLowerCase().includes(col.toLowerCase()));
@@ -150,31 +148,28 @@ export default function Principal() {
               nameColumnIndex = columnIndex;
             }
           });
-  
-          // Si no se encuentra ninguna columna con el nombre esperado, se intenta por defecto en la primera columna que contenga texto
+
           if (nameColumnIndex === -1) {
             nameColumnIndex = headerRow.findIndex((header: string) => typeof header === "string" && header.length > 1);
           }
-  
-          // Si no se encuentra ninguna columna válida, mostramos un error
+
           if (nameColumnIndex === -1) {
             setError("No se pudo identificar la columna de nombre del paciente.");
             return;
           }
-  
+
           const patientsData: Patient[] = excelData.slice(1).map((row: any) => {
-            const paciente = row[nameColumnIndex]; // El nombre está en la columna identificada
-            const dia = row[1]; // Puedes ajustar estas columnas según tus necesidades
+            const paciente = row[nameColumnIndex];
+            const dia = row[1];
             const practicas = row[2];
             const obraSocial = row[3];
             const institucion = row[4];
-  
-            // Validamos si el paciente tiene nombre
+
             if (!paciente) {
               setError("Algunos pacientes no tienen nombre definido.");
-              return; // No continuar si el paciente no tiene nombre
+              return; 
             }
-  
+
             return {
               id: row[0],
               dia: dia,
@@ -184,8 +179,7 @@ export default function Principal() {
               institucion: institucion,
             };
           }).filter((patient) => patient !== undefined);
-  
-          // Si no hay pacientes, mostramos un error
+
           if (patientsData.length === 0) {
             setError("No se encontraron pacientes en el archivo.");
           } else {
@@ -203,32 +197,30 @@ export default function Principal() {
   const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.name.endsWith(".pdf")) {
-        // Usamos PDF.js para procesar el PDF (puedes instalarlo con `npm install pdfjs-dist`)
-        import("pdfjs-dist").then((PDFJS) => {
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const typedArray = new Uint8Array(event.target?.result as ArrayBuffer);
-                const pdf = await PDFJS.getDocument(typedArray).promise;
+      import("pdfjs-dist").then((PDFJS) => {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const typedArray = new Uint8Array(event.target?.result as ArrayBuffer);
+          const pdf = await PDFJS.getDocument(typedArray).promise;
 
-                let textContent = "";
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const content = await page.getTextContent();
-                    textContent += content.items.map((item: any) => item.str).join(" ");
-                }
+          let textContent = "";
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const content = await page.getTextContent();
+            textContent += content.items.map((item: any) => item.str).join(" ");
+          }
 
-                // Procesamos el texto del PDF
-                console.log(textContent); // Aquí puedes hacer la lógica que necesites con el contenido
-            };
-            reader.readAsArrayBuffer(file);
-        });
+          console.log(textContent);
+        };
+        reader.readAsArrayBuffer(file);
+      });
     } else {
-        setError("Por favor, sube un archivo PDF válido.");
+      setError("Por favor, sube un archivo PDF válido.");
     }
-};
+  };
 
-  
-  
+
+
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -243,37 +235,37 @@ export default function Principal() {
         Salir
       </button>
 
-      
-    
+
+
 
       <button
-  onClick={() => document.getElementById('fileInput')?.click()}
-  className="absolute top-6 right-20 sm:top-6 sm:right-24 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
->
-  Excel
-</button>
-<input
-  id="fileInput"
-  type="file"
-  accept=".xlsx,.xls"
-  onChange={handleExcelUpload}
-  className="hidden"
-/>
+        onClick={() => document.getElementById('fileInput')?.click()}
+        className="absolute top-6 right-20 sm:top-6 sm:right-24 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Excel
+      </button>
+      <input
+        id="fileInput"
+        type="file"
+        accept=".xlsx,.xls"
+        onChange={handleExcelUpload}
+        className="hidden"
+      />
 
-<button
-  onClick={() => document.getElementById('pdfInput')?.click()}
-  className="absolute top-6 right-44 py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
->
-  PDF
-</button>
+      <button
+        onClick={() => document.getElementById('pdfInput')?.click()}
+        className="absolute top-6 right-44 py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        PDF
+      </button>
 
-<input
-  id="pdfInput"
-  type="file"
-  accept=".pdf"
-  onChange={handlePdfUpload}
-  className="hidden"
-/>
+      <input
+        id="pdfInput"
+        type="file"
+        accept=".pdf"
+        onChange={handlePdfUpload}
+        className="hidden"
+      />
 
 
 

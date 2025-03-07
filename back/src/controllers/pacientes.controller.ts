@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PacientesService } from '../services/pacientes.service';
 
-//Hola
+//Hola soy Ivan
 export class PacientesController {
   private pacientesService = new PacientesService();
   async crearPaciente(req: Request, res: Response) {
