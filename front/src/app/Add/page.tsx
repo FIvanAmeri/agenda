@@ -1,5 +1,5 @@
+// Add.tsx
 import React, { useState } from "react";
-import { useObrasSociales } from "../context/ObrasSocialesContext";
 import { format } from "date-fns";
 
 interface AddProps {
@@ -8,6 +8,7 @@ interface AddProps {
 }
 
 interface Patient {
+  id: string;
   dia: string;
   paciente: string;
   practicas: string;
@@ -21,25 +22,16 @@ export default function Add({ onClose, onAdd }: AddProps) {
   const [practica, setPractica] = useState("");
   const [obraSocial, setObraSocial] = useState("");
   const [institucion, setInstitucion] = useState("");
-  const [errors, setErrors] = useState<{ paciente?: string; practica?: string; institucion?: string }>({});
-  const { obrasSociales } = useObrasSociales();
 
   const handleSubmit = async () => {
-    let missingFields = [];
-
-    if (!dia) missingFields.push("Día");
-    if (!paciente) missingFields.push("Paciente");
-    if (!practica) missingFields.push("Práctica");
-    if (!obraSocial) missingFields.push("Obra Social");
-    if (!institucion) missingFields.push("Institución");
-
-    if (missingFields.length > 0) {
-      alert(`Por favor, completa los siguientes campos: ${missingFields.join(", ")}`);
+    if (!dia || !paciente || !practica || !obraSocial || !institucion) {
+      alert("Todos los campos son obligatorios");
       return;
     }
 
-    const nuevoPaciente = {
-      dia: dia ? format(new Date(dia), "dd/MM/yyyy") : "",
+    const nuevoPaciente: Patient = {
+      id: crypto.randomUUID(),
+      dia: format(new Date(dia), "dd/MM/yyyy"),
       paciente,
       practicas: practica,
       obraSocial,
@@ -56,7 +48,7 @@ export default function Add({ onClose, onAdd }: AddProps) {
       if (response.ok) {
         alert("Paciente agregado con éxito");
         onAdd(nuevoPaciente);
-        onClose();
+        onClose();  // Esto cerrará el modal
       } else {
         alert("Error al agregar paciente");
       }
@@ -72,57 +64,56 @@ export default function Add({ onClose, onAdd }: AddProps) {
 
         <label className="block mb-2 text-black">Día:</label>
         <input
-          id="date"
           type="date"
           value={dia}
           onChange={(e) => setDia(e.target.value)}
-          className="mt-2 p-2 border rounded text-black w-full"
+          className="w-full p-2 border rounded mb-2"
         />
-        
-      
-        <label className="block mt-4 mb-2 text-black">Paciente:</label>
+
+        <label className="block mb-2 text-black">Paciente:</label>
         <input
           type="text"
           value={paciente}
           onChange={(e) => setPaciente(e.target.value)}
-          className="w-full p-2 border rounded-md text-black"
+          className="w-full p-2 border rounded mb-2"
         />
 
-        <label className="block mt-4 mb-2 text-black">Práctica:</label>
+        <label className="block mb-2 text-black">Práctica:</label>
         <input
           type="text"
           value={practica}
           onChange={(e) => setPractica(e.target.value)}
-          className="w-full p-2 border rounded-md text-black"
+          className="w-full p-2 border rounded mb-2"
         />
 
-        <label className="block mt-4 mb-2 text-black">Obra Social:</label>
-        <select
+        <label className="block mb-2 text-black">Obra Social:</label>
+        <input
+          type="text"
           value={obraSocial}
           onChange={(e) => setObraSocial(e.target.value)}
-          className="w-full p-2 border rounded-md text-black"
-        >
-          {obrasSociales.map((obra, index) => (
-            <option key={index} value={obra}>
-              {obra}
-            </option>
-          ))}
-        </select>
+          className="w-full p-2 border rounded mb-2"
+        />
 
-        <label className="block mt-4 mb-2 text-black">Institución:</label>
+        <label className="block mb-2 text-black">Institución:</label>
         <input
           type="text"
           value={institucion}
           onChange={(e) => setInstitucion(e.target.value)}
-          className="w-full p-2 border rounded-md text-black"
+          className="w-full p-2 border rounded mb-2"
         />
 
-        <div className="flex justify-end mt-4">
-          <button onClick={onClose} className="mr-2 p-2 bg-gray-400 rounded-md hover:bg-gray-500">
+        <div className="flex justify-between mt-4">
+          <button
+            onClick={onClose}
+            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 w-1/2 mr-2"
+          >
             Cancelar
           </button>
-          <button onClick={handleSubmit} className="p-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-            Guardar
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-1/2"
+          >
+            Agregar
           </button>
         </div>
       </div>
