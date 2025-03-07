@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import Add from "../Add/page";
 import { format } from "date-fns";
 import * as XLSX from "xlsx";
+import * as PDF from "pdf-lib"
 
 
 interface Patient {
@@ -125,7 +126,7 @@ export default function Principal() {
 
   const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
       const reader = new FileReader();
       reader.onload = (event) => {
         const arrayBuffer = event.target?.result as ArrayBuffer;
@@ -135,20 +136,98 @@ export default function Principal() {
           const workbook = XLSX.read(binaryStr, { type: "binary" });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-          const patientsData: Patient[] = excelData.slice(1).map((row: any) => ({
-            id: row[0],
-            dia: row[1],
-            paciente: row[2],
-            practicas: row[3],
-            obraSocial: row[4],
-            institucion: row[5],
-          }));
-          setPatients(patientsData);
+  
+          // Declara explícitamente que headerRow es un arreglo de strings
+          const headerRow: string[] = excelData[0] as string[]; // Esto es para asegurar que se trata como un arreglo de strings
+  
+          let nameColumnIndex = -1;
+  
+          // Buscar la columna "concepto" (o similar) para identificar el nombre del paciente
+          const possibleNameColumns = ["concepto", "nombre", "paciente", "nombre_paciente"];
+          possibleNameColumns.forEach((col, index) => {
+            const columnIndex = headerRow.findIndex((header: string) => header.toLowerCase().includes(col.toLowerCase()));
+            if (columnIndex !== -1 && nameColumnIndex === -1) {
+              nameColumnIndex = columnIndex;
+            }
+          });
+  
+          // Si no se encuentra ninguna columna con el nombre esperado, se intenta por defecto en la primera columna que contenga texto
+          if (nameColumnIndex === -1) {
+            nameColumnIndex = headerRow.findIndex((header: string) => typeof header === "string" && header.length > 1);
+          }
+  
+          // Si no se encuentra ninguna columna válida, mostramos un error
+          if (nameColumnIndex === -1) {
+            setError("No se pudo identificar la columna de nombre del paciente.");
+            return;
+          }
+  
+          const patientsData: Patient[] = excelData.slice(1).map((row: any) => {
+            const paciente = row[nameColumnIndex]; // El nombre está en la columna identificada
+            const dia = row[1]; // Puedes ajustar estas columnas según tus necesidades
+            const practicas = row[2];
+            const obraSocial = row[3];
+            const institucion = row[4];
+  
+            // Validamos si el paciente tiene nombre
+            if (!paciente) {
+              setError("Algunos pacientes no tienen nombre definido.");
+              return; // No continuar si el paciente no tiene nombre
+            }
+  
+            return {
+              id: row[0],
+              dia: dia,
+              paciente: paciente,
+              practicas: practicas,
+              obraSocial: obraSocial,
+              institucion: institucion,
+            };
+          }).filter((patient) => patient !== undefined);
+  
+          // Si no hay pacientes, mostramos un error
+          if (patientsData.length === 0) {
+            setError("No se encontraron pacientes en el archivo.");
+          } else {
+            setPatients(patientsData);
+            setError(null);
+          }
         }
       };
       reader.readAsArrayBuffer(file);
+    } else {
+      setError("Por favor, sube un archivo Excel válido (.xlsx o .xls).");
     }
   };
+
+  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.name.endsWith(".pdf")) {
+        // Usamos PDF.js para procesar el PDF (puedes instalarlo con `npm install pdfjs-dist`)
+        import("pdfjs-dist").then((PDFJS) => {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const typedArray = new Uint8Array(event.target?.result as ArrayBuffer);
+                const pdf = await PDFJS.getDocument(typedArray).promise;
+
+                let textContent = "";
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const content = await page.getTextContent();
+                    textContent += content.items.map((item: any) => item.str).join(" ");
+                }
+
+                // Procesamos el texto del PDF
+                console.log(textContent); // Aquí puedes hacer la lógica que necesites con el contenido
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    } else {
+        setError("Por favor, sube un archivo PDF válido.");
+    }
+};
+
+  
   
 
   return (
@@ -164,6 +243,8 @@ export default function Principal() {
         Salir
       </button>
 
+      
+    
 
       <button
   onClick={() => document.getElementById('fileInput')?.click()}
@@ -176,6 +257,21 @@ export default function Principal() {
   type="file"
   accept=".xlsx,.xls"
   onChange={handleExcelUpload}
+  className="hidden"
+/>
+
+<button
+  onClick={() => document.getElementById('pdfInput')?.click()}
+  className="absolute top-6 right-44 py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+>
+  PDF
+</button>
+
+<input
+  id="pdfInput"
+  type="file"
+  accept=".pdf"
+  onChange={handlePdfUpload}
   className="hidden"
 />
 
