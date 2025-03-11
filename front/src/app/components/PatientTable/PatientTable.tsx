@@ -1,11 +1,9 @@
-// components/PatientTable/PatientTable.tsx
-
 import React from "react";
-import Patient from "../interfaz/interfaz";  // Importación correcta de la interfaz
+import Patient from "../interfaz/interfaz";
 
 interface PatientTableProps {
-  filteredPatients: Patient[];  // Esta es la propiedad esperada
-  onEditClick: (patient: Patient) => void;  // Esta es la propiedad esperada
+  filteredPatients: Patient[];
+  onEditClick: (patient: Patient) => void;
 }
 
 const PatientTable: React.FC<PatientTableProps> = ({
