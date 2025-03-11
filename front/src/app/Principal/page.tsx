@@ -1,21 +1,12 @@
-"use client";
+"use client"
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
-import Add from "../Add/page";
 import { format } from "date-fns";
-import * as XLSX from "xlsx";
-import * as PDF from "pdf-lib"
-
-
-interface Patient {
-  id: string;
-  dia: string;
-  paciente: string;
-  practicas: string;
-  obraSocial: string;
-  institucion: string;
-}
+import Patient from "../interfaz";
+import AddPatientModal from '../components/Modals/AddPatientModal';
+import EditPatientModal from '../components/Modals/EditPatientModal';
+import FilterForm from "../components/FilterForm/FilterForm";
 
 export default function Principal() {
   const router = useRouter();
@@ -23,48 +14,40 @@ export default function Principal() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
   const [selectedPractice, setSelectedPractice] = useState<string>("");
   const [selectedObraSocial, setSelectedObraSocial] = useState<string>("");
   const [selectedInstitucion, setSelectedInstitucion] = useState<string>("");
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       router.push("/");
-    } else {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (storedUser?.usuario) {
-        const formattedUser = storedUser.usuario.trim();
-        if (formattedUser) {
-          const userName = formattedUser.charAt(0).toUpperCase() + formattedUser.slice(1);
-          setUser(userName);
-        }
-      }
+      return;
+    }
+
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (storedUser?.usuario) {
+      setUser(storedUser.usuario.trim().charAt(0).toUpperCase() + storedUser.usuario.trim().slice(1));
     }
 
     const fetchPatients = async () => {
       try {
         const response = await fetch("http://localhost:3001/api/paciente");
-        if (!response.ok) {
-          throw new Error("No se pudo obtener los pacientes");
-        }
+        if (!response.ok) throw new Error("No se pudo obtener los pacientes");
         const data = await response.json();
         setPatients(data);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          setError(error.message);
-        }
-        console.error("Error al obtener pacientes:", error);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Error desconocido");
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchPatients();
   }, [router]);
 
@@ -74,34 +57,24 @@ export default function Principal() {
     router.push("/");
   };
 
-  const addPatient = (newPatient: Patient) => {
-    setPatients((prevPatients) => [...prevPatients, newPatient]);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime()) ? format(date, "dd/MM/yyyy") : dateString;
   };
 
-  const updatePatient = async (updatedPatient: Patient) => {
-    try {
-      const response = await fetch(`http://localhost:3001/api/paciente/${updatedPatient.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedPatient),
-      });
+  const addPatient = (newPatient: Patient) => {
+    setPatients((prev) => [...prev, newPatient]);
+  };
 
-      if (!response.ok) {
-        throw new Error("No se pudo actualizar el paciente");
-      }
-      setPatients((prevPatients) =>
-        prevPatients.map((patient) =>
-          patient.id === updatedPatient.id ? updatedPatient : patient
-        )
-      );
+  const updatePatient = (updatedPatient: Patient) => {
+    setPatients((prev) =>
+      prev.map((patient) => (patient.id === updatedPatient.id ? updatedPatient : patient))
+    );
+  };
 
-      setShowEditModal(false);
-    } catch (error) {
-      console.error("Error al actualizar paciente:", error);
-      setError("Hubo un error al actualizar el paciente");
-    }
+  const handleEditPatient = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setTimeout(() => setShowEditModal(true), 0);
   };
 
   const filteredPatients = patients.filter((patient) => {
@@ -114,116 +87,8 @@ export default function Principal() {
     );
   });
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return !isNaN(date.getTime()) ? format(date, "dd/MM/yyyy") : dateString;
-  };
-
-  const handleEditClick = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setShowEditModal(true);
-  };
-
-  const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const arrayBuffer = event.target?.result as ArrayBuffer;
-        if (arrayBuffer) {
-          const byteArray = new Uint8Array(arrayBuffer);
-          const binaryStr = new TextDecoder().decode(byteArray);
-          const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
-
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-
-          const headerRow: string[] = excelData[0] as string[];
-          let nameColumnIndex = -1;
-          const possibleNameColumns = ["concepto", "nombre", "paciente", "nombre_paciente"];
-          possibleNameColumns.forEach((col, index) => {
-            const columnIndex = headerRow.findIndex((header: string) => header.toLowerCase().includes(col.toLowerCase()));
-            if (columnIndex !== -1 && nameColumnIndex === -1) {
-              nameColumnIndex = columnIndex;
-            }
-          });
-
-          if (nameColumnIndex === -1) {
-            nameColumnIndex = headerRow.findIndex((header: string) => typeof header === "string" && header.length > 1);
-          }
-
-          if (nameColumnIndex === -1) {
-            setError("No se pudo identificar la columna de nombre del paciente.");
-            return;
-          }
-
-          const patientsData: Patient[] = excelData.slice(1).map((row: any) => {
-            const paciente = row[nameColumnIndex];
-            const dia = row[1];
-            const practicas = row[2];
-            const obraSocial = row[3];
-            const institucion = row[4];
-
-            if (!paciente) {
-              setError("Algunos pacientes no tienen nombre definido.");
-              return; 
-            }
-
-            return {
-              id: row[0],
-              dia: dia,
-              paciente: paciente,
-              practicas: practicas,
-              obraSocial: obraSocial,
-              institucion: institucion,
-            };
-          }).filter((patient) => patient !== undefined);
-
-          if (patientsData.length === 0) {
-            setError("No se encontraron pacientes en el archivo.");
-          } else {
-            setPatients(patientsData);
-            setError(null);
-          }
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    } else {
-      setError("Por favor, sube un archivo Excel válido (.xlsx o .xls).");
-    }
-  };
-
-  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.name.endsWith(".pdf")) {
-      import("pdfjs-dist").then((PDFJS) => {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          const typedArray = new Uint8Array(event.target?.result as ArrayBuffer);
-          const pdf = await PDFJS.getDocument(typedArray).promise;
-
-          let textContent = "";
-          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const content = await page.getTextContent();
-            textContent += content.items.map((item: any) => item.str).join(" ");
-          }
-
-          console.log(textContent);
-        };
-        reader.readAsArrayBuffer(file);
-      });
-    } else {
-      setError("Por favor, sube un archivo PDF válido.");
-    }
-  };
-
-
-
-
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative bg-cyan-900">
       <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-10 mb-6 text-center">
         Espero que estés teniendo un lindo día, {user}
       </h1>
@@ -235,273 +100,72 @@ export default function Principal() {
         Salir
       </button>
 
-
-
-
-      <button
-        onClick={() => document.getElementById('fileInput')?.click()}
-        className="absolute top-6 right-20 sm:top-6 sm:right-24 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        Excel
-      </button>
-      <input
-        id="fileInput"
-        type="file"
-        accept=".xlsx,.xls"
-        onChange={handleExcelUpload}
-        className="hidden"
-      />
-
-      <button
-        onClick={() => document.getElementById('pdfInput')?.click()}
-        className="absolute top-6 right-44 py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
-      >
-        PDF
-      </button>
-
-      <input
-        id="pdfInput"
-        type="file"
-        accept=".pdf"
-        onChange={handlePdfUpload}
-        className="hidden"
-      />
-
-
-
-      <div className="w-full px-10">
-        <div className="bg-gray-100 p-4 rounded-lg shadow-md transition-all duration-300 relative">
-          <div className="mb-4 flex gap-4">
-            <div className="w-1/4">
-              <label htmlFor="date" className="text-black font-bold">Selecciona una fecha:</label>
-              <input
-                id="date"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="mt-2 p-2 border rounded text-black w-full"
-              />
-            </div>
-            <div className="w-1/4">
-              <label htmlFor="paciente" className="text-black font-bold">Paciente:</label>
-              <select
-                id="paciente"
-                value={selectedPatientName}
-                onChange={(e) => setSelectedPatientName(e.target.value)}
-                className="mt-2 p-2 border rounded text-black w-full"
-              >
-                <option value="">Selecciona Paciente</option>
-                {Array.from(new Set(patients.map((patient) => patient.paciente))).map((patientName, index) => (
-                  <option key={index} value={patientName}>
-                    {patientName}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-1/4">
-              <label htmlFor="practicas" className="text-black font-bold">Prácticas:</label>
-              <select
-                id="practicas"
-                value={selectedPractice}
-                onChange={(e) => setSelectedPractice(e.target.value)}
-                className="mt-2 p-2 border rounded text-black w-full"
-              >
-                <option value="">Selecciona Práctica</option>
-                {Array.from(new Set(patients.map((patient) => patient.practicas))).map((practice, index) => (
-                  <option key={index} value={practice}>
-                    {practice}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-1/4">
-              <label htmlFor="obraSocial" className="text-black font-bold">Obra Social:</label>
-              <select
-                id="obraSocial"
-                value={selectedObraSocial}
-                onChange={(e) => setSelectedObraSocial(e.target.value)}
-                className="mt-2 p-2 border rounded text-black w-full"
-              >
-                <option value="">Selecciona Obra social</option>
-                {Array.from(new Set(patients.map((patient) => patient.obraSocial))).map((obraSocial, index) => (
-                  <option key={index} value={obraSocial}>
-                    {obraSocial}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-1/4">
-              <label htmlFor="institucion" className="text-black font-bold">Institución:</label>
-              <select
-                id="institucion"
-                value={selectedInstitucion}
-                onChange={(e) => setSelectedInstitucion(e.target.value)}
-                className="mt-2 p-2 border rounded text-black w-full"
-              >
-                <option value="">Selecciona Institución</option>
-                {Array.from(new Set(patients.map((patient) => patient.institucion))).map((institucion, index) => (
-                  <option key={index} value={institucion}>
-                    {institucion}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {loading && !error ? (
-            <div className="text-center text-lg text-gray-500">Cargando pacientes...</div>
-          ) : error ? (
-            <div className="text-center text-lg text-red-500">Hubo un error al cargar los pacientes</div>
-          ) : (
-            <table className="w-full text-left table-auto">
-              <thead>
-                <tr className="bg-lime-200">
-                  <th className="px-4 py-2 font-bold text-black">Día</th>
-                  <th className="px-4 py-2 font-bold text-black">Paciente</th>
-                  <th className="px-4 py-2 font-bold text-black">Prácticas</th>
-                  <th className="px-4 py-2 font-bold text-black">Obra Social</th>
-                  <th className="px-4 py-2 font-bold text-black">Institución</th>
-                  <th className="px-4 py-2 font-bold text-black">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPatients.length > 0 ? (
-                  filteredPatients.map((patient, index) => (
-                    <tr key={index} className="border-b border-gray-300 hover:bg-gray-50">
-                      <td className="px-4 py-2 text-black">{formatDate(patient.dia)}</td>
-                      <td className="px-4 py-2 text-black">{patient.paciente}</td>
-                      <td className="px-4 py-2 text-black">{patient.practicas}</td>
-                      <td className="px-4 py-2 text-black">{patient.obraSocial}</td>
-                      <td className="px-4 py-2 text-black">{patient.institucion}</td>
-                      <td className="px-4 py-2 text-black">
-                        <button onClick={() => handleEditClick(patient)} className="text-blue-500 hover:text-blue-700">
-                          Editar
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-2 text-center text-black font-bold">
-                      No hay pacientes disponibles
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="fixed bottom-10 right-4 mr-12 sm:bottom-12 sm:right-6 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-200 z-10"
-            title="Agregar pacientes"
-          >
-            <Plus size={24} />
-          </button>
-
-        </div>
+      <div className="flex space-x-4 mt-4">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+        >
+          Agregar Paciente
+        </button>
       </div>
 
-      {showAddModal && <Add onClose={() => setShowAddModal(false)} onAdd={addPatient} />}
+      <FilterForm
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        selectedPatientName={selectedPatientName}
+        setSelectedPatientName={setSelectedPatientName}
+        selectedPractice={selectedPractice}
+        setSelectedPractice={setSelectedPractice}
+        selectedObraSocial={selectedObraSocial}
+        setSelectedObraSocial={setSelectedObraSocial}
+        selectedInstitucion={selectedInstitucion}
+        setSelectedInstitucion={setSelectedInstitucion}
+        patients={patients}
+      />
+
+      {error && <div className="text-red-500 text-center mt-4">{error}</div>}
+
+      <div className="mt-10">
+        {loading ? (
+          <div className="text-center">Cargando pacientes...</div>
+        ) : filteredPatients.length > 0 ? (
+          <ul>
+            {filteredPatients.map((patient) => (
+              <li key={patient.id} className="border-b p-4 transition-all duration-300 ease-in-out transform scale-95 hover:scale-100 ">
+                <div><strong>Paciente:</strong> {patient.paciente}</div>
+                <div><strong>Fecha:</strong> {formatDate(patient.dia)}</div>
+                <div><strong>Prácticas:</strong> {patient.practicas}</div>
+                <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
+                <div><strong>Institución:</strong> {patient.institucion}</div>
+                <button
+                  onClick={() => handleEditPatient(patient)}
+                  className="py-2 px-4 bg-emerald-400 text-white rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4"
+                >
+                  Editar Paciente
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-center">No se encontraron pacientes.</div>
+        )}
+      </div>
+
+      {showAddModal && (
+        <div className="modal-overlay">
+          <AddPatientModal
+            onClose={() => setShowAddModal(false)}
+            onAdd={addPatient}
+          />
+        </div>
+      )}
 
       {showEditModal && selectedPatient && (
-        <div className="fixed inset-0 flex justify-center items-center bg-gray-600 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
-            <h2 className="text-xl mb-4 text-center text-black">Editar Paciente</h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (selectedPatient) {
-                  updatePatient(selectedPatient);
-                }
-              }}
-            >
-              <div>
-                <label htmlFor="paciente" className="block text-gray-700 font-semibold">
-                  Paciente
-                </label>
-                <input
-                  id="paciente"
-                  type="text"
-                  value={selectedPatient.paciente || ""}
-                  onChange={(e) =>
-                    setSelectedPatient({
-                      ...selectedPatient,
-                      paciente: e.target.value,
-                    })
-                  }
-                  className="mt-2 p-2 border border-gray-300 rounded w-full text-black"
-                />
-              </div>
-              <div>
-                <label htmlFor="practicas" className="block text-gray-700 font-semibold">
-                  Prácticas
-                </label>
-                <input
-                  id="practicas"
-                  type="text"
-                  value={selectedPatient.practicas || ""}
-                  onChange={(e) =>
-                    setSelectedPatient({
-                      ...selectedPatient,
-                      practicas: e.target.value,
-                    })
-                  }
-                  className="mt-2 p-2 border border-gray-300 rounded w-full text-black"
-                />
-              </div>
-              <div>
-                <label htmlFor="obraSocial" className="block text-gray-700 font-semibold">
-                  Obra Social
-                </label>
-                <input
-                  id="obraSocial"
-                  type="text"
-                  value={selectedPatient.obraSocial || ""}
-                  onChange={(e) =>
-                    setSelectedPatient({
-                      ...selectedPatient,
-                      obraSocial: e.target.value,
-                    })
-                  }
-                  className="mt-2 p-2 border border-gray-300 rounded w-full text-black"
-                />
-              </div>
-              <div>
-                <label htmlFor="institucion" className="block text-gray-700 font-semibold">
-                  Institución
-                </label>
-                <input
-                  id="institucion"
-                  type="text"
-                  value={selectedPatient.institucion || ""}
-                  onChange={(e) =>
-                    setSelectedPatient({
-                      ...selectedPatient,
-                      institucion: e.target.value,
-                    })
-                  }
-                  className="mt-2 p-2 border border-gray-300 rounded w-full text-black"
-                />
-              </div>
-              <div className="flex justify-between mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                >
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <EditPatientModal
+          selectedPatient={selectedPatient}
+          updatePatient={updatePatient}
+          setShowEditModal={setShowEditModal}
+        />
       )}
     </div>
   );

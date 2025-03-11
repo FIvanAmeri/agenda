@@ -9,7 +9,7 @@ interface ObrasSocialesContextType {
 }
 
 
-const ObrasSocialesContext = createContext<ObrasSocialesContextType | undefined>(undefined);
+export const ObrasSocialesContext = createContext<ObrasSocialesContextType | undefined>(undefined);
 
 
 export const ObrasSocialesProvider = ({ children }: { children: ReactNode }) => {
@@ -43,7 +43,8 @@ export const ObrasSocialesProvider = ({ children }: { children: ReactNode }) => 
     "Osam",
     "Federación Médica",
     "Consolidar",
-    "Grupo San Nicolas"
+    "Grupo San Nicolas",
+    "Federada"
   ]);
 
   return (

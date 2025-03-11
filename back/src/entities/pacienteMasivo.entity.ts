@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('paciente')
-export class Paciente {
+@Entity('pacientes_masivos')  // Asegúrate de que el nombre de la tabla sea correcto
+export class PacienteMasivo {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -14,9 +14,9 @@ export class Paciente {
   @Column()
   obraSocial: string;
 
-  @Column({ type: 'varchar', length: 10 })
-  dia: string;
+  @Column()
+  dia: string;  // O Date si el formato de la columna es de fecha
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column()
   institucion: string;
 }

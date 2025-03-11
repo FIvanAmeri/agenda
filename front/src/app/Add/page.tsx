@@ -40,7 +40,7 @@ export default function Add({ onClose, onAdd }: AddProps) {
     };
 
     try {
-      const response = await fetch("http://localhost:3001/api/paciente", {
+      const response = await fetch("http://localhost:3001/api/pacientes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevoPaciente),
