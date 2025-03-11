@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useObrasSociales } from '../../hooks/useObrasSociales';
-import Patient from "../../interfaz"
+import Patient from "../interfaz/interfaz";
 
 interface AddPatientModalProps {
   onClose: () => void;

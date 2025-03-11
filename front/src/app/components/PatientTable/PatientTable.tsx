@@ -1,57 +1,44 @@
+// components/PatientTable/PatientTable.tsx
+
 import React from "react";
-import Patient  from "../../interfaz";
+import Patient from "../interfaz/interfaz";  // Importación correcta de la interfaz
 
 interface PatientTableProps {
-  patients: Patient[];
-  filteredPatients: Patient[];
-  onEditClick: (patient: Patient) => void;
+  filteredPatients: Patient[];  // Esta es la propiedad esperada
+  onEditClick: (patient: Patient) => void;  // Esta es la propiedad esperada
 }
 
 const PatientTable: React.FC<PatientTableProps> = ({
-  patients,
   filteredPatients,
   onEditClick,
 }) => {
   return (
-    <table className="w-full text-left table-auto">
-      <thead>
-        <tr className="bg-lime-200">
-          <th className="px-4 py-2 font-bold text-black">Día</th>
-          <th className="px-4 py-2 font-bold text-black">Paciente</th>
-          <th className="px-4 py-2 font-bold text-black">Prácticas</th>
-          <th className="px-4 py-2 font-bold text-black">Obra Social</th>
-          <th className="px-4 py-2 font-bold text-black">Institución</th>
-          <th className="px-4 py-2 font-bold text-black">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filteredPatients.length > 0 ? (
-          filteredPatients.map((patient, index) => (
-            <tr key={index} className="border-b border-gray-300 hover:bg-gray-50">
-              <td className="px-4 py-2 text-black">{patient.dia}</td>
-              <td className="px-4 py-2 text-black">{patient.paciente}</td>
-              <td className="px-4 py-2 text-black">{patient.practicas}</td>
-              <td className="px-4 py-2 text-black">{patient.obraSocial}</td>
-              <td className="px-4 py-2 text-black">{patient.institucion}</td>
-              <td className="px-4 py-2 text-black">
-                <button
-                  onClick={() => onEditClick(patient)}
-                  className="text-blue-500 hover:text-blue-700"
-                >
-                  Editar
-                </button>
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan={6} className="px-4 py-2 text-center text-black font-bold">
-              No hay pacientes disponibles
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+    <div className="mt-10">
+      {filteredPatients.length > 0 ? (
+        <ul>
+          {filteredPatients.map((patient) => (
+            <li
+              key={patient.id}
+              className="border-b p-4 transition-all duration-300 ease-in-out transform scale-95 hover:scale-100"
+            >
+              <div><strong>Paciente:</strong> {patient.paciente}</div>
+              <div><strong>Fecha:</strong> {patient.dia}</div>
+              <div><strong>Prácticas:</strong> {patient.practicas}</div>
+              <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
+              <div><strong>Institución:</strong> {patient.institucion}</div>
+              <button
+                onClick={() => onEditClick(patient)}
+                className="py-2 px-4 bg-emerald-400 text-white rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4"
+              >
+                Editar
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="text-center">No se encontraron pacientes.</div>
+      )}
+    </div>
   );
 };
 

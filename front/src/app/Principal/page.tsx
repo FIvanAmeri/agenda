@@ -1,12 +1,14 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import Patient from "../interfaz";
+import Patient from "../components/interfaz/interfaz";
 import AddPatientModal from '../components/Modals/AddPatientModal';
 import EditPatientModal from '../components/Modals/EditPatientModal';
 import FilterForm from "../components/FilterForm/FilterForm";
+import Header from '../components/Header/Header';
+import PatientTable from "../components/PatientTable/PatientTable";
 
 export default function Principal() {
   const router = useRouter();
@@ -47,7 +49,7 @@ export default function Principal() {
         setLoading(false);
       }
     };
-  
+
     fetchPatients();
   }, [router]);
 
@@ -89,25 +91,11 @@ export default function Principal() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-cyan-900">
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-10 mb-6 text-center">
-        Espero que estés teniendo un lindo día, {user}
-      </h1>
-
-      <button
-        onClick={handleLogout}
-        className="absolute top-6 right-4 sm:top-6 sm:right-6 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-      >
-        Salir
-      </button>
-
-      <div className="flex space-x-4 mt-4">
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
-        >
-          Agregar Paciente
-        </button>
-      </div>
+      <Header 
+        user={user} 
+        handleLogout={handleLogout} 
+        setShowAddModal={setShowAddModal} 
+      />
 
       <FilterForm
         selectedDate={selectedDate}
@@ -128,26 +116,12 @@ export default function Principal() {
       <div className="mt-10">
         {loading ? (
           <div className="text-center">Cargando pacientes...</div>
-        ) : filteredPatients.length > 0 ? (
-          <ul>
-            {filteredPatients.map((patient) => (
-              <li key={patient.id} className="border-b p-4 transition-all duration-300 ease-in-out transform scale-95 hover:scale-100 ">
-                <div><strong>Paciente:</strong> {patient.paciente}</div>
-                <div><strong>Fecha:</strong> {formatDate(patient.dia)}</div>
-                <div><strong>Prácticas:</strong> {patient.practicas}</div>
-                <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
-                <div><strong>Institución:</strong> {patient.institucion}</div>
-                <button
-                  onClick={() => handleEditPatient(patient)}
-                  className="py-2 px-4 bg-emerald-400 text-white rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4"
-                >
-                  Editar Paciente
-                </button>
-              </li>
-            ))}
-          </ul>
         ) : (
-          <div className="text-center">No se encontraron pacientes.</div>
+          <PatientTable
+          filteredPatients={filteredPatients}
+          onEditClick={handleEditPatient}
+        />
+        
         )}
       </div>
 
