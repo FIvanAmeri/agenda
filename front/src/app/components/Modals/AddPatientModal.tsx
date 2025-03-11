@@ -9,7 +9,9 @@ interface AddPatientModalProps {
 
 const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => {
   const { obrasSociales } = useObrasSociales();
-  const [dia, setDia] = useState('');
+  const getCurrentDate = () => new Date().toISOString().split("T")[0];
+
+  const [dia, setDia] = useState<string>(getCurrentDate());
   const [paciente, setPaciente] = useState('');
   const [practicas, setPracticas] = useState('');
   const [obraSocial, setObraSocial] = useState('');

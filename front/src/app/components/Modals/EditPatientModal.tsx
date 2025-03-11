@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import Patient from "../interfaz/interfaz";
+import { useObrasSociales } from "../../hooks/useObrasSociales";
 
 interface EditPatientModalProps {
   selectedPatient: Patient;
@@ -8,12 +9,25 @@ interface EditPatientModalProps {
 }
 
 const EditPatientModal: React.FC<EditPatientModalProps> = ({ selectedPatient, updatePatient, setShowEditModal }) => {
-  const [dia, setDia] = useState(selectedPatient.dia);
+  const { obrasSociales } = useObrasSociales();
+  
+  const formatDate = (date: string | null | undefined) => {
+    if (!date) return new Date().toISOString().split("T")[0];
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) return new Date().toISOString().split("T")[0];
+    return parsedDate.toISOString().split("T")[0];
+  };
+
+  const [dia, setDia] = useState<string>(formatDate(selectedPatient.dia));
   const [paciente, setPaciente] = useState(selectedPatient.paciente);
   const [practicas, setPracticas] = useState(selectedPatient.practicas);
   const [obraSocial, setObraSocial] = useState(selectedPatient.obraSocial);
   const [institucion, setInstitucion] = useState(selectedPatient.institucion);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDia(formatDate(selectedPatient.dia));
+  }, [selectedPatient.dia]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,22 +43,22 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ selectedPatient, up
 
     try {
       const response = await fetch(`http://localhost:3001/api/paciente/${selectedPatient.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedPatient),
       });
 
       if (!response.ok) {
-        throw new Error('Error al editar el paciente');
+        throw new Error("Error al editar el paciente");
       }
 
       const result = await response.json();
       updatePatient(result.paciente);
       setShowEditModal(false);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Hubo un error');
+      setError(error instanceof Error ? error.message : "Hubo un error");
     }
   };
 
@@ -85,13 +99,18 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ selectedPatient, up
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-200">Obra Social</label>
-            <input
-              type="text"
+            <select
               value={obraSocial}
               onChange={(e) => setObraSocial(e.target.value)}
               required
               className="w-full mt-2 p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+              {obrasSociales.map((obra, index) => (
+                <option key={index} value={obra}>
+                  {obra}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-200">Institución</label>
@@ -114,10 +133,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ selectedPatient, up
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 w-full"
-            >
+            <button type="submit" className="py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 w-full">
               Guardar
             </button>
           </div>
