@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import Patient from "../components/interfaz/interfaz";
 import AddPatientModal from '../components/Modals/AddPatientModal';
 import EditPatientModal from '../components/Modals/EditPatientModal';
@@ -13,9 +12,9 @@ import PatientTable from "../components/PatientTable/PatientTable";
 export default function Principal() {
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [user, setUser] = useState<string>("");
+  const [user, setUser] = useState<string>(""); 
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>(""); 
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
   const [selectedPractice, setSelectedPractice] = useState<string>("");
   const [selectedObraSocial, setSelectedObraSocial] = useState<string>("");
@@ -56,11 +55,6 @@ export default function Principal() {
     router.push("/");
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return !isNaN(date.getTime()) ? format(date, "dd/MM/yyyy") : dateString;
-  };
-
   const addPatient = (newPatient: Patient) => {
     setPatients((prev) => [...prev, newPatient]);
   };
@@ -78,7 +72,7 @@ export default function Principal() {
 
   const filteredPatients = patients.filter((patient) => {
     return (
-      (selectedDate ? format(new Date(patient.dia), "yyyy-MM-dd") === selectedDate : true) &&
+      (selectedDate ? new Date(patient.dia).toISOString().split("T")[0] === selectedDate : true) &&
       (selectedPatientName ? patient.paciente.toLowerCase().includes(selectedPatientName.toLowerCase()) : true) &&
       (selectedPractice ? patient.practicas.toLowerCase().includes(selectedPractice.toLowerCase()) : true) &&
       (selectedObraSocial ? patient.obraSocial.toLowerCase().includes(selectedObraSocial.toLowerCase()) : true) &&

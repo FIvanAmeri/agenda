@@ -6,9 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function Form() {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
-
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -35,7 +33,7 @@ export default function Form() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         alert(`Bienvenido ${data.user.usuario}`);
-        router.push('/Principal'); 
+        router.push('/Principal');
       } else {
         alert(data.error);
       }
