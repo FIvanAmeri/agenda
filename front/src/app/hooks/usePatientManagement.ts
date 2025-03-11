@@ -1,11 +1,8 @@
-
 import { useState } from 'react';
 import Patient from '../components/interfaz/interfaz';
 
 const usePatientManagement = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
   const addPatient = (newPatient: Patient) => {
     setPatients((prev: Patient[]) => [...prev, newPatient]);
@@ -36,7 +33,7 @@ const usePatientManagement = () => {
     });
   };
 
-  return { patients, setPatients, addPatient, updatePatient, filteredPatients, loading, error };
+  return { patients, setPatients, addPatient, updatePatient, filteredPatients };
 };
 
 export default usePatientManagement;

@@ -13,7 +13,6 @@ import PatientTable from "../components/PatientTable/PatientTable";
 export default function Principal() {
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -45,8 +44,6 @@ export default function Principal() {
         setPatients(data);
       } catch (error) {
         setError(error instanceof Error ? error.message : "Error desconocido");
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -114,14 +111,13 @@ export default function Principal() {
       {error && <div className="text-red-500 text-center mt-4">{error}</div>}
 
       <div className="mt-10">
-        {loading ? (
+        {patients.length === 0 ? (
           <div className="text-center">Cargando pacientes...</div>
         ) : (
           <PatientTable
-          filteredPatients={filteredPatients}
-          onEditClick={handleEditPatient}
-        />
-        
+            filteredPatients={filteredPatients}
+            onEditClick={handleEditPatient}
+          />
         )}
       </div>
 
