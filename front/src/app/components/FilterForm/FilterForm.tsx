@@ -50,7 +50,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
 
   return (
     <div className="flex flex-wrap gap-2 md:flex-nowrap">
-      {/* 
+      
       <input
         type="date"
         value={selectedDate}
@@ -58,7 +58,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
         className="flex-1 min-w-[180px] p-2 border rounded-md text-sm text-black mx-[10px]"
         placeholder="Filtrar por fecha"
       />
-      */}
+     
       <select
         value={selectedPatientName}
         onChange={(e) => setSelectedPatientName(e.target.value)}
