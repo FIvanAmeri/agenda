@@ -1,5 +1,3 @@
-// components/FilterForm/PatientFilter.tsx
-
 import React, { useMemo } from "react";
 import Patient from "../interfaz/interfaz";
 
