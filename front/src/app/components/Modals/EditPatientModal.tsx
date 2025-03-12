@@ -8,9 +8,13 @@ interface EditPatientModalProps {
   setShowEditModal: (value: boolean) => void;
 }
 
-const EditPatientModal: React.FC<EditPatientModalProps> = ({ selectedPatient, updatePatient, setShowEditModal }) => {
+const EditPatientModal: React.FC<EditPatientModalProps> = ({
+  selectedPatient,
+  updatePatient,
+  setShowEditModal,
+}) => {
   const { obrasSociales } = useObrasSociales();
-  
+
   const formatDate = (date: string | null | undefined) => {
     if (!date) return new Date().toISOString().split("T")[0];
     const parsedDate = new Date(date);
@@ -24,10 +28,21 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ selectedPatient, up
   const [obraSocial, setObraSocial] = useState(selectedPatient.obraSocial);
   const [institucion, setInstitucion] = useState(selectedPatient.institucion);
   const [error, setError] = useState<string | null>(null);
+  const [estudioUrgoginecologico, setEstudioUrgoginecologico] = useState<boolean>(false);
 
   useEffect(() => {
     setDia(formatDate(selectedPatient.dia));
-  }, [selectedPatient.dia]);
+    setEstudioUrgoginecologico(practicas.includes("(U)"));
+  }, [selectedPatient.dia, selectedPatient.practicas]);
+
+  const handleCheckboxChange = () => {
+    setEstudioUrgoginecologico(!estudioUrgoginecologico);
+    if (!estudioUrgoginecologico) {
+      setPracticas((prev) => prev + " (U)");
+    } else {
+      setPracticas((prev) => prev.replace(" (U)", ""));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +112,17 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ selectedPatient, up
               className="w-full mt-2 p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          <div className="mb-4 flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={estudioUrgoginecologico}
+              onChange={handleCheckboxChange}
+              className="h-4 w-4"
+            />
+            <label className="text-sm text-gray-200">Estudio urgoginecológico</label>
+          </div>
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-200">Obra Social</label>
             <select

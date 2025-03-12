@@ -10,6 +10,14 @@ const PatientTable: React.FC<PatientTableProps> = ({
   filteredPatients,
   onEditClick,
 }) => {
+  const formatDate = (date: string) => {
+    const parsedDate = new Date(date);
+    const day = String(parsedDate.getUTCDate()).padStart(2, '0');
+    const month = String(parsedDate.getUTCMonth() + 1).padStart(2, '0');
+    const year = parsedDate.getUTCFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   return (
     <div className="mt-10">
       {filteredPatients.length > 0 ? (
@@ -20,7 +28,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
               className="border-b p-4 transition-all duration-300 ease-in-out transform scale-95 hover:scale-100"
             >
               <div><strong>Paciente:</strong> {patient.paciente}</div>
-              <div><strong>Fecha:</strong> {patient.dia}</div>
+              <div><strong>Fecha:</strong> {formatDate(patient.dia)}</div>
               <div><strong>Prácticas:</strong> {patient.practicas}</div>
               <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
               <div><strong>Institución:</strong> {patient.institucion}</div>

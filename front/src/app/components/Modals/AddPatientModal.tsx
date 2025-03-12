@@ -17,6 +17,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => 
   const [obraSocial, setObraSocial] = useState('');
   const [institucion, setInstitucion] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [estudioUrgoginecologico, setEstudioUrgoginecologico] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +48,16 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => 
       onClose();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Hubo un error');
+    }
+  };
+
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEstudioUrgoginecologico(e.target.checked);
+    if (e.target.checked) {
+      setPracticas((prevPracticas) => prevPracticas + ' (U)');
+    } else {
+      setPracticas((prevPracticas) => prevPracticas.replace(' (U)', ''));
     }
   };
 
@@ -83,6 +94,15 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => 
               onChange={(e) => setPracticas(e.target.value)}
               required
               className="w-full mt-2 p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-200">Estudio Uroginecológico</label>
+            <input
+              type="checkbox"
+              checked={estudioUrgoginecologico}
+              onChange={handleCheckboxChange}
+              className="mt-2"
             />
           </div>
           <div className="mb-4">
