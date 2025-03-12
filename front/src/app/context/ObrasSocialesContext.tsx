@@ -45,7 +45,8 @@ export const ObrasSocialesProvider = ({ children }: { children: ReactNode }) => 
     "CONSOLIDAR",
     "GRUPO SAN NICOLAS",
     "FEDERADA",
-    "MUTUALYF"
+    "MUTUALYF",
+    "OSIAD"
   ]);
 
   return (

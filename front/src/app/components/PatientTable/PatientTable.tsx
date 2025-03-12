@@ -18,11 +18,24 @@ const PatientTable: React.FC<PatientTableProps> = ({
     return `${day}-${month}-${year}`;
   };
 
+
+  const currentDate = new Date();
+  const sortedPatients = filteredPatients.sort((a, b) => {
+    const dateA = new Date(a.dia);
+    const dateB = new Date(b.dia);
+
+  
+    const diffA = Math.abs(currentDate.getTime() - dateA.getTime());
+    const diffB = Math.abs(currentDate.getTime() - dateB.getTime());
+
+    return diffA - diffB;
+  });
+
   return (
     <div className="mt-10">
-      {filteredPatients.length > 0 ? (
+      {sortedPatients.length > 0 ? (
         <ul>
-          {filteredPatients.map((patient) => (
+          {sortedPatients.map((patient) => (
             <li
               key={patient.id}
               className="border-b p-4 transition-all duration-300 ease-in-out transform scale-95 hover:scale-100"
