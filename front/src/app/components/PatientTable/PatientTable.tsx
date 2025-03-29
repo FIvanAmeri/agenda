@@ -31,7 +31,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
     return `${hours}:${minutes}`;
   };
 
-  const currentDate = new Date();
+
   const sortedPatients = [...filteredPatients].sort((a, b) => {
     const dateA = new Date(a.dia);
     const dateB = new Date(b.dia);
