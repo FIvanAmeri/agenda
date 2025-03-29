@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('pacientes_masivos')  // Asegúrate de que el nombre de la tabla sea correcto
+@Entity('pacientes_masivos')
 export class PacienteMasivo {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,9 +14,9 @@ export class PacienteMasivo {
   @Column()
   obraSocial: string;
 
-  @Column()
-  dia: string;  // O Date si el formato de la columna es de fecha
+  @Column({ type: 'varchar', length: 10 })
+  dia: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   institucion: string;
 }

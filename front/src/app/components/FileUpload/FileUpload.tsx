@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 
 interface FileUploadProps {
   onExcelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -6,16 +6,28 @@ interface FileUploadProps {
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ onExcelUpload, onPdfUpload }) => {
+  const excelFileInput = useRef<HTMLInputElement>(null);
+  const pdfFileInput = useRef<HTMLInputElement>(null);
+
+  const handleExcelClick = () => {
+    excelFileInput.current?.click();
+  };
+
+
+  const handlePdfClick = () => {
+    pdfFileInput.current?.click();
+  };
+
   return (
     <div className="absolute top-6 right-4 sm:top-6 sm:right-6">
       <button
-        onClick={() => document.getElementById("fileInput")?.click()}
+        onClick={handleExcelClick}
         className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
       >
-        Excel
+        Cargar Excel
       </button>
       <input
-        id="fileInput"
+        ref={excelFileInput}
         type="file"
         accept=".xlsx,.xls"
         onChange={onExcelUpload}
@@ -23,14 +35,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onExcelUpload, onPdfUpload }) =
       />
 
       <button
-        onClick={() => document.getElementById("pdfInput")?.click()}
+        onClick={handlePdfClick}
         className="py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600"
       >
-        PDF
+        Cargar PDF
       </button>
 
       <input
-        id="pdfInput"
+        ref={pdfFileInput}
         type="file"
         accept=".pdf"
         onChange={onPdfUpload}
