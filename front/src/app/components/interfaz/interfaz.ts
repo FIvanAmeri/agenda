@@ -1,30 +1,56 @@
-// interfaces/Patient.ts
-export default interface Patient {
-  id: number;
-  hora: string;
-  paciente: string;
-  practicas: string; // En la base de datos y API es string
-  obraSocial: string;
-  dia: string;
-  institucion: string;
-}
-
-export interface PatientFormData {
-  hora: string;
-  paciente: string;
-  practicas: string[]; // En el formulario es array
-  obraSocial: string;
-  dia: string;
-  institucion: string;
-  estudioUrgoginecologico?: boolean; // Opcional para el checkbox
-}
-
 export interface ApiResponse {
-  paciente: Patient;
+  message: string
+  error?: string
 }
 
-export interface ObrasSocialesContextType {
-  obrasSociales: string[];
-  loading: boolean;
-  error: string | null;
+export interface ForgotPasswordResponse extends ApiResponse {
+  success?: boolean
+  email?: string
+}
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface User {
+  id?: string
+  usuario: string
+  contrasena?: string
+  email?: string
+}
+
+export interface AuthResponse extends ApiResponse {
+  user: User
+}
+
+export interface RegisterResponse extends ApiResponse {
+  user?: User
+}
+
+export interface AuthContextType {
+  login: (credentials: Pick<User, "usuario" | "contrasena">) => Promise<void>
+  register: (data: Pick<User, "usuario" | "email" | "contrasena">) => Promise<void>
+  logout: () => void
+  token: string | null
+  loading: boolean
+}
+
+export interface Patient {
+  id: number
+  hora: string
+  dia: string
+  paciente: string
+  practicas: string
+  obraSocial: string
+  institucion: string
+}
+
+export interface LoginCredentials {
+  usuario: string
+  contrasena: string
+}
+
+export interface ResetPayload {
+  token: string
+  newContrasena: string
 }

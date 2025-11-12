@@ -1,35 +1,54 @@
-"use client"
+"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Patient from "../components/interfaz/interfaz";
-import AddPatientModal from '../components/Modals/AddPatientModal';
-import EditPatientModal from '../components/Modals/EditPatientModal';
+import { Patient } from "../components/interfaz/interfaz";
+import AddPatientModal from "../components/Modals/AddPatientModal";
+import EditPatientModal from "../components/Modals/EditPatientModal";
 import FilterForm from "../components/FilterForm/FilterForm";
-import Header from '../components/Header/Header';
+import Header from "../components/Header/Header";
 import PatientTable from "../components/PatientTable/PatientTable";
 import useFetchData from "../hooks/useFetchData";
 import useFilters from "../hooks/useFilters";
+import useAuth from "../hooks/useAuth";
 
 export default function Principal() {
   const router = useRouter();
+  const { token, loading } = useAuth();
   const { patients, setPatients, user, error } = useFetchData();
-  const { 
-    selectedDate, setSelectedDate, 
-    selectedPatientName, setSelectedPatientName,
-    selectedPractice, setSelectedPractice,
-    selectedObraSocial, setSelectedObraSocial,
-    selectedInstitucion, setSelectedInstitucion 
+  const {
+    selectedDate,
+    setSelectedDate,
+    selectedPatientName,
+    setSelectedPatientName,
+    selectedPractice,
+    setSelectedPractice,
+    selectedObraSocial,
+    setSelectedObraSocial,
+    selectedInstitucion,
+    setSelectedInstitucion,
   } = useFilters();
-  
+
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
+  useEffect(() => {
+    if (!loading && !token) {
+      router.replace("/");
+    }
+  }, [loading, token, router]);
+
+  if (loading) {
+    return <div className="text-center text-gray-300 mt-10">Verificando sesión...</div>;
+  }
+
+  if (!token) return null;
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    router.push("/");
+    router.replace("/");
   };
 
   const addPatient = (newPatient: Patient): void => {
@@ -39,7 +58,7 @@ export default function Principal() {
   const updatePatient = (updatedPatient: Patient): void => {
     setPatients((prev) =>
       prev.map((patient) => (patient.id === updatedPatient.id ? updatedPatient : patient))
-    ); 
+    );
   };
 
   const handleEditPatient = (patient: Patient) => {
@@ -49,21 +68,25 @@ export default function Principal() {
 
   const filteredPatients = patients.filter((patient) => {
     return (
-      (selectedDate ? new Date(patient.dia).toISOString().split('T')[0] === selectedDate : true) &&
-      (selectedPatientName ? patient.paciente.toLowerCase().includes(selectedPatientName.toLowerCase()) : true) &&
-      (selectedPractice ? patient.practicas.toLowerCase().includes(selectedPractice.toLowerCase()) : true) &&
-      (selectedObraSocial ? patient.obraSocial.toLowerCase().includes(selectedObraSocial.toLowerCase()) : true) &&
-      (selectedInstitucion ? patient.institucion.toLowerCase().includes(selectedInstitucion.toLowerCase()) : true)
+      (selectedDate ? new Date(patient.dia).toISOString().split("T")[0] === selectedDate : true) &&
+      (selectedPatientName
+        ? patient.paciente.toLowerCase().includes(selectedPatientName.toLowerCase())
+        : true) &&
+      (selectedPractice
+        ? patient.practicas.toLowerCase().includes(selectedPractice.toLowerCase())
+        : true) &&
+      (selectedObraSocial
+        ? patient.obraSocial.toLowerCase().includes(selectedObraSocial.toLowerCase())
+        : true) &&
+      (selectedInstitucion
+        ? patient.institucion.toLowerCase().includes(selectedInstitucion.toLowerCase())
+        : true)
     );
   });
 
   return (
     <div className="min-h-screen flex flex-col relative bg-cyan-900">
-      <Header 
-        user={user} 
-        handleLogout={handleLogout} 
-        setShowAddModal={setShowAddModal} 
-      />
+      <Header user={user} handleLogout={handleLogout} setShowAddModal={setShowAddModal} />
 
       <FilterForm
         selectedDate={selectedDate}
@@ -85,19 +108,13 @@ export default function Principal() {
         {patients.length === 0 ? (
           <div className="text-center">Cargando pacientes...</div>
         ) : (
-          <PatientTable
-            filteredPatients={filteredPatients}
-            onEditClick={handleEditPatient}
-          />
+          <PatientTable filteredPatients={filteredPatients} onEditClick={handleEditPatient} />
         )}
       </div>
 
       {showAddModal && (
         <div className="modal-overlay">
-          <AddPatientModal
-            onClose={() => setShowAddModal(false)}
-            onAdd={addPatient}
-          />
+          <AddPatientModal onClose={() => setShowAddModal(false)} onAdd={addPatient} />
         </div>
       )}
 
