@@ -1,26 +1,24 @@
+"use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useObrasSociales } from '../../hooks/useObrasSociales';
-import Patient from "../interfaz/interfaz";
+import { Patient, User } from "../interfaz/interfaz";
 import { ModalBase } from "./ModalBase";
 import { PatientFormFields } from "../PatientFormFields";
 import { FormActions } from "../FormActions";
 import { ErrorDisplay } from "../ErrorDisplay";
-import {  formatDate } from "../../utils/dateTimeHelpers";
+import { formatDate } from "../../utils/dateTimeHelpers";
 
 interface AddPatientModalProps {
+  user: User;
   onClose: () => void;
   onAdd: (newPatient: Patient) => void;
 }
 
-const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => {
+const AddPatientModal: React.FC<AddPatientModalProps> = ({ user, onClose, onAdd }) => {
   const { obrasSociales } = useObrasSociales();
 
-
-  const getCurrentDate = (): string => {
-    return formatDate(new Date().toISOString());
-  };
-
+  const getCurrentDate = (): string => formatDate(new Date().toISOString());
 
   const [formData, setFormData] = useState({
     dia: getCurrentDate(),
@@ -34,22 +32,14 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => 
 
   const [error, setError] = useState<string | null>(null);
 
-  const closeModal = useCallback(() => {
-    onClose();
-  }, [onClose]);
-
+  const closeModal = useCallback(() => { onClose(); }, [onClose]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeModal();
-      }
+      if (event.key === 'Escape') closeModal();
     };
-
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [closeModal]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -62,7 +52,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => 
     setFormData(prev => ({
       ...prev,
       estudioUrgoginecologico: isChecked,
-      practicas: isChecked 
+      practicas: isChecked
         ? prev.practicas.includes("(U)") ? prev.practicas : `${prev.practicas} (U)`
         : prev.practicas.replace(" (U)", "")
     }));
@@ -71,33 +61,36 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newPatient = {
-      hora: formData.hora,
-      dia: formData.dia,
-      paciente: formData.paciente,
-      practicas: formData.practicas,
-      obraSocial: formData.obraSocial,
-      institucion: formData.institucion,
+
+    const newPatient: Omit<Patient, "id"> & { userId: number } = {
+      ...formData,
+      userId: Number(user.id)
     };
+
+    const token = localStorage.getItem("token");
+    console.log("TOKEN ENVIADO DESDE AddPatientModal:", token);
 
     try {
       const response = await fetch('http://localhost:3001/api/paciente', {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(newPatient),
       });
 
       if (!response.ok) {
+        const text = await response.text();
+        console.error("Error al agregar paciente:", text);
         throw new Error('Error al crear el paciente');
       }
 
       const result = await response.json();
       onAdd(result.paciente);
       closeModal();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Hubo un error');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Hubo un error');
     }
   };
 
@@ -110,7 +103,6 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ onClose, onAdd }) => 
           onInputChange={handleInputChange}
           onCheckboxChange={handleCheckboxChange}
         />
-        
         <ErrorDisplay error={error} />
         <FormActions onCancel={closeModal} submitText="Agregar" />
       </form>

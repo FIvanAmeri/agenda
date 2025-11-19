@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Patient  from '../components/interfaz/interfaz';
+import {Patient}  from '../components/interfaz/interfaz';
 
 const useFetchData = () => {
   const router = useRouter();

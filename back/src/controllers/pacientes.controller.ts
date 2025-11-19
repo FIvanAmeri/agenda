@@ -1,63 +1,92 @@
-import { Request, Response } from 'express';
-import { PacientesService } from '../services/pacientes.service';
+import { Request, Response } from "express";
+import AppDataSource from "../data-source";
+import { Paciente } from "../entities/paciente.entity";
 
 export class PacientesController {
-  private pacientesService = new PacientesService();
+  async obtenerPacientes(req: Request, res: Response) {
+    const userId = req.user?.userId;
+
+    try {
+      const repo = AppDataSource.getRepository(Paciente);
+      const pacientes = await repo.find({ where: { userId } });
+      res.json({ pacientes });
+    } catch {
+      res.status(500).json({ message: "Error al obtener pacientes" });
+    }
+  }
 
   async crearPaciente(req: Request, res: Response) {
+    const userId = req.user?.userId;
+
+    const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
     try {
-      const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
-
-      if (!/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(hora)) {
-        return res.status(400).json({ error: 'Formato de hora inválido. Use HH:mm' });
-      }
-
-      const nuevoPaciente = await this.pacientesService.crearPaciente(
+      const repo = AppDataSource.getRepository(Paciente);
+      const nuevoPaciente = repo.create({
         hora,
         dia,
         paciente,
         practicas,
         obraSocial,
-        institucion
-      );
-      
-      res.status(201).json({ mensaje: 'Paciente creado con éxito', paciente: nuevoPaciente });
-    } catch (error) {
-      res.status(500).json({ error: 'Hubo un error al crear el paciente' });
-    }
-  }
-
-  async obtenerPacientes(req: Request, res: Response) {
-    try {
-      const pacientes = await this.pacientesService.obtenerPacientes();
-      res.status(200).json(pacientes);
-    } catch (error) {
-      res.status(500).json({ error: 'Hubo un error al obtener los pacientes' });
+        institucion,
+        userId,
+      });
+      await repo.save(nuevoPaciente);
+      res
+        .status(201)
+        .json({ paciente: nuevoPaciente, message: "Paciente agregado con éxito" });
+    } catch {
+      res.status(500).json({ message: "Error al crear paciente" });
     }
   }
 
   async actualizarPaciente(req: Request, res: Response) {
-    const { id } = req.params;
-    const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
+    const userId = req.user?.userId;
 
+    const { id } = req.params;
+    const { hora, dia, paciente, practicas, obraSocial, institucion } =
+      req.body;
     try {
-      const pacienteActualizado = await this.pacientesService.actualizarPaciente(
-        id,
+      const repo = AppDataSource.getRepository(Paciente);
+      const pacienteExistente = await repo.findOne({
+        where: { id: parseInt(id), userId },
+      });
+      if (!pacienteExistente)
+        return res.status(404).json({ message: "Paciente no encontrado" });
+
+      repo.merge(pacienteExistente, {
         hora,
         dia,
         paciente,
         practicas,
         obraSocial,
-        institucion
-      );
+        institucion,
+      });
+      const actualizado = await repo.save(pacienteExistente);
+      res.json({
+        paciente: actualizado,
+        message: "Paciente editado correctamente",
+      });
+    } catch {
+      res.status(500).json({ message: "Error al actualizar paciente" });
+    }
+  }
 
-      if (!pacienteActualizado) {
-        return res.status(404).json({ error: 'Paciente no encontrado' });
-      }
+  async eliminarPaciente(req: Request, res: Response) {
+    const userId = req.user?.userId;
 
-      return res.status(200).json({ mensaje: 'Paciente actualizado con éxito', paciente: pacienteActualizado });
-    } catch (error) {
-      res.status(500).json({ error: 'Hubo un error al actualizar el paciente' });
+    const { id } = req.params;
+    try {
+      const repo = AppDataSource.getRepository(Paciente);
+      const pacienteExistente = await repo.findOne({
+        where: { id: parseInt(id), userId },
+      });
+      if (!pacienteExistente)
+        return res.status(404).json({ message: "Paciente no encontrado" });
+
+      await repo.remove(pacienteExistente);
+      res.json({ message: "Paciente eliminado" });
+    } catch {
+      res.status(500).json({ message: "Error al eliminar paciente" });
     }
   }
 }

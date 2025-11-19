@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from './User';
 
 @Entity('paciente')
 export class Paciente {
@@ -22,4 +23,11 @@ export class Paciente {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   institucion: string;
+
+  @Column()
+  userId: number;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }

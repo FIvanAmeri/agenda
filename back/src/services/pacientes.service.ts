@@ -2,7 +2,15 @@ import AppDataSource from '../data-source';
 import { Paciente } from '../entities/paciente.entity';
 
 export class PacientesService {
-  async crearPaciente(hora: string, dia: string, paciente: string, practicas: string, obraSocial: string, institucion: string) {
+  async crearPaciente(
+    hora: string,
+    dia: string,
+    paciente: string,
+    practicas: string,
+    obraSocial: string,
+    institucion: string,
+    userId: number
+  ) {
     const pacienteRepository = AppDataSource.getRepository(Paciente);
 
     const nuevoPaciente = pacienteRepository.create({
@@ -12,26 +20,31 @@ export class PacientesService {
       practicas,
       obraSocial,
       institucion,
+      userId,
     });
 
     await pacienteRepository.save(nuevoPaciente);
     return nuevoPaciente;
   }
 
-  async obtenerPacientes() {
+  async obtenerPacientes(userId: number) {
     const pacienteRepository = AppDataSource.getRepository(Paciente);
-    return pacienteRepository.find();
+    return pacienteRepository.find({ where: { userId } });
   }
 
-  async actualizarPaciente(id: string, hora: string, dia: string, paciente: string, practicas: string, obraSocial: string, institucion: string) {
+  async actualizarPaciente(
+    id: string,
+    hora: string,
+    dia: string,
+    paciente: string,
+    practicas: string,
+    obraSocial: string,
+    institucion: string
+  ) {
     const pacienteRepository = AppDataSource.getRepository(Paciente);
-    const pacienteExistente = await pacienteRepository.findOne({
-      where: { id: parseInt(id, 10) },
-    });
+    const pacienteExistente = await pacienteRepository.findOne({ where: { id: parseInt(id, 10) } });
 
-    if (!pacienteExistente) {
-      return null;
-    }
+    if (!pacienteExistente) return null;
 
     pacienteExistente.hora = hora;
     pacienteExistente.dia = dia;

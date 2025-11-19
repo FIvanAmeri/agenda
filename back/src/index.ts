@@ -1,3 +1,5 @@
+/// <reference path="./types/express.d.ts" />
+
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -19,7 +21,7 @@ app.use(
   cors({
     origin: ['http://localhost:3000', 'http://localhost:3001'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'authorization'],
   })
 )
 

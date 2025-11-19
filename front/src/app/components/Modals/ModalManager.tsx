@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Patient from '../interfaz/interfaz';
+import {Patient} from '../interfaz/interfaz';
 
 const usePatientManagement = () => {
   const [patients, setPatients] = useState<Patient[]>([]);

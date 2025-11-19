@@ -1,24 +1,9 @@
-import { useState, useEffect } from "react";
-import Patient from "../components/interfaz/interfaz";
+import { useState } from "react";
+import { Patient } from "../components/interfaz/interfaz";
 
 const usePatientManagement = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const response = await fetch("http://localhost:3001/api/paciente");
-        if (!response.ok) throw new Error("No se pudo obtener los pacientes");
-        const data = await response.json();
-        setPatients(data);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : "Error desconocido");
-      }
-    };
-
-    fetchPatients();
-  }, []);
 
   const addPatient = (newPatient: Patient) => {
     setPatients((prev: Patient[]) => [...prev, newPatient]);
@@ -31,6 +16,10 @@ const usePatientManagement = () => {
       )
     );
   };
+  
+  const deletePatient = (id: number) => {
+    setPatients((prev: Patient[]) => prev.filter(p => p.id !== id));
+  }
 
   const filteredPatients = (filterParams: {
     selectedDate: string;
@@ -42,17 +31,17 @@ const usePatientManagement = () => {
     const { selectedDate, selectedPatientName, selectedPractice, selectedObraSocial, selectedInstitucion } = filterParams;
 
     return patients.filter((patient) => {
-      return (
-        (selectedDate ? new Date(patient.dia).toISOString().split("T")[0] === selectedDate : true) &&
-        (selectedPatientName ? patient.paciente.toLowerCase().includes(selectedPatientName.toLowerCase()) : true) &&
-        (selectedPractice ? patient.practicas.toLowerCase().includes(selectedPractice.toLowerCase()) : true) &&
-        (selectedObraSocial ? patient.obraSocial.toLowerCase().includes(selectedObraSocial.toLowerCase()) : true) &&
-        (selectedInstitucion ? patient.institucion.toLowerCase().includes(selectedInstitucion.toLowerCase()) : true)
-      );
+      const matchDate = selectedDate ? new Date(patient.dia).toISOString().split("T")[0] === selectedDate : true;
+      const matchName = selectedPatientName ? patient.paciente.toLowerCase().includes(selectedPatientName.toLowerCase()) : true;
+      const matchPractice = selectedPractice ? patient.practicas.toLowerCase().includes(selectedPractice.toLowerCase()) : true;
+      const matchObraSocial = selectedObraSocial ? patient.obraSocial.toLowerCase().includes(selectedObraSocial.toLowerCase()) : true;
+      const matchInstitucion = selectedInstitucion ? patient.institucion.toLowerCase().includes(selectedInstitucion.toLowerCase()) : true;
+
+      return matchDate && matchName && matchPractice && matchObraSocial && matchInstitucion;
     });
   };
 
-  return { patients, setPatients, error, addPatient, updatePatient, filteredPatients };
+  return { patients, setPatients, addPatient, updatePatient, deletePatient, filteredPatients, error, setError };
 };
 
 export default usePatientManagement;

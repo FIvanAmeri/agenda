@@ -43,6 +43,7 @@ export interface Patient {
   practicas: string
   obraSocial: string
   institucion: string
+  userId: number
 }
 
 export interface LoginCredentials {
@@ -53,4 +54,14 @@ export interface LoginCredentials {
 export interface ResetPayload {
   token: string
   newContrasena: string
+}
+
+export interface PatientFormData {
+  dia: string
+  hora: string
+  paciente: string
+  practicas: string
+  obraSocial: string
+  institucion: string
+  estudioUrgoginecologico: boolean
 }

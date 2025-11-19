@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useObrasSociales } from "../hooks/useObrasSociales";
-import Patient from "./interfaz/interfaz";
+import {Patient} from "./interfaz/interfaz";
 import { ModalBase } from "../components/Modals/ModalBase";
 import { PatientFormFields } from "./PatientFormFields";
 import { FormActions } from "./FormActions";
@@ -36,7 +36,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
     setShowEditModal(false);
   }, [setShowEditModal]);
 
-  // Manejador de tecla ESC
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -50,7 +50,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
     };
   }, [closeModal]);
 
-  // Actualizar estados cuando cambia el paciente seleccionado
+
   useEffect(() => {
     setFormData({
       dia: formatDate(selectedPatient.dia),

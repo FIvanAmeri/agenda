@@ -4,57 +4,52 @@ import { User, AuthResponse, AuthContextType } from "../components/interfaz/inte
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/users";
 
 export default function useAuth(): AuthContextType {
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("token");
+    return null;
+  });
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
+    if (typeof window === "undefined") {
+      setLoading(false);
+      return;
     }
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
     setLoading(false);
   }, []);
 
   const login = async (credentials: Pick<User, "usuario" | "contrasena">): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const res = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(credentials)
       });
-
-      const data: AuthResponse = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Error en el inicio de sesión.");
-      }
-
-      if (data.user) {
-        const fakeToken = btoa(`${data.user.usuario}:${Date.now()}`);
-        localStorage.setItem("token", fakeToken);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error en el inicio de sesión");
+      if (data.user && data.token) {
+        localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        setToken(fakeToken);
+        setToken(data.token);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (data: Pick<User, "usuario" | "email" | "contrasena">): Promise<void> => {
+  const register = async (payload: Pick<User, "usuario" | "email" | "contrasena">): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/register`, {
+      const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload)
       });
-
-      const result: AuthResponse = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Error al registrar usuario.");
-      }
+      const data: AuthResponse = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al registrar usuario");
     } finally {
       setLoading(false);
     }
