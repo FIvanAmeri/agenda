@@ -16,6 +16,19 @@ interface PatientFormFieldsProps {
   onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
+
+const PRACTICAS_OPTIONS = [
+  "Consulta General",
+
+];
+
+
+const INSTITUCION_OPTIONS = [
+  "Alto Rosario",
+  "ICR",
+  "Sanatorio Parque"
+];
+
 export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
   formData,
   obrasSociales,
@@ -67,16 +80,22 @@ export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
       </div>
 
       <div className="space-y-4">
+        
+    
         <div>
           <label className="block text-sm font-medium text-gray-200 mb-1">Prácticas</label>
-          <input
-            type="text"
+          <select
             name="practicas"
             value={formData.practicas}
             onChange={onInputChange}
             required
             className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          >
+            <option value="" disabled>Escoja una opción</option>
+            {PRACTICAS_OPTIONS.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -105,16 +124,21 @@ export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
           </select>
         </div>
 
+      
         <div>
           <label className="block text-sm font-medium text-gray-200 mb-1">Institución</label>
-          <input
-            type="text"
+          <select
             name="institucion"
             value={formData.institucion}
             onChange={onInputChange}
             required
             className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          >
+            <option value="" disabled>Selecciona una institución</option>
+            {INSTITUCION_OPTIONS.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
         </div>
       </div>
     </div>

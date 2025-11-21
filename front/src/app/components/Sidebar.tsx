@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { FaCalendarAlt, FaPlusSquare, FaUserMd, FaUsers, FaSignOutAlt, FaHospitalAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaPlusSquare, FaSignOutAlt, FaHospitalAlt, FaChartBar, FaMoneyBillAlt } from 'react-icons/fa';
 
 
 interface SidebarProps {
@@ -26,9 +25,15 @@ const navItems = [
     },
 
     {
-        name: 'Pacientes',
-        icon: FaUsers,
-        path: '/pacientes',
+        name: 'Informes de cobros',
+        icon: FaMoneyBillAlt,
+        path: '/cobros',
+        action: 'navigate' as const
+    },
+    {
+        name: 'Informacion de Cirugías',
+        icon: FaChartBar,
+        path: '/informes',
         action: 'navigate' as const
     },
 ];
