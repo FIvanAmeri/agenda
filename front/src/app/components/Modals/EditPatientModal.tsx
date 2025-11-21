@@ -78,42 +78,49 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
     setPracticas(prev => isChecked ? (prev.includes("(U)") ? prev : `${prev} (U)`) : prev.replace(" (U)", ""));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const updatedPatient: Patient = {
-      ...selectedPatient,
-      hora: `${dia}T${hora}:00`,
-      dia,
-      paciente,
-      practicas,
-      obraSocial,
-      institucion,
-      userId: Number(user.id)
-    };
+    const updatedPatient: Patient = {
+      ...selectedPatient,
+      hora: `${dia}T${hora}:00`,
+      dia,
+      paciente,
+      practicas,
+      obraSocial,
+      institucion,
+      userId: Number(user.id)
+    };
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-    try {
-      const response = await fetch(`http://localhost:3001/api/paciente/${selectedPatient.id}`, {
-        method: "PUT",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(updatedPatient),
-      });
+    try {
+      const response = await fetch(`http://localhost:3001/api/paciente/${selectedPatient.id}`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          hora: updatedPatient.hora,
+          dia: updatedPatient.dia,
+          paciente: updatedPatient.paciente,
+          practicas: updatedPatient.practicas,
+          obraSocial: updatedPatient.obraSocial,
+          institucion: updatedPatient.institucion,
+          userId: updatedPatient.userId,
+        }),
+      });
 
-      if (!response.ok) throw new Error("Error al actualizar el paciente");
+      if (!response.ok) throw new Error("Error al actualizar el paciente");
 
-      const result = await response.json();
-      updatePatient(result.paciente);
-      alert("Paciente editado correctamente");
-      closeModal();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Hubo un error al actualizar");
-    }
-  };
+      const result = await response.json();
+      updatePatient(result.paciente);
+      closeModal();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Hubo un error al actualizar");
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50 p-4" onClick={closeModal}>

@@ -6,7 +6,7 @@ export class Paciente {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 5 })
+  @Column({ type: 'varchar', length: 30 })
   hora: string;
 
   @Column({ type: 'varchar', length: 10 })
