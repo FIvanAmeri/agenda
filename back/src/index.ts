@@ -9,6 +9,8 @@ import userRouter from './routes/userRouters'
 import pacientesRouter from './routes/pacientes.router'
 import pacientesMasivosRouter from './routes/pacientesMasivos.router'
 import { newUsersRouter } from './routes/newUsers.router'
+import cirugiasRouter from './routes/cirugia.router'
+
 
 dotenv.config()
 
@@ -35,6 +37,8 @@ AppDataSource.initialize()
     app.use('/api', pacientesRouter)
     app.use('/api', pacientesMasivosRouter)
     app.use('/api/auth', newUsersRouter)
+
+    app.use('/api', cirugiasRouter) 
 
     app.listen(port, () => {
       console.log(`Servidor corriendo en http://localhost:${port}`)
