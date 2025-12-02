@@ -2,7 +2,7 @@
 
 import React from "react";
 import { PropsFormularioCirugia } from "../../components/interfaz/tipos-cirugia";
-import { usarFormularioCirugia } from "../../hooks/Cirugia/usarFormularioCirugia";
+import { usarFormularioCirugia } from "../../hooks/Cirugia/useFormularioCirugia";
 import { CampoSeleccionDinamico } from "./CampoSeleccionDinamico";
 
 export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user, onAdded, onClose }) => {
