@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Sidebar from '../app/components/Sidebar';
-import useAuth from '../app/hooks/useAuth';
-import { User, Patient } from '../app/components/interfaz/interfaz';
-
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Sidebar from "../app/components/Sidebar";
+import useAuth from "../app/hooks/useAuth";
+import { User, Patient, Cirugia } from "../app/components/interfaz/interfaz";
 
 interface ContentProps {
     user: User;
@@ -16,11 +15,30 @@ interface ContentProps {
     selectedPatient: Patient | null;
     setSelectedPatient: (patient: Patient | null) => void;
     showCirugiaModal: boolean;
-    setShowCirugiaModal: (show: boolean) => void; 
+    setShowCirugiaModal: (show: boolean) => void;
+    showViewCirugiaModal: boolean;
+    setShowViewCirugiaModal: (show: boolean) => void;
+    selectedCirugia: Cirugia | null;
+    setSelectedCirugia: (cirugia: Cirugia | null) => void;
 }
 
 interface MainLayoutProps {
     children: (props: ContentProps) => React.ReactNode;
+}
+
+const API_USERS = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/users";
+
+function parseJwt(token: string): { [key: string]: unknown } | null {
+    try {
+        const parts = token.split(".");
+        if (parts.length !== 3) return null;
+        const payload = parts[1];
+        const padded = payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, "=");
+        const decoded = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
+        return JSON.parse(decoded);
+    } catch {
+        return null;
+    }
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
@@ -32,17 +50,46 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const [showCirugiaModal, setShowCirugiaModal] = useState(false);
+    const [showViewCirugiaModal, setShowViewCirugiaModal] = useState(false);
+    const [selectedCirugia, setSelectedCirugia] = useState<Cirugia | null>(null);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
+        const stored = localStorage.getItem("user");
+        if (stored) {
             try {
-                setUser(JSON.parse(storedUser) as User); 
-            } catch (e) {
-                console.error("Error parsing user from localStorage:", e);
+                setUser(JSON.parse(stored) as User);
+            } catch {
+                localStorage.removeItem("user");
             }
         }
     }, []);
+
+    useEffect(() => {
+        async function fetchUserFromApi(decodedId: number, t: string) {
+            try {
+                const res = await fetch(`${API_USERS}/${decodedId}`, {
+                    headers: { Authorization: `Bearer ${t}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                const fetchedUser = data.user ?? data;
+                if (fetchedUser) {
+                    localStorage.setItem("user", JSON.stringify(fetchedUser));
+                    setUser(fetchedUser as User);
+                }
+            } catch {
+            }
+        }
+
+        if (!user && token) {
+            const payload = parseJwt(token);
+            const maybeId = payload && (payload["userId"] ?? payload["usuarioId"] ?? payload["id"]);
+            const idNumber = typeof maybeId === "number" ? maybeId : typeof maybeId === "string" && /^\d+$/.test(maybeId) ? Number(maybeId) : null;
+            if (idNumber) {
+                fetchUserFromApi(idNumber, token);
+            }
+        }
+    }, [token, user]);
 
     useEffect(() => {
         if (!authLoading && !token) {
@@ -56,8 +103,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         router.replace("/");
     };
 
-    if (authLoading || !user) return <div className="text-center text-gray-300 mt-10">Cargando...</div>;
+    if (authLoading) return <div className="text-center text-gray-300 mt-10">Cargando...</div>;
+
     if (!token) return null;
+
+    if (!user) return <div className="text-center text-gray-300 mt-10">Cargando usuario...</div>;
 
     return (
         <div className="flex bg-cyan-900 min-h-screen">
@@ -78,7 +128,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     selectedPatient,
                     setSelectedPatient,
                     showCirugiaModal,
-                    setShowCirugiaModal 
+                    setShowCirugiaModal,
+                    showViewCirugiaModal,
+                    setShowViewCirugiaModal,
+                    selectedCirugia,
+                    setSelectedCirugia
                 })}
             </main>
         </div>

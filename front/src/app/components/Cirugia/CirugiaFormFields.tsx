@@ -4,15 +4,11 @@ import React, { useState } from "react";
 import { User } from "../interfaz/interfaz";
 import { formatDate } from "../../utils/dateTimeHelpers";
 
-
-
-
 export interface CirugiaFormFieldsProps {
     user: User;
     onAdded: () => void;
-    onClose: () => void; 
+    onClose: () => void;
 }
-
 
 interface CirugiaFormData {
     fecha: string;
@@ -21,46 +17,44 @@ interface CirugiaFormData {
     medicoOpero: string;
     medicoAyudo1: string;
     medicoAyudo2: string;
-    honorarios: number;
+    honorarios: string;
     descripcion: string;
 }
 
-
 const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, onClose }) => {
-    
+
     const [formData, setFormData] = useState<CirugiaFormData>({
         fecha: formatDate(new Date().toISOString()),
-        paciente: '',
-        tipoCirugia: '',
-        medicoOpero: '',
-        medicoAyudo1: '',
-        medicoAyudo2: '',
-        honorarios: 0,
-        descripcion: '',
+        paciente: "",
+        tipoCirugia: "",
+        medicoOpero: "",
+        medicoAyudo1: "",
+        medicoAyudo2: "",
+        honorarios: "",
+        descripcion: ""
     });
-    
-    const [error, setError] = useState<string | null>(null);
 
+    const [error, setError] = useState<string | null>(null);
 
     const [medicos, setMedicos] = useState<string[]>([]);
     const [tiposCirugia, setTiposCirugia] = useState<string[]>([]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
-        setFormData(prev => ({ 
-            ...prev, 
-            [name]: type === 'number' ? Number(value) : value 
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
         }));
     };
-    
 
-    const handleAddOption = (listName: 'medicos' | 'tiposCirugia', fieldLabel: string) => {
+    const handleAddOption = (listName: "medicos" | "tiposCirugia", fieldLabel: string) => {
         const newOption = prompt(`Ingrese el nuevo valor para ${fieldLabel}:`);
         if (newOption && newOption.trim() !== "") {
-            if (listName === 'medicos') {
+            if (listName === "medicos") {
                 setMedicos(prev => (prev.includes(newOption) ? prev : [...prev, newOption]));
-       
-            } else if (listName === 'tiposCirugia') {
+            } else if (listName === "tiposCirugia") {
                 setTiposCirugia(prev => (prev.includes(newOption) ? prev : [...prev, newOption]));
             }
         }
@@ -70,43 +64,43 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
         e.preventDefault();
 
         const token = localStorage.getItem("token");
+
         const cirugiaPayload = {
             ...formData,
+            honorarios: Number(formData.honorarios),
             userId: Number(user.id)
         };
 
         try {
-            const response = await fetch('http://localhost:3001/api/cirugias', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
+            const response = await fetch("http://localhost:3001/api/cirugia", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify(cirugiaPayload),
+                body: JSON.stringify(cirugiaPayload)
             });
 
             if (!response.ok) {
                 const text = await response.text();
                 console.error("Error al agregar cirugía:", text);
-                throw new Error('Error al crear la cirugía');
+                throw new Error("Error al crear la cirugía");
             }
 
-     
+            window.alert("Cirugía ingresada correctamente");
             onAdded();
             onClose();
+
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Hubo un error al guardar la cirugía');
+            setError(err instanceof Error ? err.message : "Hubo un error al guardar la cirugía");
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-         
                 <div className="space-y-4">
-                    
-      
+
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Fecha</label>
                         <input
@@ -115,11 +109,10 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                             value={formData.fecha}
                             onChange={handleInputChange}
                             required
-                            className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 border border-gray-300 rounded-md text-black"
                         />
                     </div>
 
-             
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Nombre del Paciente</label>
                         <input
@@ -128,11 +121,10 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                             value={formData.paciente}
                             onChange={handleInputChange}
                             required
-                            className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 border border-gray-300 rounded-md text-black"
                         />
                     </div>
 
-        
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Tipo de Cirugía</label>
                         <div className="flex space-x-2">
@@ -141,24 +133,23 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                                 value={formData.tipoCirugia}
                                 onChange={handleInputChange}
                                 required
-                                className="flex-1 p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 p-2 border border-gray-300 rounded-md text-black"
                             >
                                 <option value="" disabled>Selecciona el tipo</option>
-                                {tiposCirugia.map((option) => (
+                                {tiposCirugia.map(option => (
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <button 
-                                type="button" 
-                                onClick={() => handleAddOption('tiposCirugia', 'Tipo de Cirugía')}
-                                className="bg-gray-400 text-white px-3 py-2 rounded-md hover:bg-gray-500"
+                            <button
+                                type="button"
+                                onClick={() => handleAddOption("tiposCirugia", "Tipo de Cirugía")}
+                                className="bg-gray-400 text-white px-3 py-2 rounded-md"
                             >
                                 +
                             </button>
                         </div>
                     </div>
-                    
-             
+
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Honorarios</label>
                         <input
@@ -166,15 +157,14 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                             name="honorarios"
                             value={formData.honorarios}
                             onChange={handleInputChange}
-                            required
-                            className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="0"
+                            className="w-full p-2 border border-gray-300 rounded-md text-black"
                         />
                     </div>
                 </div>
 
-          
                 <div className="space-y-4">
-         
+
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Médico que Operó</label>
                         <div className="flex space-x-2">
@@ -183,24 +173,23 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                                 value={formData.medicoOpero}
                                 onChange={handleInputChange}
                                 required
-                                className="flex-1 p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 p-2 border border-gray-300 rounded-md text-black"
                             >
                                 <option value="" disabled>Selecciona el médico</option>
-                                {medicos.map((option) => (
+                                {medicos.map(option => (
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <button 
-                                type="button" 
-                                onClick={() => handleAddOption('medicos', 'Médico que Operó')}
-                                className="bg-gray-400 text-white px-3 py-2 rounded-md hover:bg-gray-500"
+                            <button
+                                type="button"
+                                onClick={() => handleAddOption("medicos", "Médico que Operó")}
+                                className="bg-gray-400 text-white px-3 py-2 rounded-md"
                             >
                                 +
                             </button>
                         </div>
                     </div>
 
-             
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Médico que Ayudó</label>
                         <div className="flex space-x-2">
@@ -208,24 +197,23 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                                 name="medicoAyudo1"
                                 value={formData.medicoAyudo1}
                                 onChange={handleInputChange}
-                                className="flex-1 p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 p-2 border border-gray-300 rounded-md text-black"
                             >
                                 <option value="">Selecciona el médico</option>
-                                {medicos.map((option) => (
+                                {medicos.map(option => (
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <button 
-                                type="button" 
-                                onClick={() => handleAddOption('medicos', 'Médico que Ayudó 1')}
-                                className="bg-gray-400 text-white px-3 py-2 rounded-md hover:bg-gray-500"
+                            <button
+                                type="button"
+                                onClick={() => handleAddOption("medicos", "Médico que Ayudó 1")}
+                                className="bg-gray-400 text-white px-3 py-2 rounded-md"
                             >
                                 +
                             </button>
                         </div>
                     </div>
 
-             
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Segundo Médico que Ayudó</label>
                         <div className="flex space-x-2">
@@ -233,24 +221,23 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                                 name="medicoAyudo2"
                                 value={formData.medicoAyudo2}
                                 onChange={handleInputChange}
-                                className="flex-1 p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex-1 p-2 border border-gray-300 rounded-md text-black"
                             >
                                 <option value="">Selecciona el médico</option>
-                                {medicos.map((option) => (
+                                {medicos.map(option => (
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <button 
-                                type="button" 
-                                onClick={() => handleAddOption('medicos', 'Segundo Médico que Ayudó')}
-                                className="bg-gray-400 text-white px-3 py-2 rounded-md hover:bg-gray-500"
+                            <button
+                                type="button"
+                                onClick={() => handleAddOption("medicos", "Segundo Médico que Ayudó")}
+                                className="bg-gray-400 text-white px-3 py-2 rounded-md"
                             >
                                 +
                             </button>
                         </div>
                     </div>
-                    
-               
+
                     <div>
                         <label className="block text-sm font-medium text-gray-200 mb-1">Descripción</label>
                         <textarea
@@ -258,23 +245,23 @@ const CirugiaFormFields: React.FC<CirugiaFormFieldsProps> = ({ user, onAdded, on
                             value={formData.descripcion}
                             onChange={handleInputChange}
                             rows={3}
-                            className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 border border-gray-300 rounded-md text-black"
                         />
                     </div>
                 </div>
             </div>
-            
+
             <div className="mt-6 flex justify-end space-x-4">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition"
+                    className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md"
                 >
                     Cancelar
                 </button>
                 <button
                     type="submit"
-                    className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition"
+                    className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md"
                 >
                     Guardar Cirugía
                 </button>

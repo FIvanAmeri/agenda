@@ -6,16 +6,19 @@ const service = new CirugiaService();
 export class CirugiaController {
   async crear(req: Request, res: Response) {
     const body = req.body;
+
     const cirugia = await service.crear({
       fecha: body.fecha,
+      paciente: body.paciente,
+      tipoCirugia: body.tipoCirugia,
+      medicoOpero: body.medicoOpero,
+      medicoAyudo1: body.medicoAyudo1,
+      medicoAyudo2: body.medicoAyudo2,
       honorarios: body.honorarios,
-      pacienteId: body.pacienteId,
-      medicoOperadorId: body.medicoOperadorId,
-      ayudante1Id: body.ayudante1Id,
-      ayudante2Id: body.ayudante2Id,
-      tipoCirugiaId: body.tipoCirugiaId
+      descripcion: body.descripcion
     });
-    res.json({ cirugia });
+
+    return res.json({ cirugia });
   }
 
   async listar(req: Request, res: Response) {

@@ -1,7 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
-import { Medico } from "./Medico.entity";
-import { TipoCirugia } from "./TipoCirugia.entity";
-import { Paciente } from "./paciente.entity";
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity("cirugia")
 export class Cirugia {
@@ -11,41 +8,24 @@ export class Cirugia {
   @Column({ type: "date" })
   fecha: string;
 
+  @Column({ type: "varchar", length: 255 })
+  paciente: string;
+
+  @Column({ type: "varchar", length: 255 })
+  tipoCirugia: string;
+
+  @Column({ type: "varchar", length: 255 })
+  medicoOpero: string;
+
+  @Column({ type: "varchar", length: 255, nullable: true })
+  medicoAyudo1: string | null;
+
+  @Column({ type: "varchar", length: 255, nullable: true })
+  medicoAyudo2: string | null;
+
   @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
   honorarios: number | null;
 
-  @ManyToOne(() => Paciente)
-  @JoinColumn({ name: "pacienteId" })
-  paciente: Paciente | null;
-
-  @Column({ nullable: true })
-  pacienteId: number | null;
-
-  @ManyToOne(() => Medico)
-  @JoinColumn({ name: "medicoOperadorId" })
-  medicoOperador: Medico | null;
-
-  @Column({ nullable: true })
-  medicoOperadorId: number | null;
-
-  @ManyToOne(() => Medico)
-  @JoinColumn({ name: "ayudante1Id" })
-  ayudante1: Medico | null;
-
-  @Column({ nullable: true })
-  ayudante1Id: number | null;
-
-  @ManyToOne(() => Medico)
-  @JoinColumn({ name: "ayudante2Id" })
-  ayudante2: Medico | null;
-
-  @Column({ nullable: true })
-  ayudante2Id: number | null;
-
-  @ManyToOne(() => TipoCirugia)
-  @JoinColumn({ name: "tipoCirugiaId" })
-  tipoCirugia: TipoCirugia | null;
-
-  @Column({ nullable: true })
-  tipoCirugiaId: number | null;
+  @Column({ type: "text", nullable: true })
+  descripcion: string | null;
 }

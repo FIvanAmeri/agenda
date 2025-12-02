@@ -65,3 +65,16 @@ export interface PatientFormData {
   institucion: string
   estudioUrgoginecologico: boolean
 }
+
+
+export interface Cirugia {
+  id: number; 
+    fecha: string;
+    paciente: string;
+    tipoCirugia: string;
+    medicoOpero: string;
+    medicoAyudo1: string;
+    medicoAyudo2: string;
+    honorarios: number;
+    descripcion: string;
+}
