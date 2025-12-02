@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect } from "react";
 import ModalBase from "./ModalBase"; 
-import CirugiaFormFields from "./CirugiaFormFields";
+import { FormularioCamposCirugia } from "../Cirugia/FormularioCamposCirugia"; 
 import { User } from "../interfaz/interfaz";
 
 interface AddCirugiaModalProps {
@@ -29,7 +29,7 @@ const AddCirugiaModal: React.FC<AddCirugiaModalProps> = ({ user, onClose, onAdde
             onClose={closeModal}
             contentClassName="bg-gradient-to-br from-blue-700 to-green-600 text-white" 
         > 
-            <CirugiaFormFields 
+            <FormularioCamposCirugia 
                 user={user} 
                 onAdded={onAdded} 
                 onClose={closeModal} 
