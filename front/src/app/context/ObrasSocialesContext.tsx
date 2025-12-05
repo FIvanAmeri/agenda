@@ -46,7 +46,9 @@ export const ObrasSocialesProvider = ({ children }: { children: ReactNode }) => 
     "GRUPO SAN NICOLAS",
     "FEDERADA",
     "MUTUALYF",
-    "OSIAD"
+    "OSIAD",
+    "OSDOP",
+    "PREVENCION ART"
   ]);
 
   return (

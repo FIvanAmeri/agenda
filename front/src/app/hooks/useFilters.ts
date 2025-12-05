@@ -1,24 +1,18 @@
 import { useState } from "react";
 
-const useFilters = () => {
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [selectedPatientName, setSelectedPatientName] = useState<string>("");
-  const [selectedPractice, setSelectedPractice] = useState<string>("");
-  const [selectedObraSocial, setSelectedObraSocial] = useState<string>("");
-  const [selectedInstitucion, setSelectedInstitucion] = useState<string>("");
-
-
-  const resetFilters = () => {
-    setSelectedDate("");
-    setSelectedPatientName("");
-    setSelectedPractice("");
-    setSelectedObraSocial("");
-    setSelectedInstitucion("");
-  };
+export const useFilters = () => {
+  const [selectedDateFrom, setSelectedDateFrom] = useState("");
+  const [selectedDateTo, setSelectedDateTo] = useState("");
+  const [selectedPatientName, setSelectedPatientName] = useState("");
+  const [selectedPractice, setSelectedPractice] = useState("");
+  const [selectedObraSocial, setSelectedObraSocial] = useState("");
+  const [selectedInstitucion, setSelectedInstitucion] = useState("");
 
   return {
-    selectedDate,
-    setSelectedDate,
+    selectedDateFrom,
+    setSelectedDateFrom,
+    selectedDateTo,
+    setSelectedDateTo,
     selectedPatientName,
     setSelectedPatientName,
     selectedPractice,
@@ -26,9 +20,6 @@ const useFilters = () => {
     selectedObraSocial,
     setSelectedObraSocial,
     selectedInstitucion,
-    setSelectedInstitucion,
-    resetFilters,
+    setSelectedInstitucion
   };
 };
-
-export default useFilters;
