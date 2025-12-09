@@ -44,7 +44,9 @@ export interface Patient {
   obraSocial: string
   institucion: string
   userId: number
+  estadoPago: "no pagado" | "parcialmente pagado" | "pagado" 
 }
+
 
 export interface LoginCredentials {
   usuario: string

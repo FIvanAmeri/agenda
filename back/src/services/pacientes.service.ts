@@ -1,5 +1,5 @@
 import AppDataSource from '../data-source';
-import { Paciente } from '../entities/paciente.entity';
+import { Paciente, EstadoPago } from '../entities/paciente.entity';
 
 export class PacientesService {
   async crearPaciente(
@@ -52,6 +52,24 @@ export class PacientesService {
     pacienteExistente.practicas = practicas;
     pacienteExistente.obraSocial = obraSocial;
     pacienteExistente.institucion = institucion;
+
+    await pacienteRepository.save(pacienteExistente);
+    return pacienteExistente;
+  }
+
+  async actualizarEstadoDePago(
+    id: number,
+    userId: number,
+    estadoPago: EstadoPago
+  ) {
+    const pacienteRepository = AppDataSource.getRepository(Paciente);
+    const pacienteExistente = await pacienteRepository.findOne({
+      where: { id, userId },
+    });
+
+    if (!pacienteExistente) return null;
+
+    pacienteExistente.estadoPago = estadoPago;
 
     await pacienteRepository.save(pacienteExistente);
     return pacienteExistente;

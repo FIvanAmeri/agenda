@@ -28,14 +28,14 @@ interface MainLayoutProps {
 
 const API_USERS = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/users";
 
-function parseJwt(token: string): { [key: string]: unknown } | null {
+function parseJwt(token: string): Record<string, unknown> | null {
     try {
         const parts = token.split(".");
         if (parts.length !== 3) return null;
         const payload = parts[1];
         const padded = payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, "=");
         const decoded = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
-        return JSON.parse(decoded);
+        return JSON.parse(decoded) as Record<string, unknown>;
     } catch {
         return null;
     }
@@ -65,37 +65,50 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        async function fetchUserFromApi(decodedId: number, t: string) {
-            try {
-                const res = await fetch(`${API_USERS}/${decodedId}`, {
-                    headers: { Authorization: `Bearer ${t}` }
-                });
-                if (!res.ok) return;
-                const data = await res.json();
-                const fetchedUser = data.user ?? data;
-                if (fetchedUser) {
-                    localStorage.setItem("user", JSON.stringify(fetchedUser));
-                    setUser(fetchedUser as User);
-                }
-            } catch {
-            }
+        const t = token || localStorage.getItem("token");
+        if (!t) {
+            router.replace("/");
+            return;
         }
 
-        if (!user && token) {
-            const payload = parseJwt(token);
-            const maybeId = payload && (payload["userId"] ?? payload["usuarioId"] ?? payload["id"]);
-            const idNumber = typeof maybeId === "number" ? maybeId : typeof maybeId === "string" && /^\d+$/.test(maybeId) ? Number(maybeId) : null;
-            if (idNumber) {
-                fetchUserFromApi(idNumber, token);
-            }
-        }
-    }, [token, user]);
+        const decoded = parseJwt(t);
+        const exp = typeof decoded?.exp === "number" ? decoded.exp : null;
 
-    useEffect(() => {
-        if (!authLoading && !token) {
+        if (!exp || exp * 1000 < Date.now()) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
             router.replace("/");
         }
     }, [authLoading, token, router]);
+
+    useEffect(() => {
+        async function fetchUser(decodedId: number, t: string) {
+            const res = await fetch(`${API_USERS}/${decodedId}`, {
+                headers: { Authorization: `Bearer ${t}` }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const fetchedUser = data.user ?? data;
+            setUser(fetchedUser as User);
+            localStorage.setItem("user", JSON.stringify(fetchedUser));
+        }
+
+        const t = token || localStorage.getItem("token");
+        if (!t) return;
+
+        if (!user) {
+            const payload = parseJwt(t);
+            const rawId = payload?.userId ?? payload?.usuarioId ?? payload?.id;
+            const id =
+                typeof rawId === "number"
+                    ? rawId
+                    : typeof rawId === "string" && /^\d+$/.test(rawId)
+                    ? Number(rawId)
+                    : null;
+
+            if (id) fetchUser(id, t);
+        }
+    }, [token, user]);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -104,10 +117,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     };
 
     if (authLoading) return <div className="text-center text-gray-300 mt-10">Cargando...</div>;
-
-    if (!token) return null;
-
-    if (!user) return <div className="text-center text-gray-300 mt-10">Cargando usuario...</div>;
+    if (!token) return <div className="text-center text-gray-300 mt-10">Redirigiendo...</div>;
+    if (!user) return <div className="text-center text-gray-300 mt-10">Verificando...</div>;
 
     return (
         <div className="flex bg-cyan-900 min-h-screen">

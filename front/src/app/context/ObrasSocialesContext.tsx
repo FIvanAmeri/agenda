@@ -14,7 +14,6 @@ export const ObrasSocialesContext = createContext<ObrasSocialesContextType | und
 
 export const ObrasSocialesProvider = ({ children }: { children: ReactNode }) => {
   const [obrasSociales, setObrasSociales] = useState<string[]>([
-    "Escoja una opción",
     "PARTICULAR",
     "IOSFA",
     "OSPAC",
