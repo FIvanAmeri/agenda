@@ -2,45 +2,51 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 import { User } from './User';
 
 export enum EstadoPago {
-  NO_PAGADO = 'no pagado',
-  PARCIALMENTE_PAGADO = 'parcialmente pagado',
-  PAGADO = 'pagado',
+  NO_PAGADO = 'no pagado',
+  PARCIALMENTE_PAGADO = 'parcialmente pagado',
+  PAGADO = 'pagado',
 }
 
 @Entity('paciente')
 export class Paciente {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column({ type: 'varchar', length: 30 })
-  hora: string;
+  @Column({ type: 'varchar', length: 30 })
+  hora: string;
 
-  @Column({ type: 'varchar', length: 10 })
-  dia: string;
+  @Column({ type: 'varchar', length: 10 })
+  dia: string;
 
-  @Column()
-  paciente: string;
+  @Column()
+  paciente: string;
 
-  @Column()
-  practicas: string;
+  @Column()
+  practicas: string;
 
-  @Column()
-  obraSocial: string;
+  @Column()
+  obraSocial: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  institucion: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  institucion: string;
 
-  @Column()
-  userId: number;
+  @Column()
+  userId: number;
 
-  @Column({
-    type: 'enum',
-    enum: EstadoPago,
-    default: EstadoPago.NO_PAGADO,
-  })
-  estadoPago: EstadoPago;
+  @Column({
+    type: 'enum',
+    enum: EstadoPago,
+    default: EstadoPago.NO_PAGADO,
+  })
+  estadoPago: EstadoPago;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0.0 })
+  montoPagado: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0.0 })
+  montoTotal: number;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }

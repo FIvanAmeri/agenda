@@ -45,6 +45,8 @@ export interface Patient {
   institucion: string
   userId: number
   estadoPago: "no pagado" | "parcialmente pagado" | "pagado" 
+  montoPagado: number;
+  montoTotal: number;
 }
 
 

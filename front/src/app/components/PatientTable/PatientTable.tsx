@@ -16,8 +16,6 @@ const PatientTable: React.FC<PatientTableProps> = ({
   onEditClick,
   onDeleteClick,
 }) => {
-
-
   const [patientsState, setPatientsState] = useState<Patient[]>(filteredPatients);
 
   useEffect(() => {
@@ -43,11 +41,23 @@ const PatientTable: React.FC<PatientTableProps> = ({
     return `${hours}:${minutes}`;
   };
 
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   const sortedPatients = [...patientsState].sort((a, b) => b.id - a.id);
+
 
   const mapToPago = (p: Patient): PacienteParaPago => ({
     id: p.id,
     estadoPagoActual: p.estadoPago,
+    montoPagadoActual: p.montoPagado,
+    montoTotalActual: p.montoTotal,
   });
 
 
@@ -55,7 +65,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
     setPatientsState(prev =>
       prev.map(p =>
         p.id === pacienteActualizado.id
-          ? { ...p, estadoPago: pacienteActualizado.estadoPagoActual }
+          ? { ...p, estadoPago: pacienteActualizado.estadoPagoActual, montoPagado: pacienteActualizado.montoPagadoActual }
           : p
       )
     );
@@ -87,6 +97,12 @@ const PatientTable: React.FC<PatientTableProps> = ({
                     <div><strong>Prácticas:</strong> {patient.practicas}</div>
                     <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
                     <div><strong>Institución:</strong> {patient.institucion}</div>
+
+                    {(patient.estadoPago === 'parcialmente pagado' || patient.estadoPago === 'pagado') && (
+                      <div className="mt-1"> 
+                        <strong>Monto Pagado:</strong> {formatCurrency(patient.montoPagado)}
+                      </div>
+                    )}
 
                     <div className="mt-4 flex gap-2">
                       <button

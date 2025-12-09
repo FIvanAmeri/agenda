@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { FaMoneyBillWave, FaChevronDown, FaSpinner } from "react-icons/fa";
 import { EstadoPago, PacienteParaPago } from "../interfaz/boton-pago";
 import { useBotonPago } from "../../hooks/boton-pago/useBotonPago";
+import { PopUpMonto } from "../pop-up/Monto/PopUpMonto";
+import { usePagos } from "../../hooks/pagos/usePagos";
 
 interface BotonPagoProps {
   paciente: PacienteParaPago;
@@ -12,7 +14,6 @@ interface BotonPagoProps {
 
 const BotonPago: React.FC<BotonPagoProps> = ({ paciente, onEstadoActualizado }) => {
   const {
-    actualizarEstadoDePago,
     cargando,
     error,
     abierto,
@@ -23,20 +24,47 @@ const BotonPago: React.FC<BotonPagoProps> = ({ paciente, onEstadoActualizado }) 
     dropdownRef,
   } = useBotonPago();
 
-  const handleSeleccionarEstado = async (nuevoEstado: EstadoPago) => {
+  const { actualizarPagoConMonto } = usePagos();
+
+  const [mostrarPopUp, setMostrarPopUp] = useState(false);
+  const [nuevoEstadoSeleccionado, setNuevoEstadoSeleccionado] = useState<EstadoPago | null>(null);
+
+  const handleSeleccionarEstado = async (estado: EstadoPago) => {
     setAbierto(false);
-    if (nuevoEstado === paciente.estadoPagoActual) return;
+    if (estado === paciente.estadoPagoActual) return;
 
-    const pacienteActualizado = await actualizarEstadoDePago(
-      paciente.id,
-      nuevoEstado
-    );
+    if (estado === "parcialmente pagado" || estado === "pagado") {
+      setNuevoEstadoSeleccionado(estado);
+      setMostrarPopUp(true);
+    } else {
+      const pacienteActualizado = await actualizarPagoConMonto(paciente.id, estado, 0);
+      onEstadoActualizado({
+        id: paciente.id,
+        estadoPagoActual: pacienteActualizado.estadoPago,
+        montoPagadoActual: pacienteActualizado.montoPagado,
+        montoTotalActual: pacienteActualizado.montoTotal,
+      });
+    }
+  };
 
+  const handleGuardarMonto = async (monto: number) => {
+    if (!nuevoEstadoSeleccionado) return;
 
+    const pacienteActualizado = await actualizarPagoConMonto(paciente.id, nuevoEstadoSeleccionado, monto);
     onEstadoActualizado({
       id: paciente.id,
-      estadoPagoActual: nuevoEstado,
+      estadoPagoActual: pacienteActualizado.estadoPago,
+      montoPagadoActual: pacienteActualizado.montoPagado,
+      montoTotalActual: pacienteActualizado.montoTotal,
     });
+
+    setMostrarPopUp(false);
+    setNuevoEstadoSeleccionado(null);
+  };
+
+  const handleCancelarMonto = () => {
+    setMostrarPopUp(false);
+    setNuevoEstadoSeleccionado(null);
   };
 
   return (
@@ -79,6 +107,14 @@ const BotonPago: React.FC<BotonPagoProps> = ({ paciente, onEstadoActualizado }) 
             ))}
           </div>
         </div>
+      )}
+
+      {mostrarPopUp && (
+        <PopUpMonto
+          onGuardar={handleGuardarMonto}
+          onCancelar={handleCancelarMonto}
+          titulo="Ingresar Monto"
+        />
       )}
 
       {error && (

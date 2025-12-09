@@ -1,6 +1,10 @@
-export type EstadoPago = 'no pagado' | 'parcialmente pagado' | 'pagado';
+import { Patient } from "./interfaz";
+
+export type EstadoPago = Patient["estadoPago"];
 
 export interface PacienteParaPago {
-  id: number;
-  estadoPagoActual: EstadoPago;
+  id: number;
+  estadoPagoActual: EstadoPago;
+  montoPagadoActual: number;
+  montoTotalActual: number;
 }
