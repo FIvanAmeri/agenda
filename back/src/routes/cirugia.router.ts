@@ -8,4 +8,7 @@ const controller = new CirugiaController();
 router.post("/cirugia", authenticateJWT, controller.crear);
 router.get("/cirugia", authenticateJWT, controller.listar);
 
+router.get("/cirugia/medicos", authenticateJWT, controller.obtenerMedicos);
+router.get("/cirugia/tipos", authenticateJWT, controller.obtenerTiposCirugia);
+
 export default router;

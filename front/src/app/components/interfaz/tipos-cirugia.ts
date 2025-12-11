@@ -48,6 +48,7 @@ export interface ResultadoUsarFormularioCirugia {
     medicos: string[];
     tiposCirugia: string[];
     error: string | null;
+    loadingLists: boolean;
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
     handleAddOption: (listName: ListaDinamica, fieldLabel: string) => void;
     handleSubmit: (e: React.FormEvent) => Promise<void>;
