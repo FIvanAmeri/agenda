@@ -1,126 +1,119 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaMoneyBillWave, FaChevronDown, FaSpinner } from "react-icons/fa";
 import { EstadoPago, PacienteParaPago } from "../interfaz/boton-pago";
+import { Patient } from "../interfaz/interfaz";
 import { useBotonPago } from "../../hooks/boton-pago/useBotonPago";
-import { PopUpMonto } from "../pop-up/Monto/PopUpMonto";
 import { usePagos } from "../../hooks/pagos/usePagos";
+import { PopUpMonto } from "../pop-up/Monto/PopUpMonto";
 
 interface BotonPagoProps {
   paciente: PacienteParaPago;
-  onEstadoActualizado: (pacienteActualizado: PacienteParaPago) => void;
+  onEstadoActualizado: (paciente: PacienteParaPago) => void;
 }
 
-const BotonPago: React.FC<BotonPagoProps> = ({ paciente, onEstadoActualizado }) => {
-  const {
-    cargando,
-    error,
-    abierto,
-    setAbierto,
-    estados,
-    obtenerLabel,
-    obtenerEstiloEstado,
-    dropdownRef,
-  } = useBotonPago();
+const mapPatientToPacienteParaPago = (p: Patient): PacienteParaPago => ({
+  id: p.id,
+  estadoPagoActual: p.estadoPago,
+  montoPagadoActual: p.montoPagado,
+  montoTotalActual: p.montoTotal,
+  fechaPagoParcial: p.fechaPagoParcial,
+  fechaPagoTotal: p.fechaPagoTotal,
+  ultimoPagoParcial: (p as unknown as Record<string, unknown>).ultimoPagoParcial as number | undefined,
+  ultimoPagoTotal: (p as unknown as Record<string, unknown>).ultimoPagoTotal as number | undefined,
+});
 
+const BotonPago: React.FC<BotonPagoProps> = ({ paciente, onEstadoActualizado }) => {
   const { actualizarPagoConMonto } = usePagos();
+  const { abierto, setAbierto, estados, obtenerLabel, obtenerEstiloEstado, dropdownRef } =
+    useBotonPago();
 
   const [mostrarPopUp, setMostrarPopUp] = useState(false);
-  const [nuevoEstadoSeleccionado, setNuevoEstadoSeleccionado] = useState<EstadoPago | null>(null);
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState<EstadoPago | null>(null);
 
-  const handleSeleccionarEstado = async (estado: EstadoPago) => {
+  const handleSeleccion = async (estado: EstadoPago) => {
     setAbierto(false);
-    if (estado === paciente.estadoPagoActual) return;
+    setEstadoSeleccionado(estado);
 
     if (estado === "parcialmente pagado" || estado === "pagado") {
-      setNuevoEstadoSeleccionado(estado);
       setMostrarPopUp(true);
-    } else {
-      const pacienteActualizado = await actualizarPagoConMonto(paciente.id, estado, 0);
-      onEstadoActualizado({
-        id: paciente.id,
-        estadoPagoActual: pacienteActualizado.estadoPago,
-        montoPagadoActual: pacienteActualizado.montoPagado,
-        montoTotalActual: pacienteActualizado.montoTotal,
-      });
+      return;
     }
+
+    const actualizado: Patient = await actualizarPagoConMonto(
+      paciente.id,
+      "no pagado",
+      0,
+      null,
+      null
+    );
+
+    onEstadoActualizado(mapPatientToPacienteParaPago(actualizado));
   };
 
-  const handleGuardarMonto = async (monto: number) => {
-    if (!nuevoEstadoSeleccionado) return;
+  const handleGuardarMonto = async (monto: number, fecha: string) => {
+    if (!estadoSeleccionado) return;
 
-    const pacienteActualizado = await actualizarPagoConMonto(paciente.id, nuevoEstadoSeleccionado, monto);
-    onEstadoActualizado({
-      id: paciente.id,
-      estadoPagoActual: pacienteActualizado.estadoPago,
-      montoPagadoActual: pacienteActualizado.montoPagado,
-      montoTotalActual: pacienteActualizado.montoTotal,
-    });
+    const fechaParcial =
+      estadoSeleccionado === "parcialmente pagado" ? fecha : paciente.fechaPagoParcial ?? null;
 
+    const fechaTotal =
+      estadoSeleccionado === "pagado" ? fecha : paciente.fechaPagoTotal ?? null;
+
+    const actualizado: Patient = await actualizarPagoConMonto(
+      paciente.id,
+      estadoSeleccionado,
+      monto,
+      fechaParcial,
+      fechaTotal
+    );
+
+    onEstadoActualizado(mapPatientToPacienteParaPago(actualizado));
     setMostrarPopUp(false);
-    setNuevoEstadoSeleccionado(null);
-  };
-
-  const handleCancelarMonto = () => {
-    setMostrarPopUp(false);
-    setNuevoEstadoSeleccionado(null);
+    setEstadoSeleccionado(null);
   };
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div className="relative flex flex-col items-center">
       <button
-        onClick={() => setAbierto(!abierto)}
-        disabled={cargando}
-        className={`inline-flex justify-center items-center w-full rounded-lg border border-transparent shadow-md px-4 py-2 text-sm font-medium text-white transition duration-150 ease-in-out ${obtenerEstiloEstado(
+        className={`px-4 py-2 text-white rounded w-48 text-center ${obtenerEstiloEstado(
           paciente.estadoPagoActual
-        )} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500`}
+        )}`}
+        onClick={() => setAbierto(!abierto)}
       >
-        {cargando ? <FaSpinner className="animate-spin mr-2" /> : <FaMoneyBillWave className="mr-2" />}
         {obtenerLabel(paciente.estadoPagoActual)}
-        <FaChevronDown
-          className={`ml-2 -mr-1 h-3 w-3 transition-transform duration-200 ${
-            abierto ? "rotate-180" : ""
-          }`}
-        />
       </button>
 
       {abierto && (
-        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-          <div className="py-1">
-            <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b border-gray-100">
-              Cambiar Estado
-            </div>
-
-            {estados.map((estado) => (
-              <button
-                key={estado}
-                onClick={() => handleSeleccionarEstado(estado)}
-                className={`block w-full text-left px-4 py-2 text-sm ${
-                  estado === paciente.estadoPagoActual
-                    ? "bg-gray-100 text-gray-900 font-bold"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                {obtenerLabel(estado)}
-              </button>
-            ))}
-          </div>
+        <div
+          ref={dropdownRef}
+          className="absolute mt-2 bg-gray-800 text-white rounded shadow-lg w-48 z-20"
+        >
+          {estados.map((estado) => (
+            <button
+              key={estado}
+              onClick={() => handleSeleccion(estado)}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+            >
+              {obtenerLabel(estado)}
+            </button>
+          ))}
         </div>
       )}
 
       {mostrarPopUp && (
         <PopUpMonto
+          titulo={
+            estadoSeleccionado === "parcialmente pagado"
+              ? "Monto del Pago Parcial"
+              : "Monto Total Pagado"
+          }
           onGuardar={handleGuardarMonto}
-          onCancelar={handleCancelarMonto}
-          titulo="Ingresar Monto"
+          onCancelar={() => {
+            setMostrarPopUp(false);
+            setEstadoSeleccionado(null);
+          }}
         />
-      )}
-
-      {error && (
-        <div className="mt-2 text-sm text-red-600 p-2 bg-red-100 rounded-lg">
-          Error: {error}
-        </div>
       )}
     </div>
   );

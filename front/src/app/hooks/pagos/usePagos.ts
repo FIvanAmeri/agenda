@@ -3,67 +3,66 @@ import { Patient } from "../../components/interfaz/interfaz";
 import { EstadoPago } from "../../components/interfaz/boton-pago";
 
 interface RespuestaPago {
-  paciente: Patient;
-  message: string;
+  paciente: Patient;
+  message: string;
 }
 
 export const usePagos = () => {
-  const [cargando, setCargando] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const actualizarPagoConMonto = useCallback(
-    async (idPaciente: number, nuevoEstado: EstadoPago, montoDelta?: number): Promise<Patient> => {
-      setCargando(true);
-      setError(null);
+  const actualizarPagoConMonto = useCallback(
+    async (
+      idPaciente: number,
+      estadoPago: EstadoPago,
+      monto: number,
+      fechaPagoParcial: string | null,
+      fechaPagoTotal: string | null
+    ): Promise<Patient> => {
+      setCargando(true);
+      setError(null);
 
-      try {
-        const cuerpoSolicitud: { estadoPago: EstadoPago; monto?: number } = {
-          estadoPago: nuevoEstado,
-        };
+      try {
+        const body = {
+          estadoPago,
+          monto,
+          fechaPagoParcial,
+          fechaPagoTotal,
+        };
 
-        if (montoDelta !== undefined && (nuevoEstado === "parcialmente pagado" || nuevoEstado === "pagado")) {
-          cuerpoSolicitud.monto = montoDelta;
-        } else if (nuevoEstado === "no pagado") {
-          cuerpoSolicitud.monto = 0;
-        }
+        const respuesta = await fetch(
+          `http://localhost:3001/api/paciente/pago/${idPaciente}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+            },
+            body: JSON.stringify(body),
+          }
+        );
 
-        const respuesta = await fetch(
-          `http://localhost:3001/api/paciente/pago/${idPaciente}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${localStorage.getItem("token") || ""}`
-            },
-            body: JSON.stringify(cuerpoSolicitud),
-          }
-        );
+        if (!respuesta.ok) {
+          const errorData = await respuesta.json();
+          throw new Error(errorData.message || "Error al actualizar pago");
+        }
 
-        if (!respuesta.ok) {
-          const errorData = await respuesta.json();
-          throw new Error(errorData.message || "Error desconocido al actualizar el pago");
-        }
+        const data: RespuestaPago = await respuesta.json();
+        setCargando(false);
 
-        const data: RespuestaPago = await respuesta.json();
-        setCargando(false);
+        return data.paciente;
+      } catch (e: unknown) {
+        setCargando(false);
+        setError(e instanceof Error ? e.message : "Error desconocido");
+        throw e;
+      }
+    },
+    []
+  );
 
-        return data.paciente;
-      } catch (e: unknown) {
-        setCargando(false);
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("Ocurrió un error inesperado");
-        }
-        throw e;
-      }
-    },
-    []
-  );
-
-  return {
-    actualizarPagoConMonto,
-    cargando,
-    error,
-  };
+  return {
+    actualizarPagoConMonto,
+    cargando,
+    error,
+  };
 };

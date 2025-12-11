@@ -70,7 +70,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ user, onClose, onAdd 
             userId: Number(user.id),
             estadoPago: 'no pagado', 
             montoPagado: 0, 
-            montoTotal: 0 
+            montoTotal: 0,
+            fechaPagoParcial: null,
+            fechaPagoTotal: null, 
         };
 
         const token = localStorage.getItem("token");

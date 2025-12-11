@@ -4,145 +4,143 @@ import { Paciente, EstadoPago } from "../entities/paciente.entity";
 import { PacientesService } from "../services/pacientes.service";
 
 export class PacientesController {
-  private pacientesService: PacientesService;
+    private pacientesService: PacientesService;
 
-  constructor() {
-    this.pacientesService = new PacientesService();
-  }
+    constructor() {
+        this.pacientesService = new PacientesService();
+    }
 
-  async obtenerPacientes(req: Request, res: Response) {
-    const userId = req.user?.userId;
+    async obtenerPacientes(req: Request, res: Response) {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: "No autorizado" });
+        }
 
-    if (!userId) {
-      return res.status(401).json({ message: "No autorizado" });
-    }
+        try {
+            const pacientes = await this.pacientesService.obtenerPacientes(userId);
+            res.json({ pacientes });
+        } catch {
+            res.status(500).json({ message: "Error al obtener pacientes" });
+        }
+    }
 
-    try {
-      const pacientes = await this.pacientesService.obtenerPacientes(userId);
-      res.json({ pacientes });
-    } catch {
-      res.status(500).json({ message: "Error al obtener pacientes" });
-    }
-  }
+    async crearPaciente(req: Request, res: Response) {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: "No autorizado" });
+        }
 
-  async crearPaciente(req: Request, res: Response) {
-    const userId = req.user?.userId;
+        const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
+        try {
+            const nuevoPaciente = await this.pacientesService.crearPaciente(
+                hora,
+                dia,
+                paciente,
+                practicas,
+                obraSocial,
+                institucion,
+                userId
+            );
+            res.status(201).json({ paciente: nuevoPaciente, message: "Paciente agregado con éxito" });
+        } catch {
+            res.status(500).json({ message: "Error al crear paciente" });
+        }
+    }
 
-    if (!userId) {
-      return res.status(401).json({ message: "No autorizado" });
-    }
+    async actualizarPaciente(req: Request, res: Response) {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: "No autorizado" });
+        }
 
-    const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
-    try {
-      const nuevoPaciente = await this.pacientesService.crearPaciente(
-        hora,
-        dia,
-        paciente,
-        practicas,
-        obraSocial,
-        institucion,
-        userId
-      );
-      res
-        .status(201)
-        .json({ paciente: nuevoPaciente, message: "Paciente agregado con éxito" });
-    } catch {
-      res.status(500).json({ message: "Error al crear paciente" });
-    }
-  }
+        const { id } = req.params;
+        const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
+        try {
+            const pacienteActualizado = await this.pacientesService.actualizarPaciente(
+                id,
+                hora,
+                dia,
+                paciente,
+                practicas,
+                obraSocial,
+                institucion
+            );
 
-  async actualizarPaciente(req: Request, res: Response) {
-    const userId = req.user?.userId;
+            if (!pacienteActualizado) return res.status(404).json({ message: "Paciente no encontrado" });
 
-    if (!userId) {
-      return res.status(401).json({ message: "No autorizado" });
-    }
+            res.json({ paciente: pacienteActualizado, message: "Paciente editado correctamente" });
+        } catch {
+            res.status(500).json({ message: "Error al actualizar paciente" });
+        }
+    }
 
-    const { id } = req.params;
-    const { hora, dia, paciente, practicas, obraSocial, institucion } =
-      req.body;
-    try {
-      const pacienteActualizado = await this.pacientesService.actualizarPaciente(
-        id,
-        hora,
-        dia,
-        paciente,
-        practicas,
-        obraSocial,
-        institucion
-      );
+    async actualizarEstadoDePago(req: Request, res: Response) {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: "No autorizado" });
+        }
 
-      if (!pacienteActualizado)
-        return res.status(404).json({ message: "Paciente no encontrado" });
+        const idPaciente = parseInt(req.params.id, 10);
+        const { estadoPago, monto, fechaPagoParcial, fechaPagoTotal } = req.body;
 
-      res.json({
-        paciente: pacienteActualizado,
-        message: "Paciente editado correctamente",
-      });
-    } catch {
-      res.status(500).json({ message: "Error al actualizar paciente" });
-    }
-  }
+        if (!Object.values(EstadoPago).includes(estadoPago)) {
+            return res.status(400).json({
+                message:
+                    "Estado de pago inválido. Valores permitidos: 'no pagado', 'parcialmente pagado', 'pagado'.",
+            });
+        }
 
-  async actualizarEstadoDePago(req: Request, res: Response) {
-    const userId = req.user?.userId;
+        const montoNumero: number = (() => {
+            if (typeof monto === "number") return monto;
+            if (typeof monto === "string") {
+                const parsed = parseFloat(monto.replace(",", "."));
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+            return 0;
+        })();
 
-    if (!userId) {
-      return res.status(401).json({ message: "No autorizado" });
-    }
+        if (montoNumero < 0) {
+            return res.status(400).json({ message: "El monto no puede ser negativo" });
+        }
 
-    const idPaciente = parseInt(req.params.id, 10);
-    const { estadoPago, monto } = req.body;
+        try {
+            const pacienteActualizado = await this.pacientesService.actualizarEstadoDePago(
+                idPaciente,
+                userId,
+                estadoPago,
+                montoNumero,
+                typeof fechaPagoParcial === "string" ? fechaPagoParcial : null,
+                typeof fechaPagoTotal === "string" ? fechaPagoTotal : null
+            );
 
-    if (!Object.values(EstadoPago).includes(estadoPago)) {
-      return res.status(400).json({
-        message:
-          "Estado de pago inválido. Valores permitidos: 'no pagado', 'parcialmente pagado', 'pagado'.",
-      });
-    }
+            if (!pacienteActualizado) {
+                return res.status(404).json({ message: "Paciente no encontrado o no autorizado" });
+            }
 
-    try {
-      const pacienteActualizado =
-        await this.pacientesService.actualizarEstadoDePago(
-          idPaciente,
-          userId,
-          estadoPago,
-          monto 
-        );
+            res.json({ paciente: pacienteActualizado, message: "Estado de pago actualizado correctamente" });
+        } catch {
+            res.status(500).json({ message: "Error al actualizar el estado de pago" });
+        }
+    }
 
-      if (!pacienteActualizado) {
-        return res.status(404).json({ message: "Paciente no encontrado o no autorizado" });
-      }
+    async eliminarPaciente(req: Request, res: Response) {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: "No autorizado" });
+        }
 
-      res.json({
-        paciente: pacienteActualizado,
-        message: "Estado de pago actualizado correctamente",
-      });
-    } catch {
-      res.status(500).json({ message: "Error al actualizar el estado de pago" });
-    }
-  }
+        const { id } = req.params;
+        try {
+            const repo = AppDataSource.getRepository(Paciente);
+            const pacienteExistente = await repo.findOne({
+                where: { id: parseInt(id, 10), userId },
+            });
+            if (!pacienteExistente) return res.status(404).json({ message: "Paciente no encontrado" });
 
-  async eliminarPaciente(req: Request, res: Response) {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({ message: "No autorizado" });
-    }
-
-    const { id } = req.params;
-    try {
-      const repo = AppDataSource.getRepository(Paciente);
-      const pacienteExistente = await repo.findOne({
-        where: { id: parseInt(id), userId },
-      });
-      if (!pacienteExistente)
-        return res.status(404).json({ message: "Paciente no encontrado" });
-
-      await repo.remove(pacienteExistente);
-      res.json({ message: "Paciente eliminado" });
-    } catch {
-      res.status(500).json({ message: "Error al eliminar paciente" });
-    }
-  }
+            await repo.remove(pacienteExistente);
+            res.json({ message: "Paciente eliminado" });
+        } catch {
+            res.status(500).json({ message: "Error al eliminar paciente" });
+        }
+    }
 }
