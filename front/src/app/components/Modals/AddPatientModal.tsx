@@ -65,10 +65,12 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ user, onClose, onAdd 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-
         const newPatient: Omit<Patient, "id"> & { userId: number } = {
             ...formData,
-            userId: Number(user.id)
+            userId: Number(user.id),
+            estadoPago: 'no pagado', 
+            montoPagado: 0, 
+            montoTotal: 0 
         };
 
         const token = localStorage.getItem("token");

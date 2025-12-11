@@ -7,6 +7,7 @@ import PrincipalContent from "../components/content/PrincipalContent";
 import VerCirugiasContent from "../components/VerCirugia/VerCirugiasContent";
 import AddCirugiaModal from "../components/Cirugia/AddCirugiaModal";
 import CirugiaDetailModal from "../components/Cirugia/CirugiaDetailModal";
+import AddPatientModal from "../components/Modals/AddPatientModal"; 
 
 export default function PrincipalPage() {
     const searchParams = useSearchParams();
@@ -23,7 +24,23 @@ export default function PrincipalPage() {
                         {isCirugiasView ? (
                             <VerCirugiasContent user={props.user} />
                         ) : (
-                            <PrincipalContent {...props} />
+                            <PrincipalContent 
+                                user={props.user} 
+                                showAddModal={props.showAddModal}
+                                setShowAddModal={props.setShowAddModal}
+                                showEditModal={props.showEditModal}
+                                setShowEditModal={props.setShowEditModal}
+                                selectedPatient={props.selectedPatient}
+                                setSelectedPatient={props.setSelectedPatient}
+                            />
+                        )}
+
+                        {props.showAddModal && (
+                            <AddPatientModal
+                                user={props.user}
+                                onClose={() => props.setShowAddModal(false)}
+                                onAdd={() => props.setShowAddModal(false)} 
+                            />
                         )}
 
                         {props.showCirugiaModal && (
