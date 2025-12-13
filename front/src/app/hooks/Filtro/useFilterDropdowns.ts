@@ -1,55 +1,74 @@
 import { useState, useRef, useEffect } from "react";
 
-export const useFilterDropdowns = () => {
-  const formRef = useRef<HTMLDivElement | null>(null);
+interface DropdownStates {
+    patient: boolean
+    tipoCirugia: boolean
+    medico: boolean
+}
 
-  const [showPatient, setShowPatient] = useState(false);
-  const [showPractice, setShowPractice] = useState(false);
-  const [showObraSocial, setShowObraSocial] = useState(false);
-  const [showInstitucion, setShowInstitucion] = useState(false);
+export type FilterFieldKey = keyof DropdownStates;
 
-  const showSetters = {
-    patient: setShowPatient,
-    practice: setShowPractice,
-    obraSocial: setShowObraSocial,
-    institucion: setShowInstitucion,
-  } as const;
+interface DropdownSetters {
+    patient: React.Dispatch<React.SetStateAction<boolean>>
+    tipoCirugia: React.Dispatch<React.SetStateAction<boolean>>
+    medico: React.Dispatch<React.SetStateAction<boolean>>
+}
 
-  const showStates = {
-    patient: showPatient,
-    practice: showPractice,
-    obraSocial: showObraSocial,
-    institucion: showInstitucion,
-  } as const;
+interface UseFilterDropdownsResult {
+    formRef: React.RefObject<HTMLDivElement>
+    showStates: DropdownStates
+    showSetters: DropdownSetters
+    closeAllDropdowns: () => void
+    handleOpen: (field: FilterFieldKey) => void
+}
 
-  const closeAllDropdowns = () => {
-    (Object.keys(showSetters) as (keyof typeof showSetters)[]).forEach((k) => {
-      if (showStates[k]) showSetters[k](false);
-    });
-  };
+export const useFilterDropdowns = (): UseFilterDropdownsResult => {
+    const formRef: React.RefObject<HTMLDivElement> = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (formRef.current && !formRef.current.contains(e.target as Node)) {
-        closeAllDropdowns();
-      }
+    const [showPatient, setShowPatient] = useState<boolean>(false);
+    const [showTipoCirugia, setShowTipoCirugia] = useState<boolean>(false);
+    const [showMedico, setShowMedico] = useState<boolean>(false);
+
+    const showSetters: DropdownSetters = {
+        patient: setShowPatient,
+        tipoCirugia: setShowTipoCirugia,
+        medico: setShowMedico,
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    const showStates: DropdownStates = {
+        patient: showPatient,
+        tipoCirugia: showTipoCirugia,
+        medico: showMedico,
+    };
 
-  const handleOpen = (field: keyof typeof showSetters) => {
-    (Object.keys(showSetters) as (keyof typeof showSetters)[]).forEach((k) => {
-      showSetters[k](k === field);
-    });
-  };
+    const closeAllDropdowns = (): void => {
+        (Object.keys(showSetters) as (keyof DropdownSetters)[]).forEach((k: keyof DropdownSetters) => {
+            if (showStates[k]) showSetters[k](false);
+        });
+    };
 
-  return {
-    formRef,
-    showStates,
-    showSetters,
-    closeAllDropdowns,
-    handleOpen,
-  };
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent): void => {
+            if (formRef.current && !formRef.current.contains(e.target as Node)) {
+                closeAllDropdowns();
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleOpen = (field: FilterFieldKey): void => {
+        (Object.keys(showSetters) as (keyof DropdownSetters)[]).forEach((k: keyof DropdownSetters) => {
+            showSetters[k](k === field);
+        });
+    };
+
+    return {
+        formRef,
+        showStates,
+        showSetters,
+        closeAllDropdowns,
+        handleOpen,
+    };
 };

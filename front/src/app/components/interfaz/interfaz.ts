@@ -40,15 +40,16 @@ export interface Patient {
     hora: string
     dia: string
     paciente: string
+    fechaNacimiento: string | null
     practicas: string
     obraSocial: string
     institucion: string
     userId: number
     estadoPago: "no pagado" | "parcialmente pagado" | "pagado" 
-    montoPagado: number;
-    montoTotal: number;
-    fechaPagoParcial: string | null;
-    fechaPagoTotal: string | null;
+    montoPagado: number
+    montoTotal: number
+    fechaPagoParcial: string | null
+    fechaPagoTotal: string | null
 }
 
 
@@ -74,13 +75,22 @@ export interface PatientFormData {
 
 
 export interface Cirugia {
-    id: number; 
-    fecha: string;
-    paciente: string;
-    tipoCirugia: string;
-    medicoOpero: string;
-    medicoAyudo1: string;
-    medicoAyudo2: string;
-    honorarios: number;
-    descripcion: string;
+    id: number 
+    fecha: string
+    paciente: string
+    fechaNacimientoPaciente: string | null
+    edadPaciente: number | null
+    tipoCirugia: string
+    medicoOpero: string
+    medicoAyudo1: string | null
+    medicoAyudo2: string | null
+    descripcion: string | null
+    
+    montoTotalHonorarios: number | null
+    montoPagadoHonorarios: number
+    estadoPagoHonorarios: "no pagado" | "parcialmente pagado" | "pagado"
+
+    montoTotalPresupuesto: number | null
+    montoPagadoPresupuesto: number
+    estadoPagoPresupuesto: "no pagado" | "parcialmente pagado" | "pagado"
 }

@@ -1,16 +1,9 @@
 import React from 'react';
 import { generarHoras } from '../utils/dateTimeHelpers';
+import { DatosFormularioPaciente } from './interfaz/tipos-paciente';
 
 interface PatientFormFieldsProps {
-    formData: {
-        dia: string;
-        hora: string;
-        paciente: string;
-        practicas: string;
-        obraSocial: string;
-        institucion: string;
-        estudioUrgoginecologico: boolean;
-    };
+    formData: DatosFormularioPaciente;
     obrasSociales: string[];
     onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -27,7 +20,7 @@ const PRACTICAS_OPTIONS = [
 const INSTITUCION_OPTIONS = [
     "Alto Rosario",
     "ICR",
-    "Sanatorio Parque"
+    "Sanatorio Parque",
 ];
 
 export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
@@ -78,11 +71,22 @@ export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
                         className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
+                
+                <div>
+                    <label className="block text-sm font-medium text-gray-200 mb-1">Fecha de Nacimiento</label>
+                    <input
+                        type="date"
+                        name="fechaNacimiento"
+                        value={formData.fechaNacimiento || ''}
+                        onChange={onInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
             </div>
 
             <div className="space-y-4">
-            
-            
+
+
                 <div>
                     <label className="block text-sm font-medium text-gray-200 mb-1">Prácticas</label>
                     <select
@@ -116,7 +120,7 @@ export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
                     </select>
                 </div>
 
-            
+
                 <div>
                     <label className="block text-sm font-medium text-gray-200 mb-1">Institución</label>
                     <select
@@ -132,20 +136,6 @@ export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
                         ))}
                     </select>
                 </div>
-
-                {/* <div className="flex items-center">
-                    <input
-                        id="estudioUrgoginecologico"
-                        name="estudioUrgoginecologico"
-                        type="checkbox"
-                        checked={formData.estudioUrgoginecologico}
-                        onChange={onCheckboxChange}
-                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                    />
-                    <label htmlFor="estudioUrgoginecologico" className="ml-2 block text-sm text-gray-200">
-                        Estudio Uroginecológico
-                    </label>
-                </div> */}
             </div>
         </div>
     );

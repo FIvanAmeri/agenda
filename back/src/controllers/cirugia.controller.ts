@@ -10,11 +10,13 @@ export class CirugiaController {
         const cirugia = await service.crear({
             fecha: body.fecha,
             paciente: body.paciente,
+            fechaNacimientoPaciente: body.fechaNacimientoPaciente, 
             tipoCirugia: body.tipoCirugia,
             medicoOpero: body.medicoOpero,
             medicoAyudo1: body.medicoAyudo1,
             medicoAyudo2: body.medicoAyudo2,
-            honorarios: body.honorarios,
+            montoTotalHonorarios: body.montoTotalHonorarios, 
+            montoTotalPresupuesto: body.montoTotalPresupuesto, 
             descripcion: body.descripcion
         });
 
@@ -22,7 +24,16 @@ export class CirugiaController {
     }
 
     async listar(req: Request, res: Response) {
-        const data = await service.listar();
+        const filters = {
+            dateFrom: req.query.dateFrom as string,
+            dateTo: req.query.dateTo as string,
+            paciente: req.query.paciente as string,
+            tipoCirugia: req.query.tipoCirugia as string,
+            medico: req.query.medico as string,
+            estadoPago: req.query.estadoPago as "pagado" | "no pagado",
+        };
+        
+        const data = await service.listar(filters);
         res.json({ data });
     }
     

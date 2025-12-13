@@ -6,33 +6,33 @@ const pacientesRouter = express.Router();
 const pacientesController = new PacientesController();
 
 pacientesRouter.get(
-  "/paciente",
-  authenticateJWT,
-  pacientesController.obtenerPacientes.bind(pacientesController)
+    "/paciente",
+    authenticateJWT,
+    pacientesController.obtenerPacientes.bind(pacientesController)
 );
 
 pacientesRouter.post(
-  "/paciente",
-  authenticateJWT,
-  pacientesController.crearPaciente.bind(pacientesController)
+    "/paciente",
+    authenticateJWT,
+    pacientesController.crearPaciente.bind(pacientesController)
 );
 
 pacientesRouter.put(
-  "/paciente/:id",
-  authenticateJWT,
-  pacientesController.actualizarPaciente.bind(pacientesController)
+    "/paciente/:id",
+    authenticateJWT,
+    pacientesController.actualizarPaciente.bind(pacientesController)
 );
 
 pacientesRouter.put(
-  "/paciente/pago/:id",
-  authenticateJWT,
-  pacientesController.actualizarEstadoDePago.bind(pacientesController)
+    "/paciente/pago/:id",
+    authenticateJWT,
+    pacientesController.actualizarEstadoDePago.bind(pacientesController)
 );
 
 pacientesRouter.delete(
-  "/paciente/:id",
-  authenticateJWT,
-  pacientesController.eliminarPaciente.bind(pacientesController)
+    "/paciente/:id",
+    authenticateJWT,
+    pacientesController.eliminarPaciente.bind(pacientesController)
 );
 
 export default pacientesRouter;

@@ -5,7 +5,6 @@ import {
     PropsFormularioCirugia, 
     ResultadoUsarFormularioCirugia 
 } from "../../components/interfaz/tipos-cirugia";
-
 import { formatDate } from "../../utils/dateTimeHelpers"; 
 
 type ListaDinamica = "medicos" | "tiposCirugia";
@@ -15,29 +14,31 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
     const [formData, setFormData] = useState<DatosFormularioCirugia>({
         fecha: formatDate(new Date().toISOString()),
         paciente: "",
+        fechaNacimientoPaciente: "",
         tipoCirugia: "",
         medicoOpero: "",
         medicoAyudo1: "",
         medicoAyudo2: "",
-        honorarios: "",
+        montoTotalHonorarios: "",
+        montoTotalPresupuesto: "",
         descripcion: ""
     });
 
     const [error, setError] = useState<string | null>(null);
     const [medicos, setMedicos] = useState<string[]>([]);
     const [tiposCirugia, setTiposCirugia] = useState<string[]>([]);
-    const [loadingLists, setLoadingLists] = useState(true);
+    const [loadingLists, setLoadingLists] = useState<boolean>(true);
 
     useEffect(() => {
-        const fetchLists = async () => {
-            const token = localStorage.getItem("token");
+        const fetchLists = async (): Promise<void> => {
+            const token: string | null = localStorage.getItem("token");
             if (!token) {
                 setError("Usuario no autenticado. Por favor, inicie sesión.");
                 setLoadingLists(false);
                 return;
             }
 
-            const headers = { Authorization: `Bearer ${token}` };
+            const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
             try {
                 const [medicosRes, tiposRes] = await Promise.all([
@@ -45,8 +46,8 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
                     fetch("http://localhost:3001/api/cirugia/tipos", { headers }),
                 ]);
 
-                const medicosData = await medicosRes.json();
-                const tiposData = await tiposRes.json();
+                const medicosData: { medicos: string[] } = await medicosRes.json();
+                const tiposData: { tiposCirugia: string[] } = await tiposRes.json();
 
                 if (medicosRes.ok && Array.isArray(medicosData.medicos)) {
                     setMedicos(medicosData.medicos);
@@ -55,7 +56,7 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
                 if (tiposRes.ok && Array.isArray(tiposData.tiposCirugia)) {
                     setTiposCirugia(tiposData.tiposCirugia);
                 }
-            } catch (err) {
+            } catch (err: unknown) {
                 setError("No se pudieron cargar las listas dinámicas (Médicos/Tipos de Cirugía)");
             } finally {
                 setLoadingLists(false);
@@ -68,41 +69,52 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-    ) => {
+    ): void => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev: DatosFormularioCirugia) => ({
             ...prev,
             [name as keyof DatosFormularioCirugia]: value
         }));
     };
 
-    const handleAddOption = (listName: ListaDinamica, fieldLabel: string) => {
-        const newOption = prompt(`Ingrese el nuevo valor para ${fieldLabel}:`);
+    const handleAddOption = (listName: ListaDinamica, fieldLabel: string): void => {
+        const newOption: string | null = prompt(`Ingrese el nuevo valor para ${fieldLabel}:`);
         if (newOption && newOption.trim() !== "") {
-            const listSetter = listName === "medicos" ? setMedicos : setTiposCirugia;
-            listSetter(prev => (prev.includes(newOption) ? prev : [...prev, newOption]));
+            const listSetter: React.Dispatch<React.SetStateAction<string[]>> = listName === "medicos" ? setMedicos : setTiposCirugia;
+            listSetter((prev: string[]) => (prev.includes(newOption) ? prev : [...prev, newOption]));
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setError(null);
 
-        const token = localStorage.getItem("token");
+        const token: string | null = localStorage.getItem("token");
 
         if (!token) {
             setError("Usuario no autenticado. Por favor, inicie sesión.");
             return;
         }
+        
+        const honorarios: number | null = formData.montoTotalHonorarios ? Number(formData.montoTotalHonorarios) : null;
+        const presupuesto: number | null = formData.montoTotalPresupuesto ? Number(formData.montoTotalPresupuesto) : null;
 
         const cirugiaPayload: CirugiaPayload = {
-            ...formData,
-            honorarios: Number(formData.honorarios),
+            fecha: formData.fecha,
+            paciente: formData.paciente,
+            fechaNacimientoPaciente: formData.fechaNacimientoPaciente,
+            tipoCirugia: formData.tipoCirugia,
+            medicoOpero: formData.medicoOpero,
+            medicoAyudo1: formData.medicoAyudo1,
+            medicoAyudo2: formData.medicoAyudo2,
+            montoTotalHonorarios: honorarios,
+            montoTotalPresupuesto: presupuesto,
+            descripcion: formData.descripcion,
             userId: Number(user.id)
         };
 
         try {
-            const response = await fetch("http://localhost:3001/api/cirugia", {
+            const response: Response = await fetch("http://localhost:3001/api/cirugia", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -112,7 +124,7 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
             });
 
             if (!response.ok) {
-                const text = await response.text();
+                const text: string = await response.text();
                 throw new Error("Error al crear la cirugía: " + text);
             }
 
@@ -120,7 +132,7 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
             onAdded();
             onClose();
 
-        } catch (err) {
+        } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Hubo un error al guardar la cirugía");
         }
     };

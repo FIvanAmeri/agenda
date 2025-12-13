@@ -1,9 +1,11 @@
 import { Patient } from "../interfaz/interfaz"; 
+import React from "react";
 
 export interface DatosFormularioPaciente {
     dia: string;
     hora: string;
     paciente: string;
+    fechaNacimiento: string | null;
     practicas: string;
     obraSocial: string;
     institucion: string;

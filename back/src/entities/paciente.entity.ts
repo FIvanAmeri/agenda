@@ -21,6 +21,9 @@ export class Paciente {
     @Column()
     paciente: string;
 
+    @Column({ type: 'varchar', length: 10, nullable: true })
+    fechaNacimiento: string | null;
+
     @Column()
     practicas: string;
 

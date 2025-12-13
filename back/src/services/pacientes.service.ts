@@ -6,6 +6,7 @@ export class PacientesService {
         hora: string,
         dia: string,
         paciente: string,
+        fechaNacimiento: string | null,
         practicas: string,
         obraSocial: string,
         institucion: string,
@@ -17,6 +18,7 @@ export class PacientesService {
             hora,
             dia,
             paciente,
+            fechaNacimiento,
             practicas,
             obraSocial,
             institucion,
@@ -41,6 +43,7 @@ export class PacientesService {
         hora: string,
         dia: string,
         paciente: string,
+        fechaNacimiento: string | null,
         practicas: string,
         obraSocial: string,
         institucion: string
@@ -53,6 +56,7 @@ export class PacientesService {
         pacienteExistente.hora = hora;
         pacienteExistente.dia = dia;
         pacienteExistente.paciente = paciente;
+        pacienteExistente.fechaNacimiento = fechaNacimiento;
         pacienteExistente.practicas = practicas;
         pacienteExistente.obraSocial = obraSocial;
         pacienteExistente.institucion = institucion;
@@ -102,7 +106,7 @@ export class PacientesService {
             pacienteExistente.fechaPagoTotal = pacienteExistente.fechaPagoTotal ?? null;
 
             const saved = await pacienteRepository.save(pacienteExistente);
-            const result: Paciente & { ultimoPagoParcial?: number } = { ...saved };
+            const result: Paciente & { ultimoPagoParcial?: number } = { ...saved } as Paciente & { ultimoPagoParcial?: number };
             if (montoDelta > 0) result.ultimoPagoParcial = Number(montoDelta.toFixed(2));
             return result;
         }
@@ -123,7 +127,7 @@ export class PacientesService {
             if (fechaPagoParcial !== null) pacienteExistente.fechaPagoParcial = fechaPagoParcial;
 
             const saved = await pacienteRepository.save(pacienteExistente);
-            const result: Paciente & { ultimoPagoTotal?: number; ultimoPagoParcial?: number } = { ...saved };
+            const result: Paciente & { ultimoPagoTotal?: number; ultimoPagoParcial?: number } = { ...saved } as Paciente & { ultimoPagoTotal?: number; ultimoPagoParcial?: number };
             if (montoDelta > 0) result.ultimoPagoTotal = Number(montoDelta.toFixed(2));
             result.ultimoPagoParcial = Number(montoActualParcial.toFixed(2));
             return result;

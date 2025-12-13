@@ -30,12 +30,13 @@ export class PacientesController {
             return res.status(401).json({ message: "No autorizado" });
         }
 
-        const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
+        const { hora, dia, paciente, fechaNacimiento, practicas, obraSocial, institucion } = req.body;
         try {
             const nuevoPaciente = await this.pacientesService.crearPaciente(
                 hora,
                 dia,
                 paciente,
+                fechaNacimiento,
                 practicas,
                 obraSocial,
                 institucion,
@@ -54,13 +55,14 @@ export class PacientesController {
         }
 
         const { id } = req.params;
-        const { hora, dia, paciente, practicas, obraSocial, institucion } = req.body;
+        const { hora, dia, paciente, fechaNacimiento, practicas, obraSocial, institucion } = req.body;
         try {
             const pacienteActualizado = await this.pacientesService.actualizarPaciente(
                 id,
                 hora,
                 dia,
                 paciente,
+                fechaNacimiento,
                 practicas,
                 obraSocial,
                 institucion
