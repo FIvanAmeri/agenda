@@ -11,16 +11,8 @@ interface Props {
     user: User
 }
 
-const formatDateForDisplay = (isoDate: string): string => {
-    const date: Date = new Date(isoDate + 'T00:00:00'); 
-    const day: string = String(date.getDate()).padStart(2, "0");
-    const month: string = String(date.getMonth() + 1).padStart(2, "0");
-    const year: number = date.getFullYear();
-    return `${day}/${month}/${year}`;
-};
-
-const formatCurrency = (amount: number | null): string => {
-    if (amount === null || amount === undefined) return "$ -";
+const formatCurrencyARS = (amount: number | null): string => {
+    if (amount === null || amount === undefined) return "$ 0.00";
     const numericAmount: number = Number(amount);
     return new Intl.NumberFormat('es-AR', {
         style: 'currency',
@@ -29,6 +21,27 @@ const formatCurrency = (amount: number | null): string => {
         maximumFractionDigits: 2,
     }).format(numericAmount);
 };
+
+
+const formatCurrencyUSD = (amount: number | null): string => {
+    if (amount === null || amount === undefined) return "USD 0.00";
+    const numericAmount: number = Number(amount);
+    const formatted: string = new Intl.NumberFormat('en-US', {
+        style: 'decimal', 
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(numericAmount);
+    return `USD ${formatted}`;
+};
+
+const formatDateForDisplay = (isoDate: string): string => {
+    const date: Date = new Date(isoDate + 'T00:00:00'); 
+    const day: string = String(date.getDate()).padStart(2, "0");
+    const month: string = String(date.getMonth() + 1).padStart(2, "0");
+    const year: number = date.getFullYear();
+    return `${day}/${month}/${year}`;
+};
+
 
 const getEstadoIcon = (estado: Cirugia["estadoPagoHonorarios"]): JSX.Element => {
     switch (estado) {
@@ -59,18 +72,45 @@ interface PagoCellProps {
     pagado: number
     estado: Cirugia["estadoPagoHonorarios"]
     label: string
+    moneda: 'ARS' | 'USD'
 }
 
-const PagoCell: React.FC<PagoCellProps> = ({ total, pagado, estado, label }) => (
-    <div className={`p-1 rounded-md text-xs font-semibold whitespace-nowrap border ${getEstadoClass(estado)}`}>
-        <strong className="text-gray-300 block mb-0.5">{label}</strong>
-        {total === null ? (
-            "N/A"
-        ) : (
-            `${formatCurrency(pagado)} / ${formatCurrency(total)}`
-        )}
-    </div>
-);
+const PagoCell: React.FC<PagoCellProps> = ({ total, estado, label, moneda }) => {
+    const formatFn = moneda === 'ARS' ? formatCurrencyARS : formatCurrencyUSD;
+    return (
+        <div className={`p-1 rounded-md text-xs font-semibold whitespace-nowrap border ${getEstadoClass(estado)}`}>
+            <strong className="text-gray-300 block mb-0.5">{label}</strong>
+            {total === null ? (
+                formatFn(null)
+            ) : (
+                formatFn(total)
+            )}
+        </div>
+    );
+}
+
+interface MedicoPagoDisplayProps {
+    montoHonorarios: number | null
+    montoPresupuesto: number | null
+    participacion: number
+}
+
+
+const MedicoPagoDisplay: React.FC<MedicoPagoDisplayProps> = ({ montoHonorarios, montoPresupuesto, participacion }) => {
+    const honorarios: number | null = montoHonorarios !== null ? Number(montoHonorarios) * participacion : null;
+    const presupuesto: number | null = montoPresupuesto !== null ? Number(montoPresupuesto) * participacion : null;
+
+    return (
+        <div className="flex flex-col text-[10px] font-medium min-w-[70px] pt-1"> 
+            <span className="text-cyan-400 block w-full text-left">
+                {formatCurrencyUSD(honorarios)}
+            </span>
+            <span className="text-yellow-400 block w-full text-left">
+                {formatCurrencyARS(presupuesto)}
+            </span>
+        </div>
+    );
+};
 
 
 interface CirugiaTableProps {
@@ -116,9 +156,46 @@ const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDe
                                     {c.edadPaciente !== null ? `${c.edadPaciente} años` : "-"}
                                 </td>
                                 <td className="py-3 px-4 align-top break-words">{c.tipoCirugia}</td>
-                                <td className="py-3 px-4 text-xs align-top break-words">{c.medicoOpero || "-"}</td>
-                                <td className="py-3 px-4 text-xs align-top break-words">{c.medicoAyudo1 || "-"}</td>
-                                <td className="py-3 px-4 text-xs align-top break-words">{c.medicoAyudo2 || "-"}</td>
+                                
+                                <td className="py-3 px-4 text-xs align-top break-words min-w-[96px] h-full">
+                                    <div className="min-h-[30px] w-full"> 
+                                        <span className="block text-left">{c.medicoOpero || "-"}</span>
+                                    </div>
+                                    {c.medicoOpero && (
+                                        <MedicoPagoDisplay 
+                                            montoHonorarios={c.montoTotalHonorarios} 
+                                            montoPresupuesto={c.montoTotalPresupuesto} 
+                                            participacion={0.50} 
+                                        />
+                                    )}
+                                </td>
+                                
+                                <td className="py-3 px-4 text-xs align-top break-words min-w-[96px] h-full">
+                                    <div className="min-h-[30px] w-full">
+                                        <span className="block text-left">{c.medicoAyudo1 || "-"}</span>
+                                    </div>
+                                    {c.medicoAyudo1 && (
+                                        <MedicoPagoDisplay 
+                                            montoHonorarios={c.montoTotalHonorarios} 
+                                            montoPresupuesto={c.montoTotalPresupuesto} 
+                                            participacion={0.25} 
+                                        />
+                                    )}
+                                </td>
+                                
+                                <td className="py-3 px-4 text-xs align-top break-words min-w-[96px] h-full">
+                                    <div className="min-h-[30px] w-full">
+                                        <span className="block text-left">{c.medicoAyudo2 || "-"}</span>
+                                    </div>
+                                    {c.medicoAyudo2 && (
+                                        <MedicoPagoDisplay 
+                                            montoHonorarios={c.montoTotalHonorarios} 
+                                            montoPresupuesto={c.montoTotalPresupuesto} 
+                                            participacion={0.25} 
+                                        />
+                                    )}
+                                </td>
+                                
                                 <td className="py-3 px-4 align-top"></td>
                             </tr>
                             
@@ -134,12 +211,14 @@ const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDe
                                                     pagado={c.montoPagadoHonorarios} 
                                                     estado={c.estadoPagoHonorarios}
                                                     label="Honorarios"
+                                                    moneda="USD"
                                                 />
                                                 <PagoCell 
                                                     total={c.montoTotalPresupuesto} 
                                                     pagado={c.montoPagadoPresupuesto} 
                                                     estado={c.estadoPagoPresupuesto}
                                                     label="Presupuesto"
+                                                    moneda="ARS"
                                                 />
                                             </div>
                                         </div>
@@ -229,10 +308,10 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
                     setter([]);
                 }
             } else {
-                 throw new Error(`Error al cargar ${endpoint}: ${res.status}`);
+                throw new Error(`Error al cargar ${endpoint}: ${res.status}`);
             }
         } catch (error) {
-             console.error("Error en fetchOptions para", endpoint, error);
+            console.error("Error en fetchOptions para", endpoint, error);
         }
     };
 
