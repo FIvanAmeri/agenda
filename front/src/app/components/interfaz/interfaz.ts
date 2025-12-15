@@ -52,7 +52,6 @@ export interface Patient {
     fechaPagoTotal: string | null
 }
 
-
 export interface LoginCredentials {
     usuario: string
     contrasena: string
@@ -81,6 +80,7 @@ export interface Cirugia {
     fechaNacimientoPaciente: string | null
     edadPaciente: number | null
     tipoCirugia: string
+    obraSocial: string | null
     medicoOpero: string
     medicoAyudo1: string | null
     medicoAyudo2: string | null

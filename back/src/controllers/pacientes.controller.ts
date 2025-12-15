@@ -83,7 +83,7 @@ export class PacientesController {
         }
 
         const idPaciente = parseInt(req.params.id, 10);
-        const { estadoPago, monto, fechaPagoParcial, fechaPagoTotal } = req.body;
+        const { estadoPago, montoDelta, fechaPagoParcial, fechaPagoTotal } = req.body;
 
         if (!Object.values(EstadoPago).includes(estadoPago)) {
             return res.status(400).json({
@@ -92,10 +92,10 @@ export class PacientesController {
             });
         }
 
-        const montoNumero: number = (() => {
-            if (typeof monto === "number") return monto;
-            if (typeof monto === "string") {
-                const parsed = parseFloat(monto.replace(",", "."));
+        const montoNumero = (() => {
+            if (typeof montoDelta === "number") return montoDelta;
+            if (typeof montoDelta === "string") {
+                const parsed = parseFloat(montoDelta.replace(",", "."));
                 return Number.isFinite(parsed) ? parsed : 0;
             }
             return 0;
@@ -143,6 +143,20 @@ export class PacientesController {
             res.json({ message: "Paciente eliminado" });
         } catch {
             res.status(500).json({ message: "Error al eliminar paciente" });
+        }
+    }
+    
+    async obtenerObrasSociales(req: Request, res: Response) {
+        const userId = req.user?.userId; 
+        if (!userId) {
+            return res.status(401).json({ message: "No autorizado" });
+        }
+
+        try {
+            const obrasSociales = await this.pacientesService.obtenerObrasSocialesUnicas(userId);
+            res.json({ obrasSociales }); 
+        } catch (error) {
+            res.status(500).json({ message: "Error al obtener obras sociales", error });
         }
     }
 }

@@ -1,21 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
     DatosFormularioCirugia, 
     CirugiaPayload, 
     PropsFormularioCirugia, 
-    ResultadoUsarFormularioCirugia 
+    ResultadoUsarFormularioCirugia,
+    ListaDinamica
 } from "../../components/interfaz/tipos-cirugia";
+import { useObrasSociales } from "../../context/ObrasSocialesContext";
 import { formatDate } from "../../utils/dateTimeHelpers"; 
-
-type ListaDinamica = "medicos" | "tiposCirugia";
 
 export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormularioCirugia): ResultadoUsarFormularioCirugia => {
     
+    const { obrasSociales, setObrasSociales } = useObrasSociales();
+
     const [formData, setFormData] = useState<DatosFormularioCirugia>({
         fecha: formatDate(new Date().toISOString()),
         paciente: "",
         fechaNacimientoPaciente: "",
         tipoCirugia: "",
+        obraSocial: "",
         medicoOpero: "",
         medicoAyudo1: "",
         medicoAyudo2: "",
@@ -56,7 +59,7 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
                 if (tiposRes.ok && Array.isArray(tiposData.tiposCirugia)) {
                     setTiposCirugia(tiposData.tiposCirugia);
                 }
-            } catch (err: unknown) {
+            } catch (err) {
                 setError("No se pudieron cargar las listas dinámicas (Médicos/Tipos de Cirugía)");
             } finally {
                 setLoadingLists(false);
@@ -67,7 +70,7 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
     }, [user.id]);
 
 
-    const handleInputChange = (
+    const handleInputChange = useCallback((
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ): void => {
         const { name, value } = e.target;
@@ -75,17 +78,27 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
             ...prev,
             [name as keyof DatosFormularioCirugia]: value
         }));
-    };
+    }, []);
 
-    const handleAddOption = (listName: ListaDinamica, fieldLabel: string): void => {
-        const newOption: string | null = prompt(`Ingrese el nuevo valor para ${fieldLabel}:`);
+    const handleAddOption = useCallback((listName: ListaDinamica, fieldLabel: string): void => {
+        const newOption: string | null = window.prompt(`Ingrese el nuevo valor para ${fieldLabel}:`);
         if (newOption && newOption.trim() !== "") {
-            const listSetter: React.Dispatch<React.SetStateAction<string[]>> = listName === "medicos" ? setMedicos : setTiposCirugia;
-            listSetter((prev: string[]) => (prev.includes(newOption) ? prev : [...prev, newOption]));
+            const trimmedOption: string = newOption.trim().toUpperCase();
+            
+            if (listName === "medicos") {
+                setMedicos((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
+                setFormData(prev => ({ ...prev, medicoOpero: trimmedOption }));
+            } else if (listName === "tiposCirugia") {
+                setTiposCirugia((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
+                setFormData(prev => ({ ...prev, tipoCirugia: trimmedOption }));
+            } else if (listName === "obrasSociales") {
+                setObrasSociales((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
+                setFormData(prev => ({ ...prev, obraSocial: trimmedOption }));
+            }
         }
-    };
+    }, [setObrasSociales]);
 
-    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+    const handleSubmit = useCallback(async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setError(null);
 
@@ -104,6 +117,7 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
             paciente: formData.paciente,
             fechaNacimientoPaciente: formData.fechaNacimientoPaciente,
             tipoCirugia: formData.tipoCirugia,
+            obraSocial: formData.obraSocial,
             medicoOpero: formData.medicoOpero,
             medicoAyudo1: formData.medicoAyudo1,
             medicoAyudo2: formData.medicoAyudo2,
@@ -132,15 +146,16 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
             onAdded();
             onClose();
 
-        } catch (err: unknown) {
+        } catch (err) {
             setError(err instanceof Error ? err.message : "Hubo un error al guardar la cirugía");
         }
-    };
+    }, [formData, user.id, onAdded, onClose]);
 
     return {
         formData,
         medicos,
         tiposCirugia,
+        obrasSociales,
         error,
         loadingLists,
         handleInputChange,

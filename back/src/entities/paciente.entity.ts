@@ -27,7 +27,7 @@ export class Paciente {
     @Column()
     practicas: string;
 
-    @Column()
+    @Column({ name: 'obrasocial' })
     obraSocial: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })

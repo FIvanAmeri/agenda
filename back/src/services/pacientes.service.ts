@@ -106,7 +106,7 @@ export class PacientesService {
             pacienteExistente.fechaPagoTotal = pacienteExistente.fechaPagoTotal ?? null;
 
             const saved = await pacienteRepository.save(pacienteExistente);
-            const result: Paciente & { ultimoPagoParcial?: number } = { ...saved } as Paciente & { ultimoPagoParcial?: number };
+            const result = saved as Paciente & { ultimoPagoParcial?: number };
             if (montoDelta > 0) result.ultimoPagoParcial = Number(montoDelta.toFixed(2));
             return result;
         }
@@ -127,7 +127,7 @@ export class PacientesService {
             if (fechaPagoParcial !== null) pacienteExistente.fechaPagoParcial = fechaPagoParcial;
 
             const saved = await pacienteRepository.save(pacienteExistente);
-            const result: Paciente & { ultimoPagoTotal?: number; ultimoPagoParcial?: number } = { ...saved } as Paciente & { ultimoPagoTotal?: number; ultimoPagoParcial?: number };
+            const result = saved as Paciente & { ultimoPagoTotal?: number; ultimoPagoParcial?: number };
             if (montoDelta > 0) result.ultimoPagoTotal = Number(montoDelta.toFixed(2));
             result.ultimoPagoParcial = Number(montoActualParcial.toFixed(2));
             return result;
@@ -135,5 +135,19 @@ export class PacientesService {
 
         const saved = await pacienteRepository.save(pacienteExistente);
         return saved;
+    }
+
+    async obtenerObrasSocialesUnicas(userId: number): Promise<string[]> {
+        const pacienteRepository = AppDataSource.getRepository(Paciente);
+        
+        const result = await pacienteRepository
+            .createQueryBuilder("paciente")
+            .select("DISTINCT paciente.obraSocial", "obraSocial")
+            .where("paciente.userId = :userId", { userId })
+            .andWhere("paciente.obraSocial IS NOT NULL AND paciente.obraSocial != ''")
+            .orderBy("obraSocial", "ASC")
+            .getRawMany() as { obraSocial: string }[];
+
+        return result.map(item => item.obraSocial);
     }
 }

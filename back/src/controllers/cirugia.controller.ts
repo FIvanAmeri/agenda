@@ -23,6 +23,23 @@ export class CirugiaController {
         return res.json({ cirugia });
     }
 
+    async obtenerPorId(req: Request, res: Response) {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ message: "ID de cirugía inválido" });
+        }
+        
+        try {
+            const cirugia = await service.obtenerPorId(id);
+            if (!cirugia) {
+                return res.status(404).json({ message: "Cirugía no encontrada" });
+            }
+            return res.json({ data: cirugia });
+        } catch (error) {
+            return res.status(500).json({ message: "Error al obtener la cirugía" });
+        }
+    }
+
     async listar(req: Request, res: Response) {
         const filters = {
             dateFrom: req.query.dateFrom as string,
@@ -37,6 +54,43 @@ export class CirugiaController {
         res.json({ data });
     }
     
+    async actualizar(req: Request, res: Response) {
+        const id = parseInt(req.params.id);
+        const body = req.body;
+
+        if (isNaN(id)) {
+            return res.status(400).json({ message: "ID de cirugía inválido" });
+        }
+
+        try {
+            const cirugiaActualizada = await service.actualizar(id, body);
+            return res.json({ data: cirugiaActualizada });
+        } catch (error) {
+            if (error instanceof Error && error.message.includes("no encontrada")) {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Error al actualizar la cirugía" });
+        }
+    }
+
+    async eliminar(req: Request, res: Response) {
+        const id = parseInt(req.params.id);
+
+        if (isNaN(id)) {
+            return res.status(400).json({ message: "ID de cirugía inválido" });
+        }
+
+        try {
+            await service.eliminar(id);
+            return res.status(204).send();
+        } catch (error) {
+            if (error instanceof Error && error.message.includes("no encontrada")) {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Error al eliminar la cirugía" });
+        }
+    }
+
     async obtenerMedicos(req: Request, res: Response) {
         try {
             const medicos = await service.obtenerMedicosUnicos();

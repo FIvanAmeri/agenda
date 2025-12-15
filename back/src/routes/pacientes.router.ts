@@ -35,4 +35,11 @@ pacientesRouter.delete(
     pacientesController.eliminarPaciente.bind(pacientesController)
 );
 
+
+pacientesRouter.get(
+    "/paciente/obrassociales",
+    authenticateJWT,
+    pacientesController.obtenerObrasSociales.bind(pacientesController)
+);
+
 export default pacientesRouter;

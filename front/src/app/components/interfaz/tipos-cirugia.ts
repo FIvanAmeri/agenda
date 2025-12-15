@@ -6,6 +6,7 @@ export interface DatosFormularioCirugia {
     paciente: string
     fechaNacimientoPaciente: string
     tipoCirugia: string
+    obraSocial: string
     medicoOpero: string
     medicoAyudo1: string
     medicoAyudo2: string
@@ -19,6 +20,7 @@ export interface CirugiaPayload {
     paciente: string
     fechaNacimientoPaciente: string
     tipoCirugia: string
+    obraSocial: string
     medicoOpero: string
     medicoAyudo1: string
     medicoAyudo2: string
@@ -45,13 +47,14 @@ export interface PropsCampoSeleccionDinamico {
     deshabilitado?: boolean
 }
 
-type ListaDinamica = "medicos" | "tiposCirugia";
+export type ListaDinamica = "medicos" | "tiposCirugia" | "obrasSociales";
 
 
 export interface ResultadoUsarFormularioCirugia {
     formData: DatosFormularioCirugia
     medicos: string[]
     tiposCirugia: string[]
+    obrasSociales: string[]
     error: string | null
     loadingLists: boolean
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
@@ -66,10 +69,23 @@ export interface FiltrosCirugia {
     selectedTipoCirugia: string
     selectedMedico: string
     selectedStatus: "pagado" | "no pagado" | ""
+    selectedObraSocial: string
 }
 
 export interface PropsFiltroCirugia {
     filters: FiltrosCirugia
     setFilters: React.Dispatch<React.SetStateAction<FiltrosCirugia>>
     cirugias: Cirugia[]
+    medicosOpciones: string[]
+    tiposCirugiaOpciones: string[]
+    obrasSocialesOpciones: string[]
+}
+
+export interface CirugiaDetailModalProps {
+    cirugia: Cirugia
+    onClose: () => void
+    onSubmit: (cirugiaId: number, updatePayload: Partial<Cirugia>) => Promise<void>
+    medicosOpciones: string[]
+    tiposCirugiaOpciones: string[]
+    obrasSocialesOpciones: string[]
 }

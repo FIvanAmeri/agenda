@@ -8,6 +8,7 @@ import AutocompleteInput from "./AutocompleteInput";
 import { useFilterDropdowns } from "../../hooks/Filtro/useFilterDropdowns";
 import { useCirugiaLists } from "../../hooks/Cirugia/useCirugiaLists";
 import { PropsFiltroCirugia, FiltrosCirugia } from "../../components/interfaz/tipos-cirugia";
+import { FilterFieldKey } from "../../hooks/Filtro/useFilterDropdowns";
 
 const formatISO = (date: Date | null): string => {
     if (!date) return "";
@@ -38,11 +39,14 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
     filters,
     setFilters,
     cirugias,
+    medicosOpciones,
+    tiposCirugiaOpciones,
+    obrasSocialesOpciones,
 }) => {
     const { formRef, showStates, closeAllDropdowns, handleOpen } =
         useFilterDropdowns();
 
-    const { patientNames, tiposCirugia, medicos } = useCirugiaLists(cirugias);
+    const { patientNames } = useCirugiaLists(cirugias);
 
     const handleFilterChange = (field: keyof FiltrosCirugia, value: string): void => {
         setFilters((prev: FiltrosCirugia) => ({ ...prev, [field]: value }));
@@ -64,6 +68,7 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
             selectedTipoCirugia: "",
             selectedMedico: "",
             selectedStatus: "",
+            selectedObraSocial: "",
         });
         closeAllDropdowns();
     };
@@ -106,7 +111,7 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
                     label="Paciente"
                     value={filters.selectedPatientName}
                     setValue={(val: string) => handleFilterChange("selectedPatientName", val)}
-                    fieldKey="patient"
+                    fieldKey={"patient" as FilterFieldKey}
                     filteredNames={filterSuggestions(patientNames, filters.selectedPatientName)}
                     placeholder="Escriba o seleccione paciente..."
                     dataTestId="filter-paciente"
@@ -119,8 +124,8 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
                     label="Tipo Cirugía"
                     value={filters.selectedTipoCirugia}
                     setValue={(val: string) => handleFilterChange("selectedTipoCirugia", val)}
-                    fieldKey="tipoCirugia"
-                    filteredNames={filterSuggestions(tiposCirugia, filters.selectedTipoCirugia)}
+                    fieldKey={"tipoCirugia" as FilterFieldKey}
+                    filteredNames={filterSuggestions(tiposCirugiaOpciones, filters.selectedTipoCirugia)}
                     placeholder="Escriba o seleccione tipo..."
                     dataTestId="filter-tipo-cirugia"
                     isShowing={showStates.tipoCirugia}
@@ -132,15 +137,28 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
                     label="Médico"
                     value={filters.selectedMedico}
                     setValue={(val: string) => handleFilterChange("selectedMedico", val)}
-                    fieldKey="medico"
-                    filteredNames={filterSuggestions(medicos, filters.selectedMedico)}
+                    fieldKey={"medico" as FilterFieldKey}
+                    filteredNames={filterSuggestions(medicosOpciones, filters.selectedMedico)}
                     placeholder="Escriba o seleccione médico..."
                     dataTestId="filter-medico"
                     isShowing={showStates.medico}
                     handleOpen={handleOpen}
                     handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedMedico")}
                 />
-
+                
+                <AutocompleteInput
+                    label="Obra Social"
+                    value={filters.selectedObraSocial}
+                    setValue={(val: string) => handleFilterChange("selectedObraSocial", val)}
+                    fieldKey={"obraSocial" as FilterFieldKey}
+                    filteredNames={filterSuggestions(obrasSocialesOpciones, filters.selectedObraSocial)}
+                    placeholder="Escriba o seleccione OS..."
+                    dataTestId="filter-obra-social"
+                    isShowing={showStates.obraSocial}
+                    handleOpen={handleOpen}
+                    handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedObraSocial")}
+                />
+                
                 <div className="flex flex-col">
                     <label className="text-xs font-medium text-gray-400 mb-1">Estado Pago</label>
                     <select

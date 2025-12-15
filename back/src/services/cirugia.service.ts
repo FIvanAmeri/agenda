@@ -1,6 +1,7 @@
-import { Repository, Between, FindManyOptions, Like } from "typeorm";
+import { Repository, Between, FindManyOptions, Like, FindOptionsWhere } from "typeorm";
 import AppDataSource from "../data-source";
 import { Cirugia } from "../entities/Cirugia.entity";
+import { CirugiaConEdad } from "../interfaces/cirugia.interface";
 
 export interface CirugiaFilter {
     dateFrom?: string;
@@ -9,6 +10,23 @@ export interface CirugiaFilter {
     tipoCirugia?: string;
     medico?: string;
     estadoPago?: "pagado" | "no pagado";
+}
+
+export interface CirugiaUpdatePayload {
+    fecha?: string;
+    paciente?: string;
+    fechaNacimientoPaciente?: string | null;
+    tipoCirugia?: string;
+    medicoOpero?: string;
+    medicoAyudo1?: string | null;
+    medicoAyudo2?: string | null;
+    montoTotalHonorarios?: number | null;
+    montoPagadoHonorarios?: number;
+    estadoPagoHonorarios?: Cirugia["estadoPagoHonorarios"];
+    montoTotalPresupuesto?: number | null;
+    montoPagadoPresupuesto?: number;
+    estadoPagoPresupuesto?: Cirugia["estadoPagoPresupuesto"];
+    descripcion?: string | null;
 }
 
 export class CirugiaService {
@@ -36,46 +54,45 @@ export class CirugiaService {
     }
     
     private applyFilters(filters: CirugiaFilter): FindManyOptions<Cirugia> {
-        const where: any[] = [];
+        const whereConditions: FindOptionsWhere<Cirugia>[] = [];
         
         if (filters.dateFrom && filters.dateTo) {
-            where.push({ fecha: Between(filters.dateFrom, filters.dateTo) });
+            whereConditions.push({ fecha: Between(filters.dateFrom, filters.dateTo) });
         } else if (filters.dateFrom) {
-            where.push({ fecha: Between(filters.dateFrom, new Date().toISOString().split('T')[0]) });
+            whereConditions.push({ fecha: Between(filters.dateFrom, new Date().toISOString().split('T')[0]) });
         } else if (filters.dateTo) {
-            where.push({ fecha: Between('1900-01-01', filters.dateTo) }); 
+            whereConditions.push({ fecha: Between('1900-01-01', filters.dateTo) }); 
         }
 
         if (filters.paciente) {
-            where.push({ paciente: Like(`%${filters.paciente}%`) });
+            whereConditions.push({ paciente: Like(`%${filters.paciente}%`) });
         }
         
         if (filters.tipoCirugia) {
-            where.push({ tipoCirugia: Like(`%${filters.tipoCirugia}%`) });
+            whereConditions.push({ tipoCirugia: Like(`%${filters.tipoCirugia}%`) });
         }
 
         if (filters.medico) {
             const medicoFilter = Like(`%${filters.medico}%`);
-            where.push([
+            whereConditions.push([
                 { medicoOpero: medicoFilter },
                 { medicoAyudo1: medicoFilter },
                 { medicoAyudo2: medicoFilter },
-            ]);
+            ] as FindOptionsWhere<Cirugia>);
         }
         
         if (filters.estadoPago) {
             const estado = filters.estadoPago === "pagado" ? "pagado" : "no pagado";
-            const estadoNoPagado = filters.estadoPago === "no pagado" ? "no pagado" : "pagado";
+            
             if (filters.estadoPago === "pagado") {
-                 where.push([
-                    { estadoPagoHonorarios: estado },
-                    { estadoPagoPresupuesto: estado },
-                ]);
+                 whereConditions.push({ estadoPagoHonorarios: estado, estadoPagoPresupuesto: estado });
             } else {
-                 where.push([
-                    { estadoPagoHonorarios: estadoNoPagado },
-                    { estadoPagoPresupuesto: estadoNoPagado },
-                ]);
+                 whereConditions.push([
+                    { estadoPagoHonorarios: "no pagado" },
+                    { estadoPagoHonorarios: "parcialmente pagado" },
+                    { estadoPagoPresupuesto: "no pagado" },
+                    { estadoPagoPresupuesto: "parcialmente pagado" },
+                ] as FindOptionsWhere<Cirugia>);
             }
         }
         
@@ -83,13 +100,18 @@ export class CirugiaService {
             order: { fecha: "DESC" },
         };
         
-        if (where.length > 0) {
-            if (where.length === 1 && Array.isArray(where[0])) {
-                options.where = where[0];
-            } else if (where.length > 0) {
-                 options.where = where.reduce((acc, current) => {
-                    return { ...acc, ...current }; 
-                }, {});
+        if (whereConditions.length > 0) {
+            
+            if (whereConditions.length === 1 && Array.isArray(whereConditions[0])) {
+                options.where = whereConditions[0];
+            } else if (whereConditions.length > 0) {
+                const finalWhere = whereConditions.flat().filter(Boolean) as FindOptionsWhere<Cirugia>[];
+                
+                if (finalWhere.length > 0) {
+                    options.where = finalWhere.reduce((acc: FindOptionsWhere<Cirugia>, current: FindOptionsWhere<Cirugia>) => {
+                        return { ...acc, ...current }; 
+                    }, {} as FindOptionsWhere<Cirugia>);
+                }
             }
         }
         
@@ -108,7 +130,7 @@ export class CirugiaService {
         fechaNacimientoPaciente?: string | null;
         montoTotalHonorarios?: number | null;
         montoTotalPresupuesto?: number | null;
-    }) {
+    }): Promise<Cirugia> {
         const c = this.repo.create({
             ...payload,
             montoTotalHonorarios: payload.montoTotalHonorarios ?? null,
@@ -116,21 +138,48 @@ export class CirugiaService {
         });
         return await this.repo.save(c);
     }
+    
+    async obtenerPorId(id: number): Promise<CirugiaConEdad | null> {
+        const cirugia = await this.repo.findOne({ where: { id } });
+        if (!cirugia) return null;
+        
+        return {
+            ...cirugia,
+            edadPaciente: this.calcularEdad(cirugia.fechaNacimientoPaciente)
+        };
+    }
 
-    async listar(filters: CirugiaFilter = {}) {
+    async listar(filters: CirugiaFilter = {}): Promise<CirugiaConEdad[]> {
         const options = this.applyFilters(filters);
         
         const cirugias = await this.repo.find(options);
         
-     
         return cirugias.map(c => ({
             ...c,
             edadPaciente: this.calcularEdad(c.fechaNacimientoPaciente)
         }));
     }
+    
+    async actualizar(id: number, payload: CirugiaUpdatePayload): Promise<Cirugia> {
+        const cirugia = await this.repo.findOne({ where: { id } });
+
+        if (!cirugia) {
+            throw new Error(`Cirugía con ID ${id} no encontrada`);
+        }
+
+        this.repo.merge(cirugia, payload);
+        return await this.repo.save(cirugia);
+    }
+    
+    async eliminar(id: number): Promise<void> {
+        const result = await this.repo.delete(id);
+        if (result.affected === 0) {
+            throw new Error(`Cirugía con ID ${id} no encontrada`);
+        }
+    }
 
     private async obtenerValoresUnicos(column: keyof Cirugia): Promise<string[]> {
-        const result = await this.repo
+        const result: { valor: string }[] = await this.repo
             .createQueryBuilder("cirugia")
             .select(`DISTINCT cirugia.${column}`, "valor")
             .where(`cirugia.${column} IS NOT NULL AND cirugia.${column} != ''`)
