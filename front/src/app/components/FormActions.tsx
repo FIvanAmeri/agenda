@@ -1,31 +1,31 @@
 import React from 'react';
 
 interface FormActionsProps {
-  onCancel: () => void;
-  submitText?: string;
-  cancelText?: string;
+    onCancel: () => void;
+    submitText?: string;
+    cancelText?: string;
 }
 
 export const FormActions: React.FC<FormActionsProps> = ({ 
-  onCancel, 
-  submitText = 'Guardar', 
-  cancelText = 'Cancelar' 
+    onCancel, 
+    submitText = 'Guardar', 
+    cancelText = 'Cancelar' 
 }) => {
-  return (
-    <div className="col-span-full flex flex-col sm:flex-row justify-between gap-3 mt-4">
-      <button
-        type="button"
-        onClick={onCancel}
-        className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex-1"
-      >
-        {cancelText}
-      </button>
-      <button
-        type="submit"
-        className="py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex-1"
-      >
-        {submitText}
-      </button>
-    </div>
-  );
+    return (
+        <div className="col-span-full flex justify-end space-x-4 pt-4 border-t border-[#1f3b47] mt-6">
+            <button
+                type="button"
+                onClick={onCancel}
+                className="px-6 py-2 border border-gray-600 text-gray-300 rounded-md hover:bg-[#1a4553] transition duration-200"
+            >
+                {cancelText}
+            </button>
+            <button
+                type="submit"
+                className="px-6 py-2 bg-[#0c4a34] text-white font-semibold rounded-md hover:bg-[#1f5666] transition duration-200"
+            >
+                {submitText}
+            </button>
+        </div>
+    );
 };

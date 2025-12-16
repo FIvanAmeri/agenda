@@ -1,6 +1,6 @@
 import React from "react";
 import  {Patient}  from "../interfaz/interfaz";
-import PatientFormInput from "../PatientForm/PatientFormInput";
+import PatientFormInput from "./PatientFormInput";
 
 interface PatientFormProps {
   patients: Patient[];

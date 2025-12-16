@@ -1,36 +1,36 @@
 import React, { ReactNode } from 'react';
+import { FaTimes } from 'react-icons/fa';
 
 interface ModalBaseProps {
-  children: ReactNode;
-  title: string;
-  onClose: () => void;
+    children: ReactNode;
+    title: string;
+    onClose: () => void;
 }
 
 export const ModalBase: React.FC<ModalBaseProps> = ({ children, title, onClose }) => {
-  return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50 p-4"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-gradient-to-r from-blue-600 to-teal-600 p-6 rounded-lg shadow-lg w-full max-w-6xl mx-auto overflow-y-auto"
-        style={{ maxHeight: '90vh' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-white">{title}</h2>
-          <button
+    return (
+        <div 
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 transition-opacity duration-300"
             onClick={onClose}
-            className="text-white hover:text-gray-200 focus:outline-none"
-            aria-label="Cerrar modal"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        >
+            <div 
+                className="bg-[#0F2A35] rounded-xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300 border-2 border-[#004d40]"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="sticky top-0 bg-gradient-to-r from-[#004d40] to-[#1a4553] p-4 flex justify-between items-center text-white flex-shrink-0">
+                    <h2 className="text-2xl font-bold">{title}</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-white hover:text-red-400 transition p-1 rounded-full hover:bg-black hover:bg-opacity-20"
+                        aria-label="Cerrar modal"
+                    >
+                        <FaTimes className="text-xl" />
+                    </button>
+                </div>
+                <div className="flex-1 p-6 space-y-4">
+                    {children}
+                </div>
+            </div>
         </div>
-        {children}
-      </div>
-    </div>
-  );
+    );
 };
