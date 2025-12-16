@@ -3,18 +3,18 @@ import React from "react";
 
 interface DropdownStates {
     patient: boolean
-    tipoCirugia: boolean
-    medico: boolean
+    practice: boolean
     obraSocial: boolean
+    institucion: boolean
 }
 
 export type FilterFieldKey = keyof DropdownStates;
 
 interface DropdownSetters {
     patient: React.Dispatch<React.SetStateAction<boolean>>
-    tipoCirugia: React.Dispatch<React.SetStateAction<boolean>>
-    medico: React.Dispatch<React.SetStateAction<boolean>>
+    practice: React.Dispatch<React.SetStateAction<boolean>>
     obraSocial: React.Dispatch<React.SetStateAction<boolean>>
+    institucion: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 interface UseFilterDropdownsResult {
@@ -29,22 +29,22 @@ export const useFilterDropdowns = (): UseFilterDropdownsResult => {
     const formRef: React.RefObject<HTMLDivElement> = useRef<HTMLDivElement | null>(null);
 
     const [showPatient, setShowPatient] = useState<boolean>(false);
-    const [showTipoCirugia, setShowTipoCirugia] = useState<boolean>(false);
-    const [showMedico, setShowMedico] = useState<boolean>(false);
+    const [showPractice, setShowPractice] = useState<boolean>(false);
     const [showObraSocial, setShowObraSocial] = useState<boolean>(false);
+    const [showInstitucion, setShowInstitucion] = useState<boolean>(false);
 
     const showSetters: DropdownSetters = {
         patient: setShowPatient,
-        tipoCirugia: setShowTipoCirugia,
-        medico: setShowMedico,
+        practice: setShowPractice,
         obraSocial: setShowObraSocial,
+        institucion: setShowInstitucion,
     };
 
     const showStates: DropdownStates = {
         patient: showPatient,
-        tipoCirugia: showTipoCirugia,
-        medico: showMedico,
+        practice: showPractice,
         obraSocial: showObraSocial,
+        institucion: showInstitucion,
     };
 
     const closeAllDropdowns = (): void => {

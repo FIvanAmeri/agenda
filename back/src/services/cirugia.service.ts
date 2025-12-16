@@ -16,6 +16,7 @@ export interface CirugiaUpdatePayload {
     fecha?: string;
     paciente?: string;
     fechaNacimientoPaciente?: string | null;
+    obraSocial?: string | null;
     tipoCirugia?: string;
     medicoOpero?: string;
     medicoAyudo1?: string | null;
@@ -124,6 +125,7 @@ export class CirugiaService {
         paciente: string;
         tipoCirugia: string;
         medicoOpero: string;
+        obraSocial?: string | null;
         medicoAyudo1?: string | null;
         medicoAyudo2?: string | null;
         descripcion?: string | null;
@@ -200,5 +202,9 @@ export class CirugiaService {
 
     async obtenerTiposCirugiaUnicos(): Promise<string[]> {
         return this.obtenerValoresUnicos('tipoCirugia');
+    }
+
+    async obtenerObrasSocialesUnicas(): Promise<string[]> {
+        return this.obtenerValoresUnicos('obraSocial');
     }
 }

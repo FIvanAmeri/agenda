@@ -14,6 +14,13 @@ export default function PrincipalPage() {
     const currentView = searchParams.get("view");
     const isCirugiasView = currentView === "cirugias";
 
+    const [cirugiaRefreshKey, setCirugiaRefreshKey] = React.useState(0);
+
+    const handleCirugiaAddedSuccess = (setShowCirugiaModal: (show: boolean) => void) => {
+        setShowCirugiaModal(false); 
+        setCirugiaRefreshKey(prev => prev + 1); 
+    };
+
     return (
         <MainLayout>
             {(props) => {
@@ -22,7 +29,10 @@ export default function PrincipalPage() {
                 return (
                     <>
                         {isCirugiasView ? (
-                            <VerCirugiasContent user={props.user} />
+                            <VerCirugiasContent 
+                                user={props.user} 
+                                key={cirugiaRefreshKey}
+                            />
                         ) : (
                             <PrincipalContent 
                                 user={props.user} 
@@ -47,7 +57,7 @@ export default function PrincipalPage() {
                             <AddCirugiaModal
                                 user={props.user}
                                 onClose={() => props.setShowCirugiaModal(false)}
-                                onAdded={() => props.setShowCirugiaModal(false)}
+                                onAdded={() => handleCirugiaAddedSuccess(props.setShowCirugiaModal)}
                             />
                         )}
 

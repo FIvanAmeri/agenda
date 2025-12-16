@@ -1,4 +1,4 @@
-import { User, Cirugia } from "../interfaz/interfaz"; 
+import { User, Cirugia, ApiResponse } from "../interfaz/interfaz"; 
 import React from "react";
 
 export interface DatosFormularioCirugia {
@@ -79,13 +79,15 @@ export interface PropsFiltroCirugia {
     medicosOpciones: string[]
     tiposCirugiaOpciones: string[]
     obrasSocialesOpciones: string[]
+    onCirugiaAdded: () => void
 }
 
 export interface CirugiaDetailModalProps {
     cirugia: Cirugia
     onClose: () => void
-    onSubmit: (cirugiaId: number, updatePayload: Partial<Cirugia>) => Promise<void>
-    medicosOpciones: string[]
-    tiposCirugiaOpciones: string[]
-    obrasSocialesOpciones: string[]
+    onSubmit?: (cirugiaId: number, updatePayload: Partial<Cirugia>) => Promise<void>
+    medicosOpciones?: string[]
+    tiposCirugiaOpciones?: string[]
+    obrasSocialesOpciones?: string[]
+    showHonorarios: boolean
 }

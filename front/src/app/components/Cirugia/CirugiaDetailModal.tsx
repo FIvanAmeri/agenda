@@ -39,8 +39,7 @@ const SelectField: React.FC<SelectFieldProps> = ({ name, label, value, options, 
     
     const normalizedValue: string = value || "";
 
-    const isValidOption: boolean = options.includes(normalizedValue);
-    const selectedValue: string = isValidOption ? normalizedValue : ""; 
+    const selectedValue: string = normalizedValue; 
 
     return (
         <div>
@@ -92,6 +91,7 @@ export default function CirugiaDetailModal({
     medicosOpciones,
     tiposCirugiaOpciones,
     obrasSocialesOpciones,
+    showHonorarios,
 }: CirugiaDetailModalProps): JSX.Element {
     const [formData, setFormData] = useState<Partial<Cirugia>>({});
     const [loading, setLoading] = useState<boolean>(false);
@@ -131,18 +131,18 @@ export default function CirugiaDetailModal({
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
-        if (!cirugia.id) return;
+        if (!cirugia.id || !onSubmit) return;
 
         setLoading(true);
         await onSubmit(cirugia.id, formData);
         setLoading(false);
     };
 
-   
+    
     const isDirty: boolean = Object.keys(formData).some(key => {
         const formValue = formData[key as keyof Partial<Cirugia>];
         const originalValue = cirugia[key as keyof Cirugia];
-         const normalizedFormValue = (formValue === null || formValue === undefined) ? "" : String(formValue);
+        const normalizedFormValue = (formValue === null || formValue === undefined) ? "" : String(formValue);
         const normalizedOriginalValue = (originalValue === null || originalValue === undefined) ? "" : String(originalValue);
 
         return normalizedFormValue !== normalizedOriginalValue;
@@ -206,7 +206,7 @@ export default function CirugiaDetailModal({
                                     name="tipoCirugia"
                                     label="Tipo de Cirugía"
                                     value={formData.tipoCirugia as string} 
-                                    options={tiposCirugiaOpciones}
+                                    options={tiposCirugiaOpciones || []}
                                     onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                                     isRequired={true}
                                 />
@@ -217,7 +217,7 @@ export default function CirugiaDetailModal({
                                     name="obraSocial"
                                     label="Obra Social"
                                     value={formData.obraSocial as string}
-                                    options={obrasSocialesOpciones}
+                                    options={obrasSocialesOpciones || []}
                                     onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                                 />
                             </div>
@@ -242,7 +242,7 @@ export default function CirugiaDetailModal({
                                 name="medicoOpero"
                                 label="Médico que Operó"
                                 value={formData.medicoOpero as string}
-                                options={medicosOpciones}
+                                options={medicosOpciones || []}
                                 onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                                 isRequired={true}
                             />
@@ -250,14 +250,14 @@ export default function CirugiaDetailModal({
                                 name="medicoAyudo1"
                                 label="Médico Ayudante 1"
                                 value={formData.medicoAyudo1 as string}
-                                options={medicosOpciones}
+                                options={medicosOpciones || []}
                                 onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                             />
                             <SelectField
                                 name="medicoAyudo2"
                                 label="Médico Ayudante 2"
                                 value={formData.medicoAyudo2 as string}
-                                options={medicosOpciones}
+                                options={medicosOpciones || []}
                                 onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                             />
                         </div>

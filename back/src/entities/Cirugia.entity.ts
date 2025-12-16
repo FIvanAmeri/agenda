@@ -16,6 +16,9 @@ export class Cirugia {
     @Column({ type: "date", nullable: true })
     fechaNacimientoPaciente: string | null;
 
+    @Column({ type: "varchar", length: 255, nullable: true })
+    obraSocial: string | null;
+
     @Column({ type: "varchar", length: 255 })
     tipoCirugia: string;
 
@@ -28,7 +31,6 @@ export class Cirugia {
     @Column({ type: "varchar", length: 255, nullable: true })
     medicoAyudo2: string | null;
 
- 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
     montoTotalHonorarios: number | null;
 
@@ -37,7 +39,6 @@ export class Cirugia {
     
     @Column({ type: "enum", enum: ["no pagado", "parcialmente pagado", "pagado"], default: "no pagado" })
     estadoPagoHonorarios: EstadoPago;
-
 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
     montoTotalPresupuesto: number | null;

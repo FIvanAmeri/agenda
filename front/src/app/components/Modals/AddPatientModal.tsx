@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useObrasSociales } from '../../hooks/useObrasSociales';
 import { Patient, User } from "../interfaz/interfaz";
+import { DatosFormularioPaciente } from "../interfaz/tipos-paciente";
 import { ModalBase } from "./ModalBase";
 import { PatientFormFields } from "../PatientFormFields";
 import { FormActions } from "../FormActions";
 import { ErrorDisplay } from "../ErrorDisplay";
-import { formatDate } from "../../utils/dateTimeHelpers";
+import { formatDate } from "../../utilidades/dateTimeHelpers";
 
 interface AddPatientModalProps {
     user: User;
@@ -24,10 +25,11 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ user, onClose, onAdd 
 
     const getCurrentDate = (): string => formatDate(new Date().toISOString());
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<DatosFormularioPaciente>({
         dia: getCurrentDate(),
         hora: '',
         paciente: '',
+        fechaNacimiento: null,
         practicas: '',
         obraSocial: '',
         institucion: '',

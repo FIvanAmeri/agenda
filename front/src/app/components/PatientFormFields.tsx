@@ -1,5 +1,5 @@
 import React from 'react';
-import { generarHoras } from '../utils/dateTimeHelpers';
+import { generarHoras } from '../utilidades/dateTimeHelpers';
 import { DatosFormularioPaciente } from './interfaz/tipos-paciente';
 
 interface PatientFormFieldsProps {

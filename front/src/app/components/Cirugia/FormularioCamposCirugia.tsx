@@ -32,17 +32,17 @@ export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
-    {error && (
+                {error && (
                     <div className="p-3 bg-red-800 text-white rounded-md">
                         Error: {error}
                     </div>
                 )}
 
-               <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-cyan-400">Datos Generales</h3>
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-cyan-400">Datos Generales</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                         <div>
+                        <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">Fecha de Cirugía</label>
                             <input
                                 type="date"
@@ -89,8 +89,8 @@ export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user
                             />
                         </div>
                         
-                       <div className="md:col-span-3">
-                             <CampoSeleccionDinamico
+                        <div className="md:col-span-3">
+                            <CampoSeleccionDinamico
                                 nombre="obraSocial"
                                 etiqueta="Obra Social"
                                 valor={formData.obraSocial}
@@ -101,7 +101,7 @@ export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user
                             />
                         </div>
 
-                       <div className="col-span-full">
+                        <div className="col-span-full">
                             <label className="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
                             <textarea
                                 name="descripcion"
@@ -189,7 +189,7 @@ export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user
 
                 </div>
 
-               <div className="flex justify-end space-x-4 pt-4 border-t border-[#1f3b47]">
+                <div className="flex justify-end space-x-4 pt-4 border-t border-[#1f3b47]">
                     <button
                         type="button"
                         onClick={onClose}

@@ -124,11 +124,11 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
                     label="Tipo Cirugía"
                     value={filters.selectedTipoCirugia}
                     setValue={(val: string) => handleFilterChange("selectedTipoCirugia", val)}
-                    fieldKey={"tipoCirugia" as FilterFieldKey}
+                    fieldKey={"practice" as FilterFieldKey}
                     filteredNames={filterSuggestions(tiposCirugiaOpciones, filters.selectedTipoCirugia)}
                     placeholder="Escriba o seleccione tipo..."
                     dataTestId="filter-tipo-cirugia"
-                    isShowing={showStates.tipoCirugia}
+                    isShowing={showStates.practice}
                     handleOpen={handleOpen}
                     handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedTipoCirugia")}
                 />
@@ -137,11 +137,11 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
                     label="Médico"
                     value={filters.selectedMedico}
                     setValue={(val: string) => handleFilterChange("selectedMedico", val)}
-                    fieldKey={"medico" as FilterFieldKey}
+                    fieldKey={"institucion" as FilterFieldKey}
                     filteredNames={filterSuggestions(medicosOpciones, filters.selectedMedico)}
                     placeholder="Escriba o seleccione médico..."
                     dataTestId="filter-medico"
-                    isShowing={showStates.medico}
+                    isShowing={showStates.institucion}
                     handleOpen={handleOpen}
                     handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedMedico")}
                 />

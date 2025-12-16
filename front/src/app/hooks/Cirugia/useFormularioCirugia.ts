@@ -7,7 +7,7 @@ import {
     ListaDinamica
 } from "../../components/interfaz/tipos-cirugia";
 import { useObrasSociales } from "../../context/ObrasSocialesContext";
-import { formatDate } from "../../utils/dateTimeHelpers"; 
+import { formatDate } from "../../utilidades/dateTimeHelpers"; 
 
 export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormularioCirugia): ResultadoUsarFormularioCirugia => {
     

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatDate } from '../utils/dateTimeHelpers';
+import { formatDate } from '../utilidades/dateTimeHelpers';
 import {Patient} from '../components/interfaz/interfaz';
 import { PatientFormData } from '../components/interfaz/interfaz';
 

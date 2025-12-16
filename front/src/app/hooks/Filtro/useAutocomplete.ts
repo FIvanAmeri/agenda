@@ -1,11 +1,22 @@
 import React, { useEffect, useRef, RefObject } from 'react';
 
 
-export const useAutocomplete = (
-    setter: React.Dispatch<React.SetStateAction<boolean>>, 
-): RefObject<HTMLDivElement> => {
+interface UseAutocompleteProps {
+    isShowing: boolean;
+    value: string;
+    setter: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface UseAutocompleteResult {
+    wrapperRef: RefObject<HTMLDivElement>;
+    inputRef: RefObject<HTMLInputElement>;
+}
+
+
+export const useAutocomplete = ({ setter, isShowing, value }: UseAutocompleteProps): UseAutocompleteResult => {
     
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -21,5 +32,5 @@ export const useAutocomplete = (
         };
     }, [setter]);
 
-    return wrapperRef;
+    return { wrapperRef, inputRef };
 };

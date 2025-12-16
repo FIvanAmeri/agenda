@@ -11,6 +11,7 @@ export class CirugiaController {
             fecha: body.fecha,
             paciente: body.paciente,
             fechaNacimientoPaciente: body.fechaNacimientoPaciente, 
+            obraSocial: body.obraSocial,
             tipoCirugia: body.tipoCirugia,
             medicoOpero: body.medicoOpero,
             medicoAyudo1: body.medicoAyudo1,

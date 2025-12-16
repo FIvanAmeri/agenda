@@ -6,6 +6,7 @@ import FiltroCirugiaForm from "../../components/Cirugia/FiltroCirugiaForm";
 import { FiltrosCirugia } from "../../components/interfaz/tipos-cirugia";
 import { FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa"; 
 import CirugiaDetailModal from "../../components/Cirugia/CirugiaDetailModal"; 
+import ConfirmDeleteModal from "../../components/Cirugia/ConfirmDeleteModal";
 
 interface Props {
     user: User
@@ -69,7 +70,7 @@ const getEstadoClass = (estado: Cirugia["estadoPagoHonorarios"]): string => {
 
 interface PagoCellProps {
     total: number | null
-    pagado: number
+    pagado: number | null
     estado: Cirugia["estadoPagoHonorarios"]
     label: string
     moneda: 'ARS' | 'USD'
@@ -116,7 +117,7 @@ const MedicoPagoDisplay: React.FC<MedicoPagoDisplayProps> = ({ montoHonorarios, 
 interface CirugiaTableProps {
     cirugias: Cirugia[]
     onEditClick: (c: Cirugia) => void
-    onDeleteClick: (id: number) => void
+    onDeleteClick: (c: Cirugia) => void
 }
 
 const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDeleteClick }) => {
@@ -222,15 +223,21 @@ const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDe
                                                 />
                                             </div>
                                         </div>
+
+                                        <div className="flex-1 min-w-[150px] flex flex-col justify-center">
+                                            <h4 className="text-white text-xs font-bold mb-2 uppercase">Obra Social</h4>
+                                            <div className="text-sm text-yellow-300 p-2 border border-gray-600 bg-[#0F2A35] rounded-lg flex-grow min-h-[40px] flex items-center justify-center font-semibold">
+                                                {c.obraSocial || "Particular / No especificada"}
+                                            </div>
+                                        </div>
                                         
                                         <div className="flex-1 min-w-[250px] flex flex-col">
                                             <h4 className="text-white text-xs font-bold mb-2 uppercase">Descripción</h4>
-                                           <div className="text-xs text-gray-300 p-2 border border-gray-700 rounded-lg flex-grow min-h-[60px] break-words whitespace-normal">
+                                            <div className="text-xs text-gray-300 p-2 border border-gray-700 rounded-lg flex-grow min-h-[60px] break-words whitespace-normal">
                                                 {c.descripcion || "Sin descripción."}
                                             </div>
                                         </div>
 
-                                        
                                         <div className="w-full md:w-auto flex flex-col justify-end items-end p-2">
                                             <h4 className="text-white text-xs font-bold mb-2 uppercase hidden md:block">Acciones</h4>
                                             <div className="flex justify-end items-center mt-auto">
@@ -242,7 +249,7 @@ const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDe
                                                     <FaEdit className="inline-block text-base" />
                                                 </button>
                                                 <button
-                                                    onClick={() => onDeleteClick(c.id)}
+                                                    onClick={() => onDeleteClick(c)}
                                                     className="text-red-400 hover:text-red-600 p-2 border border-red-700/50 rounded-lg transition"
                                                     title="Eliminar"
                                                 >
@@ -268,6 +275,11 @@ interface OptionsResponse {
     tiposCirugia?: string[]
 }
 
+interface DeleteCirugiaState {
+    id: number | null
+    patientName: string
+}
+
 export default function VerCirugiasContent({ user }: Props): JSX.Element {
     const [cirugias, setCirugias] = useState<Cirugia[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -287,6 +299,8 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
     const [tiposCirugiaOpciones, setTiposCirugiaOpciones] = useState<string[]>([]);
     const [medicosOpciones, setMedicosOpciones] = useState<string[]>([]);
     const [obrasSocialesOpciones, setObrasSocialesOpciones] = useState<string[]>([]);
+    const [deleteCirugia, setDeleteCirugia] = useState<DeleteCirugiaState>({ id: null, patientName: "" });
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
 
     const fetchOptions = async (endpoint: string, setter: React.Dispatch<React.SetStateAction<string[]>>): Promise<void> => {
         try {
@@ -352,6 +366,11 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
         }
     };
 
+    const handleCirugiaAdded = (): void => {
+        setNotification({ message: "Cirugía agregada con éxito. Actualizando lista...", type: "success" });
+        setFetchTrigger(prev => prev + 1);
+    };
+
     useEffect(() => {
         fetchOptions("cirugia/medicos", setMedicosOpciones);
         fetchOptions("cirugia/tipos", setTiposCirugiaOpciones);
@@ -405,10 +424,22 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
         }
     };
 
-    const handleDeleteClick = async (cirugiaId: number): Promise<void> => {
-        if (!window.confirm(`¿Estás seguro de que quieres eliminar la cirugía ID: ${cirugiaId}? Esta acción no se puede deshacer.`)) {
-            return;
-        }
+    const handleDeleteClick = (cirugia: Cirugia): void => {
+        setDeleteCirugia({ id: cirugia.id, patientName: cirugia.paciente });
+        setIsConfirmModalOpen(true);
+    };
+
+    const closeConfirmModal = (): void => {
+        setIsConfirmModalOpen(false);
+        setDeleteCirugia({ id: null, patientName: "" });
+    }
+
+    const confirmDelete = async (): Promise<void> => {
+        if (deleteCirugia.id === null) return;
+        
+        const cirugiaId: number = deleteCirugia.id;
+
+        closeConfirmModal(); 
 
         try {
             const token: string | null = localStorage.getItem("token");
@@ -475,6 +506,7 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
                 medicosOpciones={medicosOpciones}
                 tiposCirugiaOpciones={tiposCirugiaOpciones}
                 obrasSocialesOpciones={obrasSocialesOpciones}
+                onCirugiaAdded={handleCirugiaAdded}
             />
 
             {cirugias.length === 0 && (
@@ -499,8 +531,17 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
                     medicosOpciones={medicosOpciones}
                     tiposCirugiaOpciones={tiposCirugiaOpciones}
                     obrasSocialesOpciones={obrasSocialesOpciones}
+                    showHonorarios={true}
                 />
             )}
+            
+            <ConfirmDeleteModal
+                isOpen={isConfirmModalOpen}
+                onClose={closeConfirmModal}
+                onConfirm={confirmDelete}
+                patientName={deleteCirugia.patientName}
+                cirugiaId={deleteCirugia.id !== null ? deleteCirugia.id : 0}
+            />
         </div>
     );
 }

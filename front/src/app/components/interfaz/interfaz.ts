@@ -85,12 +85,18 @@ export interface Cirugia {
     medicoAyudo1: string | null
     medicoAyudo2: string | null
     descripcion: string | null
-    
     montoTotalHonorarios: number | null
-    montoPagadoHonorarios: number
+    montoPagadoHonorarios: number | null
     estadoPagoHonorarios: "no pagado" | "parcialmente pagado" | "pagado"
-
     montoTotalPresupuesto: number | null
-    montoPagadoPresupuesto: number
+    montoPagadoPresupuesto: number | null
     estadoPagoPresupuesto: "no pagado" | "parcialmente pagado" | "pagado"
+    userId: number
+}
+
+export interface CirugiaResponse extends ApiResponse {
+    cirugias: Cirugia[]
+    medicosOpciones: string[]
+    tiposCirugiaOpciones: string[]
+    obrasSocialesOpciones: string[]
 }

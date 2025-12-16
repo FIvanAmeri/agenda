@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { DatosFormularioPaciente, PropsUseFormularioPaciente, ResultadoUseFormularioPaciente } from "../../components/interfaz/tipos-paciente";
-import { extractTime, formatDate } from "../../utils/dateTimeHelpers";
+import { extractTime, formatDate } from "../../utilidades/dateTimeHelpers";
 
 export const useFormularioPaciente = ({
     selectedPatient,
