@@ -78,8 +78,7 @@ export class PacientesService {
 
         if (!pacienteExistente) return null;
 
-        const montoActualParcial = Number(pacienteExistente.montoPagado);
-        const montoActualTotal = Number(pacienteExistente.montoTotal);
+        const montoActualPagado = Number(pacienteExistente.montoPagado);
 
         if (estadoPago === EstadoPago.NO_PAGADO) {
             pacienteExistente.estadoPago = EstadoPago.NO_PAGADO;
@@ -93,43 +92,38 @@ export class PacientesService {
 
         if (estadoPago === EstadoPago.PARCIALMENTE_PAGADO) {
             pacienteExistente.estadoPago = EstadoPago.PARCIALMENTE_PAGADO;
+            let ultimoPagoParcial = 0;
 
             if (montoDelta > 0) {
-                pacienteExistente.montoPagado = Number((montoActualParcial + montoDelta).toFixed(2));
-            } else {
-                pacienteExistente.montoPagado = Number(montoActualParcial.toFixed(2));
+                pacienteExistente.montoPagado = Number((montoActualPagado + montoDelta).toFixed(2));
+                ultimoPagoParcial = montoDelta;
             }
-
-            pacienteExistente.montoTotal = Number(montoActualTotal.toFixed(2));
+            
+            pacienteExistente.montoTotal = pacienteExistente.montoTotal;
 
             if (fechaPagoParcial !== null) pacienteExistente.fechaPagoParcial = fechaPagoParcial;
-            pacienteExistente.fechaPagoTotal = pacienteExistente.fechaPagoTotal ?? null;
-
             const saved = await pacienteRepository.save(pacienteExistente);
-            const result = saved as Paciente & { ultimoPagoParcial?: number };
-            if (montoDelta > 0) result.ultimoPagoParcial = Number(montoDelta.toFixed(2));
+            const result = { ...saved, ultimoPagoParcial: ultimoPagoParcial };
             return result;
         }
 
         if (estadoPago === EstadoPago.PAGADO) {
             pacienteExistente.estadoPago = EstadoPago.PAGADO;
-
+            let ultimoPagoTotal = 0;
+            
             if (montoDelta > 0) {
-                const nuevoAcumulado = Number((montoActualParcial + montoDelta).toFixed(2));
+                const nuevoAcumulado = Number((montoActualPagado + montoDelta).toFixed(2));
                 pacienteExistente.montoPagado = nuevoAcumulado;
                 pacienteExistente.montoTotal = nuevoAcumulado;
+                ultimoPagoTotal = montoDelta;
             } else {
-                pacienteExistente.montoPagado = Number(montoActualParcial.toFixed(2));
-                pacienteExistente.montoTotal = Number(montoActualTotal.toFixed(2));
+                pacienteExistente.montoTotal = Number(montoActualPagado.toFixed(2));
+                pacienteExistente.montoPagado = Number(montoActualPagado.toFixed(2));
             }
 
             if (fechaPagoTotal !== null) pacienteExistente.fechaPagoTotal = fechaPagoTotal;
-            if (fechaPagoParcial !== null) pacienteExistente.fechaPagoParcial = fechaPagoParcial;
-
             const saved = await pacienteRepository.save(pacienteExistente);
-            const result = saved as Paciente & { ultimoPagoTotal?: number; ultimoPagoParcial?: number };
-            if (montoDelta > 0) result.ultimoPagoTotal = Number(montoDelta.toFixed(2));
-            result.ultimoPagoParcial = Number(montoActualParcial.toFixed(2));
+            const result = { ...saved, ultimoPagoTotal: ultimoPagoTotal };
             return result;
         }
 

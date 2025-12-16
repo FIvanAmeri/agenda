@@ -83,7 +83,7 @@ export class PacientesController {
         }
 
         const idPaciente = parseInt(req.params.id, 10);
-        const { estadoPago, montoDelta, fechaPagoParcial, fechaPagoTotal } = req.body;
+        const { estadoPago, monto: montoDelta, fechaPagoParcial, fechaPagoTotal } = req.body;
 
         if (!Object.values(EstadoPago).includes(estadoPago)) {
             return res.status(400).json({

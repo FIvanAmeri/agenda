@@ -16,7 +16,8 @@ export const useFormularioPaciente = ({
         practicas: selectedPatient.practicas,
         obraSocial: selectedPatient.obraSocial,
         institucion: selectedPatient.institucion,
-        estudioUrgoginecologico: selectedPatient.practicas.includes("(U)")
+        fechaNacimiento: selectedPatient.fechaNacimiento || "",
+        estudioUrgoginecologico: selectedPatient.practicas.includes(" (U)")
     });
 
     const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,8 @@ export const useFormularioPaciente = ({
             practicas: selectedPatient.practicas,
             obraSocial: selectedPatient.obraSocial,
             institucion: selectedPatient.institucion,
-            estudioUrgoginecologico: selectedPatient.practicas.includes("(U)")
+            fechaNacimiento: selectedPatient.fechaNacimiento || "",
+            estudioUrgoginecologico: selectedPatient.practicas.includes(" (U)")
         });
     }, [selectedPatient]);
 
@@ -48,7 +50,7 @@ export const useFormularioPaciente = ({
             ...prev,
             estudioUrgoginecologico: isChecked,
             practicas: isChecked 
-                ? prev.practicas.includes("(U)") ? prev.practicas : `${prev.practicas} (U)`
+                ? prev.practicas.includes(" (U)") ? prev.practicas : `${prev.practicas} (U)`
                 : prev.practicas.replace(" (U)", "")
         }));
     };
@@ -65,19 +67,27 @@ export const useFormularioPaciente = ({
             practicas: formData.practicas,
             obraSocial: formData.obraSocial,
             institucion: formData.institucion,
+            fechaNacimiento: formData.fechaNacimiento,
         };
 
         try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("Usuario no autenticado. Por favor, inicie sesión.");
+            }
+
             const response = await fetch(`http://localhost:3001/api/paciente/${selectedPatient.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(updatedPatient),
             });
 
             if (!response.ok) {
-                throw new Error("Error al actualizar el paciente");
+                const errorText = await response.text();
+                throw new Error(`Error al actualizar el paciente: ${response.status} - ${errorText}`);
             }
 
             const result = await response.json();

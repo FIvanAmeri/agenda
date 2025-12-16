@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Patient, User } from "../../components/interfaz/interfaz";
 import AddPatientModal from "../../components/Modals/AddPatientModal";
 import EditPatientModal from "../../components/Modals/EditPatientModal";
@@ -8,6 +8,42 @@ import FilterForm from "../../components/FilterForm/FilterForm";
 import PatientTable from "../../components/PatientTable/PatientTable";
 import usePatients from "../../hooks/usePatients";
 import { useFilters } from "../../hooks/useFilters";
+
+interface NotificationState {
+    show: boolean;
+    message: string;
+    type: 'success' | 'error';
+}
+
+const NotificationModal: React.FC<{ notification: NotificationState, onClose: () => void }> = ({ notification, onClose }) => {
+    if (!notification.show) return null;
+
+    const bgColor = notification.type === 'success' ? 'bg-[#004d40]' : 'bg-red-700';
+    const borderColor = notification.type === 'success' ? 'border-[#009688]' : 'border-red-500';
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-[100] flex justify-center items-center p-4" onClick={onClose}>
+            <div 
+                className={`w-full max-w-md p-6 rounded-lg shadow-2xl text-white transform transition-all duration-300 border-2 ${bgColor} ${borderColor}`}
+                onClick={e => e.stopPropagation()}
+            >
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-semibold">{notification.type === 'success' ? 'Operación Exitosa' : 'Error'}</h3>
+                    <button onClick={onClose} className="text-white hover:text-gray-300 text-2xl leading-none">&times;</button>
+                </div>
+                <p className="text-lg mb-6">{notification.message}</p>
+                <div className="flex justify-end">
+                    <button 
+                        onClick={onClose} 
+                        className={`px-6 py-2 rounded-md font-semibold ${notification.type === 'success' ? 'bg-[#009688] hover:bg-[#00796b]' : 'bg-red-500 hover:bg-red-600'} transition duration-200`}
+                    >
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function PrincipalContent({
     user,
@@ -27,6 +63,14 @@ export default function PrincipalContent({
     setSelectedPatient: (p: Patient | null) => void;
 }) {
     const { patients, setPatients, loading: patientsLoading, error: patientsError } = usePatients();
+    
+    const [notification, setNotification] = useState<NotificationState>({ show: false, message: '', type: 'success' });
+
+    const closeNotification = () => setNotification({ show: false, message: '', type: 'success' });
+
+    const displayNotification = (message: string, type: 'success' | 'error' = 'success') => {
+        setNotification({ show: true, message, type });
+    };
 
     const {
         selectedDateFrom,
@@ -74,18 +118,56 @@ export default function PrincipalContent({
     const addPatient = (newPatient: Patient) => {
         setPatients((prev) => {
             const list = Array.isArray(prev) ? prev : [];
-            return [...list, newPatient];
+            const updatedList = [...list, newPatient];
+
+            updatedList.sort((a, b) => {
+                const dateA = new Date(a.dia);
+                const dateB = new Date(b.dia);
+
+                if (dateA.getTime() !== dateB.getTime()) {
+                    return dateA.getTime() - dateB.getTime();
+                }
+
+                const timeA = a.hora.split(":").map(Number);
+                const timeB = b.hora.split(":").map(Number);
+                
+                const totalMinutesA = timeA[0] * 60 + timeA[1];
+                const totalMinutesB = timeB[0] * 60 + timeB[1];
+                
+                return totalMinutesA - totalMinutesB;
+            });
+            
+            return updatedList;
         });
-        alert("Paciente agregado con éxito");
+        displayNotification("Turno agregado exitosamente.", 'success');
     };
 
     const updatePatient = (updatedPatient: Patient) => {
-        setPatients((prev) =>
-            (Array.isArray(prev) ? prev : []).map((p) =>
+        setPatients((prev) => {
+            const updatedList = (Array.isArray(prev) ? prev : []).map((p) =>
                 p.id === updatedPatient.id ? updatedPatient : p
-            )
-        );
-        alert("Paciente editado correctamente");
+            );
+            
+            updatedList.sort((a, b) => {
+                const dateA = new Date(a.dia);
+                const dateB = new Date(b.dia);
+
+                if (dateA.getTime() !== dateB.getTime()) {
+                    return dateA.getTime() - dateB.getTime();
+                }
+
+                const timeA = a.hora.split(":").map(Number);
+                const timeB = b.hora.split(":").map(Number);
+                
+                const totalMinutesA = timeA[0] * 60 + timeA[1];
+                const totalMinutesB = timeB[0] * 60 + timeB[1];
+                
+                return totalMinutesA - totalMinutesB;
+            });
+
+            return updatedList;
+        });
+        displayNotification("Cambios guardados con éxito.", 'success');
     };
 
     const deletePatient = async (patientId: number) => {
@@ -100,9 +182,9 @@ export default function PrincipalContent({
             if (!response.ok) throw new Error("Error al eliminar");
 
             setPatients((prev) => (Array.isArray(prev) ? prev : []).filter((p) => p.id !== patientId));
-            alert("Paciente eliminado");
+            displayNotification("Paciente eliminado de la agenda.", 'success');
         } catch {
-            alert("Hubo un error al borrar el paciente.");
+            displayNotification("Error: No se pudo eliminar el paciente.", 'error');
         }
     };
 
@@ -198,6 +280,8 @@ export default function PrincipalContent({
                     setShowEditModal={setShowEditModal}
                 />
             )}
+            
+            <NotificationModal notification={notification} onClose={closeNotification} />
         </div>
     );
 }

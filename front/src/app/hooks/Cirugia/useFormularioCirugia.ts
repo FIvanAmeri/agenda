@@ -80,21 +80,19 @@ export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulari
         }));
     }, []);
 
-    const handleAddOption = useCallback((listName: ListaDinamica, fieldLabel: string): void => {
-        const newOption: string | null = window.prompt(`Ingrese el nuevo valor para ${fieldLabel}:`);
-        if (newOption && newOption.trim() !== "") {
-            const trimmedOption: string = newOption.trim().toUpperCase();
+    const handleAddOption = useCallback((listName: ListaDinamica, nuevoValor: string): void => {
+        
+        const trimmedOption: string = nuevoValor.trim().toUpperCase();
             
-            if (listName === "medicos") {
-                setMedicos((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
-                setFormData(prev => ({ ...prev, medicoOpero: trimmedOption }));
-            } else if (listName === "tiposCirugia") {
-                setTiposCirugia((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
-                setFormData(prev => ({ ...prev, tipoCirugia: trimmedOption }));
-            } else if (listName === "obrasSociales") {
-                setObrasSociales((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
-                setFormData(prev => ({ ...prev, obraSocial: trimmedOption }));
-            }
+        if (listName === "medicos") {
+            setMedicos((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
+            setFormData(prev => ({ ...prev, medicoOpero: trimmedOption }));
+        } else if (listName === "tiposCirugia") {
+            setTiposCirugia((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
+            setFormData(prev => ({ ...prev, tipoCirugia: trimmedOption }));
+        } else if (listName === "obrasSociales") {
+            setObrasSociales((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
+            setFormData(prev => ({ ...prev, obraSocial: trimmedOption }));
         }
     }, [setObrasSociales]);
 

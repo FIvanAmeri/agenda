@@ -1,9 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Patient } from "../interfaz/interfaz";
+import React, { useEffect, useState, useCallback } from "react";
+import type { Patient } from "../interfaz/interfaz";
 import BotonPago from "../Pago/boton-pago";
-import { PacienteParaPago } from "../interfaz/boton-pago";
+import type { PacienteParaPago } from "../interfaz/pago-interfaces";
+
+interface PatientWithLastPayment extends Patient {
+    ultimoPagoParcial?: number;
+    ultimoPagoTotal?: number;
+}
 
 interface PatientTableProps {
     filteredPatients: Patient[];
@@ -16,8 +21,8 @@ const formatDateForDisplay = (isoDate?: string | null): string => {
     const date = new Date(isoDate);
     if (isNaN(date.getTime())) return "";
     const localDate = new Date(isoDate.includes('T') ? isoDate : isoDate + 'T00:00:00');
-    const localD = localDate.getDate().toString().padStart(2, '0');
-    const localM = (localDate.getMonth() + 1).toString().padStart(2, '0');
+    const localD = localDate.getDate().toString().padStart(2, "0");
+    const localM = (localDate.getMonth() + 1).toString().padStart(2, "0");
     const localY = localDate.getFullYear();
     return `${localD}/${localM}/${localY}`;
 };
@@ -44,22 +49,23 @@ const PatientTable: React.FC<PatientTableProps> = ({
     onEditClick,
     onDeleteClick,
 }) => {
-    const [patientsState, setPatientsState] = useState<Patient[]>(filteredPatients);
+    const initialPatientsState = filteredPatients as PatientWithLastPayment[];
+    const [patientsState, setPatientsState] = useState<PatientWithLastPayment[]>(initialPatientsState);
 
     useEffect(() => {
-        setPatientsState(filteredPatients);
+        setPatientsState(filteredPatients as PatientWithLastPayment[]);
     }, [filteredPatients]);
 
-    const formatDate = (dateString: string) => {
+    const formatDate = useCallback((dateString: string) => {
         const date = new Date(dateString);
         const adjustedDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
         const day = String(adjustedDate.getDate()).padStart(2, "0");
         const month = String(adjustedDate.getMonth() + 1).padStart(2, "0");
         const year = adjustedDate.getFullYear();
         return `${day}-${month}-${year}`;
-    };
+    }, []);
 
-    const formatTime = (timeString: string) => {
+    const formatTime = useCallback((timeString: string) => {
         if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeString)) {
             return timeString;
         }
@@ -67,9 +73,9 @@ const PatientTable: React.FC<PatientTableProps> = ({
         const hours = String(time.getHours()).padStart(2, "0");
         const minutes = String(time.getMinutes()).padStart(2, "0");
         return `${hours}:${minutes}`;
-    };
+    }, []);
 
-    const formatCurrency = (amount: number | string): string => {
+    const formatCurrency = useCallback((amount: number | string): string => {
         const numericAmount = Number(amount);
         return new Intl.NumberFormat('es-AR', {
             style: 'currency',
@@ -77,40 +83,44 @@ const PatientTable: React.FC<PatientTableProps> = ({
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         }).format(numericAmount);
-    };
+    }, []);
 
     const sortedPatients = [...patientsState].sort((a, b) => b.id - a.id);
 
-    const mapToPago = (p: Patient): PacienteParaPago => ({
+    const mapToPago = useCallback((p: PatientWithLastPayment): PacienteParaPago => ({
         id: p.id,
         estadoPagoActual: p.estadoPago,
         montoPagadoActual: p.montoPagado,
         montoTotalActual: p.montoTotal,
         fechaPagoParcial: p.fechaPagoParcial ?? null,
         fechaPagoTotal: p.fechaPagoTotal ?? null,
-        ultimoPagoParcial: (p as { ultimoPagoParcial?: number }).ultimoPagoParcial,
-        ultimoPagoTotal: (p as { ultimoPagoTotal?: number }).ultimoPagoTotal,
-    });
+        ultimoPagoParcial: p.ultimoPagoParcial,
+        ultimoPagoTotal: p.ultimoPagoTotal,
+    }), []);
 
 
-    const handleEstadoActualizado = (pacienteActualizado: PacienteParaPago) => {
+    const handleEstadoActualizado = useCallback((pacienteActualizado: PacienteParaPago) => {
         setPatientsState(prev =>
-            prev.map(p =>
-                p.id === pacienteActualizado.id
-                    ? {
-                        ...p,
-                        estadoPago: pacienteActualizado.estadoPagoActual,
-                        montoPagado: pacienteActualizado.montoPagadoActual,
-                        montoTotal: pacienteActualizado.montoTotalActual,
-                        fechaPagoParcial: pacienteActualizado.fechaPagoParcial || null,
-                        fechaPagoTotal: pacienteActualizado.fechaPagoTotal || null,
-                        ultimoPagoParcial: pacienteActualizado.ultimoPagoParcial ?? undefined,
-                        ultimoPagoTotal: pacienteActualizado.ultimoPagoTotal ?? undefined,
-                    }
-                    : p
-            )
+            prev.map(p => {
+                if (p.id !== pacienteActualizado.id) {
+                    return p;
+                }
+
+                const newPatient: PatientWithLastPayment = {
+                    ...p,
+                    estadoPago: pacienteActualizado.estadoPagoActual,
+                    montoPagado: pacienteActualizado.montoPagadoActual,
+                    montoTotal: pacienteActualizado.montoTotalActual,
+                    fechaPagoParcial: pacienteActualizado.fechaPagoParcial || null,
+                    fechaPagoTotal: pacienteActualizado.fechaPagoTotal || null,
+                    ultimoPagoParcial: pacienteActualizado.ultimoPagoParcial,
+                    ultimoPagoTotal: pacienteActualizado.ultimoPagoTotal,
+                };
+                
+                return newPatient;
+            })
         );
-    };
+    }, []);
 
     return (
         <div className="mt-10">
@@ -120,7 +130,6 @@ const PatientTable: React.FC<PatientTableProps> = ({
                         const pagoData = mapToPago(patient);
                         const fechaParcialFormateada = formatDateForDisplay(patient.fechaPagoParcial);
                         const fechaTotalFormateada = formatDateForDisplay(patient.fechaPagoTotal);
-                        const montoMostradoEnTarjeta = patient.montoPagado;
                         const edad = calcularEdad(patient.fechaNacimiento);
 
                         return (
@@ -146,28 +155,28 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                         <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
                                         <div><strong>Institución:</strong> {patient.institucion}</div>
 
-                                        {(patient.estadoPago !== 'no pagado' || montoMostradoEnTarjeta > 0) && (
+                                        {patient.estadoPago !== 'no pagado' && (
                                             <div>
-                                                <strong>Monto Pagado:</strong> {formatCurrency(montoMostradoEnTarjeta)}
+                                                <strong>Monto Pagado:</strong> {formatCurrency(patient.montoPagado)}
                                             </div>
                                         )}
 
                                         {(patient.estadoPago === 'parcialmente pagado' || patient.estadoPago === 'pagado') && (
                                             <div className="mt-2 text-sm">
-                                                {fechaParcialFormateada && (
+                                                {fechaParcialFormateada && patient.estadoPago === 'parcialmente pagado' && (
                                                     <div className="text-yellow-600 font-medium">
                                                         Pago Parcial: {fechaParcialFormateada}
-                                                        {(pagoData.ultimoPagoParcial !== undefined) && (
-                                                            <span className="ml-2">– {formatCurrency(pagoData.ultimoPagoParcial)}</span>
+                                                        {(patient.ultimoPagoParcial !== undefined && patient.ultimoPagoParcial > 0) && (
+                                                            <span className="ml-2">– {formatCurrency(patient.ultimoPagoParcial)}</span>
                                                         )}
                                                     </div>
                                                 )}
 
-                                                {fechaTotalFormateada && (
+                                                {fechaTotalFormateada && patient.estadoPago === 'pagado' && (
                                                     <div className="text-green-600 font-medium">
                                                         Pago Total: {fechaTotalFormateada}
-                                                        {(pagoData.ultimoPagoTotal !== undefined) && (
-                                                            <span className="ml-2">– {formatCurrency(pagoData.ultimoPagoTotal)}</span>
+                                                        {(patient.ultimoPagoTotal !== undefined && patient.ultimoPagoTotal > 0) && (
+                                                            <span className="ml-2">– {formatCurrency(patient.ultimoPagoTotal)}</span>
                                                         )}
                                                     </div>
                                                 )}

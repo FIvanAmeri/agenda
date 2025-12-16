@@ -50,6 +50,9 @@ export interface Patient {
     montoTotal: number
     fechaPagoParcial: string | null
     fechaPagoTotal: string | null
+    // CORRECCIÓN: Se añaden las propiedades devueltas por el backend
+    ultimoPagoParcial?: number
+    ultimoPagoTotal?: number
 }
 
 export interface LoginCredentials {

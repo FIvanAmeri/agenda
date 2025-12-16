@@ -19,7 +19,7 @@ interface EditPatientModalProps {
 
 const parsePracticas = (practicas: string) => {
     const isUroginecologico = practicas.includes(" (U)");
-    const basePractica = practicas.replace(" (U)", "");
+    const basePractica = practicas.replace(" (U)", "").trim();
     return { basePractica, isUroginecologico };
 };
 
@@ -32,9 +32,13 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
     const { obrasSociales } = useObrasSociales();
     const [error, setError] = useState<string | null>(null);
 
+    const getFormattedDate = (dateString: string) => {
+        if (!dateString) return "";
+        return formatDate(dateString); 
+    };
 
     const [formData, setFormData] = useState<DatosFormularioPaciente>({
-        dia: formatDate(selectedPatient.dia),
+        dia: getFormattedDate(selectedPatient.dia),
         hora: selectedPatient.hora,
         paciente: selectedPatient.paciente,
         fechaNacimiento: selectedPatient.fechaNacimiento,
@@ -44,10 +48,9 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         estudioUrgoginecologico: parsePracticas(selectedPatient.practicas).isUroginecologico
     });
 
-
     useEffect(() => {
         setFormData({
-            dia: formatDate(selectedPatient.dia),
+            dia: getFormattedDate(selectedPatient.dia),
             hora: selectedPatient.hora,
             paciente: selectedPatient.paciente,
             fechaNacimiento: selectedPatient.fechaNacimiento,
@@ -57,7 +60,6 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
             estudioUrgoginecologico: parsePracticas(selectedPatient.practicas).isUroginecologico
         });
     }, [selectedPatient]);
-
 
     const closeModal = useCallback(() => { setShowEditModal(false); }, [setShowEditModal]);
 
@@ -73,12 +75,13 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         const { name, value } = e.target;
         
         if (name === 'practicas' && formData.estudioUrgoginecologico) {
+            const basePractica = value.replace(" (U)", "").trim();
             setFormData(prev => ({ 
                 ...prev, 
-                practicas: `${value} (U)`
+                practicas: `${basePractica} (U)`
             }));
         } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
+            setFormData(prev => ({ ...prev, [name as keyof DatosFormularioPaciente]: value }));
         }
     };
 
@@ -86,7 +89,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         const isChecked = e.target.checked;
         
         setFormData(prev => {
-            const basePractica = prev.practicas.replace(" (U)", "");
+            const basePractica = prev.practicas.replace(" (U)", "").trim();
 
             if (isChecked) {
                 if (basePractica) {
@@ -106,9 +109,9 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
 
-
-        if (!formData.practicas.replace(" (U)", "") || !formData.institucion) {
+        if (!formData.practicas.replace(" (U)", "").trim() || !formData.institucion) {
             setError("Por favor, selecciona una Práctica y una Institución.");
             return;
         }
@@ -122,6 +125,10 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         };
 
         const token = localStorage.getItem("token");
+        if (!token) {
+            setError("Usuario no autenticado.");
+            return;
+        }
 
         try {
             const response = await fetch(`http://localhost:3001/api/paciente/${selectedPatient.id}`, {
@@ -135,8 +142,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
 
             if (!response.ok) {
                 const text = await response.text();
-                console.error("Error al editar paciente:", text);
-                throw new Error('Error al actualizar el paciente');
+                throw new Error(`Error al actualizar el paciente: ${text}`);
             }
 
             const result = await response.json(); 
