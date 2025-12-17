@@ -118,56 +118,32 @@ export default function PrincipalContent({
     const addPatient = (newPatient: Patient) => {
         setPatients((prev) => {
             const list = Array.isArray(prev) ? prev : [];
-            const updatedList = [...list, newPatient];
-
-            updatedList.sort((a, b) => {
-                const dateA = new Date(a.dia);
-                const dateB = new Date(b.dia);
-
-                if (dateA.getTime() !== dateB.getTime()) {
-                    return dateA.getTime() - dateB.getTime();
-                }
-
-                const timeA = a.hora.split(":").map(Number);
-                const timeB = b.hora.split(":").map(Number);
-                
-                const totalMinutesA = timeA[0] * 60 + timeA[1];
-                const totalMinutesB = timeB[0] * 60 + timeB[1];
-                
-                return totalMinutesA - totalMinutesB;
+            const updatedList = [...list, newPatient].sort((a, b) => {
+                const dateA = new Date(a.dia).getTime();
+                const dateB = new Date(b.dia).getTime();
+                if (dateA !== dateB) return dateA - dateB;
+                return a.hora.localeCompare(b.hora);
             });
-            
             return updatedList;
         });
         displayNotification("Turno agregado exitosamente.", 'success');
+        setShowAddModal(false);
     };
 
     const updatePatient = (updatedPatient: Patient) => {
         setPatients((prev) => {
-            const updatedList = (Array.isArray(prev) ? prev : []).map((p) =>
-                p.id === updatedPatient.id ? updatedPatient : p
-            );
-            
-            updatedList.sort((a, b) => {
-                const dateA = new Date(a.dia);
-                const dateB = new Date(b.dia);
-
-                if (dateA.getTime() !== dateB.getTime()) {
-                    return dateA.getTime() - dateB.getTime();
-                }
-
-                const timeA = a.hora.split(":").map(Number);
-                const timeB = b.hora.split(":").map(Number);
-                
-                const totalMinutesA = timeA[0] * 60 + timeA[1];
-                const totalMinutesB = timeB[0] * 60 + timeB[1];
-                
-                return totalMinutesA - totalMinutesB;
-            });
-
+            const list = Array.isArray(prev) ? prev : [];
+            const updatedList = list.map((p) => p.id === updatedPatient.id ? updatedPatient : p)
+                .sort((a, b) => {
+                    const dateA = new Date(a.dia).getTime();
+                    const dateB = new Date(b.dia).getTime();
+                    if (dateA !== dateB) return dateA - dateB;
+                    return a.hora.localeCompare(b.hora);
+                });
             return updatedList;
         });
         displayNotification("Cambios guardados con éxito.", 'success');
+        setShowEditModal(false);
     };
 
     const deletePatient = async (patientId: number) => {
@@ -194,36 +170,24 @@ export default function PrincipalContent({
     };
 
     const dataToFilter = Array.isArray(patients) ? patients : [];
-
     const fromISO = convertToISO(selectedDateFrom);
     const toISO = convertToISO(selectedDateTo);
 
     const filteredPatients = dataToFilter.filter((p) => {
-        const patientISO = parsePatientDateToISO((p as Patient).dia);
+        const patientISO = parsePatientDateToISO(p.dia);
         if (!patientISO) return false;
         const afterFrom = fromISO ? patientISO >= fromISO : true;
         const beforeTo = toISO ? patientISO <= toISO : true;
-
-        const pacienteValue = typeof p.paciente === "string" ? p.paciente : "";
-        const practicasValue = typeof p.practicas === "string" ? p.practicas : "";
-        const obraSocialValue = typeof p.obraSocial === "string" ? p.obraSocial : "";
-        const institucionValue = typeof p.institucion === "string" ? p.institucion : "";
-        
-
+        const pacienteValue = p.paciente || "";
         const matchStatus = selectedStatus === "" 
             ? true 
             : selectedStatus === "Pagado" 
                 ? p.estadoPago === "pagado" 
                 : p.estadoPago === "no pagado" || p.estadoPago === "parcialmente pagado";
 
-
         const matchName = selectedPatientName ? pacienteValue.toLowerCase().includes(selectedPatientName.toLowerCase()) : true;
-        const matchPractice = selectedPractice ? practicasValue.toLowerCase().includes(selectedPractice.toLowerCase()) : true;
-        const matchOS = selectedObraSocial ? obraSocialValue.toLowerCase().includes(selectedObraSocial.toLowerCase()) : true;
-        const matchInst = selectedInstitucion ? institucionValue.toLowerCase().includes(selectedInstitucion.toLowerCase()) : true;
         
-
-        return afterFrom && beforeTo && matchName && matchPractice && matchOS && matchInst && matchStatus;
+        return afterFrom && beforeTo && matchName && matchStatus;
     });
 
     return (
@@ -261,6 +225,7 @@ export default function PrincipalContent({
                     filteredPatients={filteredPatients}
                     onEditClick={handleEditPatient}
                     onDeleteClick={deletePatient}
+                    setPatients={setPatients}
                 />
             </div>
 

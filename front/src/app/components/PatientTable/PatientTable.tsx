@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import type { Patient } from "../interfaz/interfaz";
 import BotonPago from "../Pago/boton-pago";
 import type { PacienteParaPago } from "../interfaz/pago-interfaces";
@@ -9,6 +9,7 @@ interface PatientTableProps {
     filteredPatients: Patient[];
     onEditClick: (patient: Patient) => void;
     onDeleteClick: (patientId: number) => void;
+    setPatients: React.Dispatch<React.SetStateAction<Patient[]>>;
 }
 
 const formatDateForDisplay = (isoDate?: string | null): string => {
@@ -29,7 +30,6 @@ const calcularEdad = (fechaNacimiento: string | null): number | null => {
         const hoy = new Date();
         let edad = hoy.getFullYear() - fechaNac.getFullYear();
         const mes = hoy.getMonth() - fechaNac.getMonth();
-        
         if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
             edad--;
         }
@@ -43,14 +43,8 @@ const PatientTable: React.FC<PatientTableProps> = ({
     filteredPatients,
     onEditClick,
     onDeleteClick,
+    setPatients,
 }) => {
-    const initialPatientsState: Patient[] = filteredPatients;
-    const [patientsState, setPatientsState] = useState<Patient[]>(initialPatientsState);
-
-    useEffect(() => {
-        setPatientsState(filteredPatients);
-    }, [filteredPatients]);
-
     const formatDate = useCallback((dateString: string) => {
         const date = new Date(dateString);
         const adjustedDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
@@ -61,9 +55,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
     }, []);
 
     const formatTime = useCallback((timeString: string) => {
-        if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeString)) {
-            return timeString;
-        }
+        if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeString)) return timeString;
         const time = new Date(timeString);
         const hours = String(time.getHours()).padStart(2, "0");
         const minutes = String(time.getMinutes()).padStart(2, "0");
@@ -80,8 +72,6 @@ const PatientTable: React.FC<PatientTableProps> = ({
         }).format(numericAmount);
     }, []);
 
-    const sortedPatients = [...patientsState].sort((a, b) => b.id - a.id);
-
     const mapToPago = useCallback((p: Patient): PacienteParaPago => ({
         id: p.id,
         estadoPagoActual: p.estadoPago,
@@ -93,15 +83,11 @@ const PatientTable: React.FC<PatientTableProps> = ({
         ultimoPagoTotal: p.ultimoPagoTotal,
     }), []);
 
-
     const handleEstadoActualizado = useCallback((pacienteActualizado: PacienteParaPago) => {
-        setPatientsState(prev =>
+        setPatients(prev =>
             prev.map(p => {
-                if (p.id !== pacienteActualizado.id) {
-                    return p;
-                }
-
-                const newPatient: Patient = {
+                if (p.id !== pacienteActualizado.id) return p;
+                return {
                     ...p,
                     estadoPago: pacienteActualizado.estadoPagoActual,
                     montoPagado: pacienteActualizado.montoPagadoActual,
@@ -111,17 +97,15 @@ const PatientTable: React.FC<PatientTableProps> = ({
                     ultimoPagoParcial: pacienteActualizado.ultimoPagoParcial,
                     ultimoPagoTotal: pacienteActualizado.ultimoPagoTotal,
                 };
-                
-                return newPatient;
             })
         );
-    }, []);
+    }, [setPatients]);
 
     return (
         <div className="mt-10">
-            {sortedPatients.length > 0 ? (
+            {filteredPatients.length > 0 ? (
                 <ul className="space-y-4">
-                    {sortedPatients.map((patient, index) => {
+                    {filteredPatients.map((patient, index) => {
                         const pagoData = mapToPago(patient);
                         const fechaParcialFormateada = formatDateForDisplay(patient.fechaPagoParcial);
                         const fechaTotalFormateada = formatDateForDisplay(patient.fechaPagoTotal);
@@ -156,39 +140,17 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                             </div>
                                         )}
 
-                                        {(patient.estadoPago === 'parcialmente pagado' || patient.estadoPago === 'pagado') && (
-                                            <div className="mt-2 text-sm">
-                                                {fechaParcialFormateada && (patient.estadoPago === 'parcialmente pagado' || patient.estadoPago === 'pagado') && (
-                                                    <div className="text-yellow-600 font-medium">
-                                                        Pago Parcial: {fechaParcialFormateada}
-                                                        {(patient.ultimoPagoParcial !== undefined && patient.ultimoPagoParcial > 0) && patient.estadoPago === 'parcialmente pagado' && (
-                                                            <span className="ml-2">– {formatCurrency(patient.ultimoPagoParcial)}</span>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {fechaTotalFormateada && patient.estadoPago === 'pagado' && (
-                                                    <div className="text-green-600 font-medium">
-                                                        Pago Total: {fechaTotalFormateada}
-                                                        {(patient.ultimoPagoTotal !== undefined && patient.ultimoPagoTotal > 0) && (
-                                                            <span className="ml-2">– {formatCurrency(patient.ultimoPagoTotal)}</span>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
                                         <div className="mt-4 flex gap-2">
                                             <button
                                                 onClick={() => onEditClick(patient)}
-                                                className="py-2 px-4 bg-emerald-400 text-white rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                className="py-2 px-4 bg-emerald-400 text-white rounded-md hover:bg-emerald-600 text-sm"
                                             >
                                                 Editar
                                             </button>
 
                                             <button
                                                 onClick={() => onDeleteClick(patient.id)}
-                                                className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+                                                className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
                                             >
                                                 Borrar
                                             </button>
