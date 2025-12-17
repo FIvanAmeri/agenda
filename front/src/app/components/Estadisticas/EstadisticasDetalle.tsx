@@ -3,7 +3,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
 } from "recharts";
-import { FaTimes, FaUser, FaCalendarAlt } from "react-icons/fa";
+import { FaTimes, FaUser, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
 import useEstadisticas from "../../hooks/useEstadisticas";
 
 interface ItemEstadistica {
@@ -58,19 +58,19 @@ const EstadisticasDetalle: React.FC = () => {
     if (error) return <div className="p-10 text-red-500">Error: {error}</div>;
     if (!stats) return null;
 
-    const dataPagos: BarDataPoint[] = (stats.resumenPagos.mensuales as unknown as ItemPago[]).map((item, index) => ({
+    const dataPagos: BarDataPoint[] = (stats.resumenPagos.mensuales as ItemPago[]).map((item, index) => ({
         mes: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"][index],
         monto: item.monto,
         pacientes: item.pacientes
     }));
 
     const dataEdades: PieDataPoint[] = Object.entries(stats.distribucionEdades).map(([rango, info]) => {
-        const detalle = info as unknown as ItemEstadistica;
+        const detalle = info as ItemEstadistica;
         return { name: rango, value: detalle.cantidad, pacientes: detalle.pacientes };
     });
 
     const dataObras: PieDataPoint[] = Object.entries(stats.porObraSocial).map(([nombre, info]) => {
-        const detalle = info as unknown as ItemEstadistica;
+        const detalle = info as ItemEstadistica;
         return { name: nombre, value: detalle.cantidad, pacientes: detalle.pacientes };
     });
 
@@ -102,6 +102,18 @@ const EstadisticasDetalle: React.FC = () => {
                 </div>
             </div>
 
+            <div className="mb-8">
+                <div className="bg-green-900/20 p-5 rounded-xl border border-green-700/50 inline-block min-w-[280px] shadow-lg">
+                    <div className="flex items-center text-green-400 mb-1 gap-2">
+                        <FaMoneyBillWave className="text-sm" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Monto Total Cobrado</span>
+                    </div>
+                    <div className="text-4xl font-black text-white">
+                        {formatCurrency(stats.resumenPagos.totalAnual)}
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <div className="bg-cyan-950 p-6 rounded-xl border border-gray-700 shadow-lg">
                     <h3 className="text-xl font-semibold mb-4 text-cyan-100 text-center">Honorarios Mensuales</h3>
@@ -119,9 +131,11 @@ const EstadisticasDetalle: React.FC = () => {
                                     dataKey="monto" 
                                     fill="#4ade80" 
                                     className="cursor-pointer"
-                                    onClick={(data: unknown) => {
-                                        const entry = data as BarDataPoint;
-                                        if (entry && entry.mes) openModal(`Pagos de ${entry.mes} ${selectedYear}`, entry.pacientes);
+                                    onClick={(event: any) => {
+                                        if (event && event.payload) {
+                                            const payload = event.payload as BarDataPoint;
+                                            openModal(`Pagos de ${payload.mes} ${selectedYear}`, payload.pacientes);
+                                        }
                                     }}
                                 />
                             </BarChart>
@@ -138,9 +152,11 @@ const EstadisticasDetalle: React.FC = () => {
                                     data={dataEdades}
                                     cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value"
                                     className="cursor-pointer"
-                                    onClick={(data: unknown) => {
-                                        const entry = data as { payload: PieDataPoint };
-                                        if (entry && entry.payload) openModal(`Pacientes Rango ${entry.payload.name}`, entry.payload.pacientes);
+                                    onClick={(event: any) => {
+                                        if (event && event.payload) {
+                                            const payload = event.payload as PieDataPoint;
+                                            openModal(`Pacientes Rango ${payload.name}`, payload.pacientes);
+                                        }
                                     }}
                                 >
                                     {dataEdades.map((_, index) => (
@@ -176,7 +192,7 @@ const EstadisticasDetalle: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-3 text-cyan-100 border-b border-gray-700 pb-2 text-center">Prácticas por Institución</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 max-h-60 overflow-y-auto custom-scrollbar-subtle pr-2">
                         {Object.entries(stats.metricasPracticas).map(([clave, info]) => {
-                            const detalle = info as unknown as ItemEstadistica;
+                            const detalle = info as ItemEstadistica;
                             return (
                                 <div 
                                     key={clave} 

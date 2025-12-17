@@ -28,7 +28,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     const router = useRouter();
 
     return (
-        <aside className="w-64 flex-shrink-0 bg-cyan-950 text-gray-100 flex flex-col">
+        /* CAMBIO AQUÍ: Agregado sticky, top-0 y h-screen */
+        <aside className="w-64 flex-shrink-0 bg-cyan-950 text-gray-100 flex flex-col sticky top-0 h-screen">
             <div className="flex-grow overflow-y-auto custom-scrollbar-subtle p-6">
                 <div className="flex items-center mb-10">
                     <FaHospitalAlt className="text-3xl text-green-400 mr-3" />
