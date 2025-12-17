@@ -10,6 +10,22 @@ import CirugiaDetailModal from "../components/Cirugia/CirugiaDetailModal";
 import AddPatientModal from "../components/Modals/AddPatientModal"; 
 import EstadisticasDetalle from "../components/Estadisticas/EstadisticasDetalle";
 
+interface MainLayoutProps {
+    user: any; 
+    showAddModal: boolean;
+    setShowAddModal: (show: boolean) => void;
+    showEditModal: boolean;
+    setShowEditModal: (show: boolean) => void;
+    showCirugiaModal: boolean;
+    setShowCirugiaModal: (show: boolean) => void;
+    showViewCirugiaModal: boolean;
+    setShowViewCirugiaModal: (show: boolean) => void;
+    selectedPatient: any;
+    setSelectedPatient: (patient: any) => void;
+    selectedCirugia: any;
+    setSelectedCirugia: (cirugia: any) => void;
+}
+
 export default function PrincipalPage() {
     const searchParams = useSearchParams();
     const currentView = searchParams.get("view");
@@ -23,7 +39,7 @@ export default function PrincipalPage() {
         setCirugiaRefreshKey(prev => prev + 1); 
     };
 
-    const renderContent = (props: any) => {
+    const renderContent = (props: MainLayoutProps) => {
         if (isEstadisticasView) {
             return <EstadisticasDetalle />;
         }
@@ -52,7 +68,7 @@ export default function PrincipalPage() {
 
     return (
         <MainLayout>
-            {(props) => {
+            {(props: MainLayoutProps) => {
                 if (!props.user) return null;
 
                 return (

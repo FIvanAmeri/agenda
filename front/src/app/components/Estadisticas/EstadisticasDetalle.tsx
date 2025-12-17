@@ -124,16 +124,20 @@ const EstadisticasDetalle: React.FC = () => {
                                 <XAxis dataKey="mes" stroke="#9ca3af" />
                                 <YAxis stroke="#9ca3af" tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
                                 <Tooltip 
-                                    formatter={(v: number | undefined) => [v ? formatCurrency(v) : "$0,00", "Monto"]}
+                                    formatter={(v: string | number | (string | number)[] | undefined) => {
+                                        if (v === undefined) return [formatCurrency(0), "Monto"];
+                                        const value = Array.isArray(v) ? Number(v[0]) : Number(v);
+                                        return [formatCurrency(value || 0), "Monto"];
+                                    }}
                                     contentStyle={{ backgroundColor: "#083344", borderColor: "#155e75" }} 
                                 />
                                 <Bar 
                                     dataKey="monto" 
                                     fill="#4ade80" 
                                     className="cursor-pointer"
-                                    onClick={(event: any) => {
-                                        if (event && event.payload) {
-                                            const payload = event.payload as BarDataPoint;
+                                    onClick={(data) => {
+                                        if (data && data.payload) {
+                                            const payload = data.payload as BarDataPoint;
                                             openModal(`Pagos de ${payload.mes} ${selectedYear}`, payload.pacientes);
                                         }
                                     }}
@@ -152,9 +156,9 @@ const EstadisticasDetalle: React.FC = () => {
                                     data={dataEdades}
                                     cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value"
                                     className="cursor-pointer"
-                                    onClick={(event: any) => {
-                                        if (event && event.payload) {
-                                            const payload = event.payload as PieDataPoint;
+                                    onClick={(data) => {
+                                        if (data && data.payload) {
+                                            const payload = data.payload as PieDataPoint;
                                             openModal(`Pacientes Rango ${payload.name}`, payload.pacientes);
                                         }
                                     }}

@@ -28,7 +28,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     const router = useRouter();
 
     return (
-        /* CAMBIO AQUÍ: Agregado sticky, top-0 y h-screen */
         <aside className="w-64 flex-shrink-0 bg-cyan-950 text-gray-100 flex flex-col sticky top-0 h-screen">
             <div className="flex-grow overflow-y-auto custom-scrollbar-subtle p-6">
                 <div className="flex items-center mb-10">
@@ -80,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onClick={() => router.push("/Principal?view=estadisticas")}
                         className="w-full flex items-center p-3 hover:bg-cyan-800 rounded-lg"
                     >
-                        <FaChartBar className="mr-4 text-green-400" /> Estadísticas
+                        <FaChartBar className="mr-4 text-green-400" /> Estadísticas estudios
                     </button>
                 </nav>
             </div>
