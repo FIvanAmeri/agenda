@@ -5,6 +5,7 @@ import {
 } from "recharts";
 import { FaTimes, FaUser, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
 import useEstadisticas from "../../hooks/useEstadisticas";
+import { useAuth } from "../../context/AuthContext";
 
 interface ItemEstadistica {
     cantidad: number;
@@ -33,12 +34,19 @@ interface PieDataPoint {
 const COLORES = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d", "#ffc658"];
 
 const EstadisticasDetalle: React.FC = () => {
+    const { user, loading: authLoading } = useAuth();
     const currentYear = new Date().getFullYear();
     const [selectedYear, setSelectedYear] = useState(currentYear);
     const { stats, loading, error, fetchStats } = useEstadisticas();
     const [modalOpen, setModalOpen] = useState(false);
     const [modalTitle, setModalTitle] = useState("");
     const [modalContent, setModalContent] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            window.location.href = "/";
+        }
+    }, [user, authLoading]);
 
     const availableYears = useMemo(() => {
         const startYear = 2025;
@@ -51,12 +59,14 @@ const EstadisticasDetalle: React.FC = () => {
     }, [currentYear]);
 
     useEffect(() => {
-        fetchStats(selectedYear);
-    }, [selectedYear, fetchStats]);
+        if (user) {
+            fetchStats(selectedYear);
+        }
+    }, [selectedYear, fetchStats, user]);
 
-    if (loading) return <div className="p-10 text-white">Cargando estadísticas de {selectedYear}...</div>;
+    if (authLoading || loading) return <div className="p-10 text-white">Cargando estadísticas...</div>;
     if (error) return <div className="p-10 text-red-500">Error: {error}</div>;
-    if (!stats) return null;
+    if (!user || !stats) return null;
 
     const dataPagos: BarDataPoint[] = (stats.resumenPagos.mensuales as ItemPago[]).map((item, index) => ({
         mes: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"][index],

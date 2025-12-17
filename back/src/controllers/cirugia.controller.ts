@@ -5,44 +5,28 @@ const service = new CirugiaService();
 
 export class CirugiaController {
     async crear(req: Request, res: Response) {
+        const usuarioId = (req as any).user.userId || (req as any).user.id;
         const body = req.body;
-
-        const cirugia = await service.crear({
-            fecha: body.fecha,
-            paciente: body.paciente,
-            fechaNacimientoPaciente: body.fechaNacimientoPaciente, 
-            obraSocial: body.obraSocial,
-            tipoCirugia: body.tipoCirugia,
-            medicoOpero: body.medicoOpero,
-            medicoAyudo1: body.medicoAyudo1,
-            medicoAyudo2: body.medicoAyudo2,
-            montoTotalHonorarios: body.montoTotalHonorarios, 
-            montoTotalPresupuesto: body.montoTotalPresupuesto, 
-            descripcion: body.descripcion
-        });
-
+        const cirugia = await service.crear({ ...body, usuarioId });
         return res.json({ cirugia });
     }
 
     async obtenerPorId(req: Request, res: Response) {
         const id = parseInt(req.params.id);
-        if (isNaN(id)) {
-            return res.status(400).json({ message: "ID de cirugía inválido" });
-        }
-        
+        const usuarioId = (req as any).user.userId || (req as any).user.id;
         try {
-            const cirugia = await service.obtenerPorId(id);
-            if (!cirugia) {
-                return res.status(404).json({ message: "Cirugía no encontrada" });
-            }
+            const cirugia = await service.obtenerPorId(id, usuarioId);
+            if (!cirugia) return res.status(404).json({ message: "No encontrado" });
             return res.json({ data: cirugia });
-        } catch (error) {
-            return res.status(500).json({ message: "Error al obtener la cirugía" });
+        } catch {
+            return res.status(500).json({ message: "Error" });
         }
     }
 
     async listar(req: Request, res: Response) {
+        const usuarioId = (req as any).user.userId || (req as any).user.id;
         const filters = {
+            usuarioId,
             dateFrom: req.query.dateFrom as string,
             dateTo: req.query.dateTo as string,
             paciente: req.query.paciente as string,
@@ -50,63 +34,49 @@ export class CirugiaController {
             medico: req.query.medico as string,
             estadoPago: req.query.estadoPago as "pagado" | "no pagado",
         };
-        
         const data = await service.listar(filters);
-        res.json({ data });
+        return res.json({ data });
     }
     
     async actualizar(req: Request, res: Response) {
         const id = parseInt(req.params.id);
-        const body = req.body;
-
-        if (isNaN(id)) {
-            return res.status(400).json({ message: "ID de cirugía inválido" });
-        }
-
+        const usuarioId = (req as any).user.userId || (req as any).user.id;
         try {
-            const cirugiaActualizada = await service.actualizar(id, body);
-            return res.json({ data: cirugiaActualizada });
-        } catch (error) {
-            if (error instanceof Error && error.message.includes("no encontrada")) {
-                return res.status(404).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Error al actualizar la cirugía" });
+            const data = await service.actualizar(id, usuarioId, req.body);
+            return res.json({ data });
+        } catch {
+            return res.status(500).json({ message: "Error" });
         }
     }
 
     async eliminar(req: Request, res: Response) {
         const id = parseInt(req.params.id);
-
-        if (isNaN(id)) {
-            return res.status(400).json({ message: "ID de cirugía inválido" });
-        }
-
+        const usuarioId = (req as any).user.userId || (req as any).user.id;
         try {
-            await service.eliminar(id);
+            await service.eliminar(id, usuarioId);
             return res.status(204).send();
-        } catch (error) {
-            if (error instanceof Error && error.message.includes("no encontrada")) {
-                return res.status(404).json({ message: error.message });
-            }
-            return res.status(500).json({ message: "Error al eliminar la cirugía" });
+        } catch {
+            return res.status(500).json({ message: "Error" });
         }
     }
 
     async obtenerMedicos(req: Request, res: Response) {
+        const usuarioId = (req as any).user.userId || (req as any).user.id;
         try {
-            const medicos = await service.obtenerMedicosUnicos();
-            res.json({ medicos });
-        } catch (error) {
-            res.status(500).json({ message: "Error al obtener médicos", error });
+            const medicos = await service.obtenerMedicosUnicos(usuarioId);
+            return res.json({ medicos });
+        } catch {
+            return res.status(500).json({ message: "Error" });
         }
     }
 
     async obtenerTiposCirugia(req: Request, res: Response) {
+        const usuarioId = (req as any).user.userId || (req as any).user.id;
         try {
-            const tipos = await service.obtenerTiposCirugiaUnicos();
-            res.json({ tiposCirugia: tipos });
-        } catch (error) {
-            res.status(500).json({ message: "Error al obtener tipos de cirugía", error });
+            const tiposCirugia = await service.obtenerTiposCirugiaUnicos(usuarioId);
+            return res.json({ tiposCirugia });
+        } catch {
+            return res.status(500).json({ message: "Error" });
         }
     }
 }

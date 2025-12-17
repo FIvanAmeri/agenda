@@ -7,6 +7,9 @@ export class Cirugia {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column({ type: "int" })
+    usuarioId: number;
+
     @Column({ type: "date" })
     fecha: string;
 
