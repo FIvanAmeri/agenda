@@ -136,7 +136,19 @@ const PatientTable: React.FC<PatientTableProps> = ({
 
                                         {patient.estadoPago !== 'no pagado' && (
                                             <div>
-                                                <strong>Monto Pagado:</strong> {formatCurrency(patient.montoPagado)}
+                                                <div>
+                                                    <strong>Monto Pagado:</strong> {formatCurrency(patient.montoPagado)}
+                                                </div>
+                                                {patient.estadoPago === 'parcialmente pagado' && fechaParcialFormateada && (
+                                                    <div>
+                                                        <strong>Fecha de Pago Parcial:</strong> {fechaParcialFormateada}
+                                                    </div>
+                                                )}
+                                                {patient.estadoPago === 'pagado' && fechaTotalFormateada && (
+                                                    <div>
+                                                        <strong>Fecha de Pago Total:</strong> {fechaTotalFormateada}
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
 

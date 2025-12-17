@@ -1,5 +1,5 @@
 import AppDataSource from "../data-source";
-import { Paciente } from "../entities/paciente.entity";
+import { Paciente, EstadoPago } from "../entities/paciente.entity";
 
 interface DetalleEstadistica {
     cantidad: number;
@@ -10,19 +10,27 @@ export class EstadisticasService {
     private patientRepository = AppDataSource.getRepository(Paciente);
 
     async obtenerEstadisticasGenerales(userId: number, anio: number) {
-        const pacientes = await this.patientRepository.createQueryBuilder("paciente")
-            .where("paciente.userId = :userId", { userId })
-            .andWhere(`(
-                (paciente.fechaPagoTotal IS NOT NULL AND EXTRACT(YEAR FROM CAST(paciente.fechaPagoTotal AS DATE)) = :anio) OR 
-                (paciente.fechaPagoParcial IS NOT NULL AND EXTRACT(YEAR FROM CAST(paciente.fechaPagoParcial AS DATE)) = :anio)
-            )`, { anio })
-            .getMany();
+        const todosLosPacientes = await this.patientRepository.find({
+            where: { userId }
+        });
+
+        const pacientesPagadosAnio = todosLosPacientes.filter(p => {
+            const fechaIso = p.fechaPagoTotal || p.fechaPagoParcial;
+            if (!fechaIso) return false;
+            const fecha = new Date(fechaIso);
+            return fecha.getFullYear() === anio;
+        });
+
+        const pacientesNoPagados = todosLosPacientes.filter(p => 
+            p.estadoPago === EstadoPago.NO_PAGADO
+        );
 
         return {
-            resumenPagos: this.calcularPagosMensuales(pacientes, anio),
-            distribucionEdades: this.calcularRangosEtarios(pacientes),
-            porObraSocial: this.agruparPorObraSocial(pacientes),
-            metricasPracticas: this.analizarPracticas(pacientes)
+            resumenPagos: this.calcularPagosMensuales(pacientesPagadosAnio, anio),
+            distribucionEdades: this.calcularRangosEtarios(pacientesPagadosAnio),
+            porObraSocial: this.agruparPorObraSocial(pacientesPagadosAnio),
+            metricasPracticas: this.analizarPracticas(pacientesPagadosAnio),
+            metricasNoPagados: this.analizarPracticas(pacientesNoPagados)
         };
     }
 
@@ -35,12 +43,10 @@ export class EstadisticasService {
             const fechaIso = p.fechaPagoTotal || p.fechaPagoParcial;
             if (fechaIso) {
                 const fecha = new Date(fechaIso);
-                if (fecha.getFullYear() === anio) {
-                    const mes = fecha.getMonth();
-                    meses[mes].monto += monto;
-                    meses[mes].pacientes.push(`${p.paciente} ($${monto.toLocaleString()})`);
-                    totalAnual += monto;
-                }
+                const mesIndex = fecha.getMonth();
+                meses[mesIndex].monto += monto;
+                meses[mesIndex].pacientes.push(`${p.paciente} ($${monto.toLocaleString()})`);
+                totalAnual += monto;
             }
         });
 

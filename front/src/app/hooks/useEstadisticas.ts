@@ -1,25 +1,28 @@
 import { useState, useCallback } from "react";
 import api from "../services/api";
 
-interface DetalleEstadistica {
+export interface DetalleEstadistica {
     cantidad: number;
     pacientes: string[];
 }
 
-interface EstadisticasData {
+export interface ResumenMensual {
+    monto: number;
+    pacientes: string[];
+}
+
+export interface EstadisticasData {
     resumenPagos: {
-        mensuales: {
-            monto: number;
-            pacientes: string[];
-        }[];
+        mensuales: ResumenMensual[];
         totalAnual: number;
     };
     distribucionEdades: Record<string, DetalleEstadistica>;
     porObraSocial: Record<string, DetalleEstadistica>;
     metricasPracticas: Record<string, DetalleEstadistica>;
+    metricasNoPagados: Record<string, DetalleEstadistica>;
 }
 
-interface UseEstadisticasResult {
+export interface UseEstadisticasResult {
     stats: EstadisticasData | null;
     loading: boolean;
     error: string | null;
