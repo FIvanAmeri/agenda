@@ -195,3 +195,31 @@ export interface CirugiaDetailModalProps {
     obrasSocialesOpciones?: string[]
     showHonorarios: boolean
 }
+
+export interface EstadisticasData {
+    resumenPagos: {
+        mensuales: number[];
+        totalAnual: number;
+    };
+    distribucionEdades: {
+        [key: string]: number;
+    };
+    porInstitucion: {
+        [key: string]: {
+            pacientes: number;
+            totalCobrado: number;
+        };
+    };
+    porObraSocial: {
+        [key: string]: number;
+    };
+    frecuenciaPacientes: {
+        [key: string]: {
+            visitas: number;
+            motivos: string[];
+        };
+    };
+    metricasPracticas: {
+        [key: string]: number;
+    };
+}

@@ -98,7 +98,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
         <div ref={formRef} className="bg-gray-800 p-5 rounded-xl shadow-2xl">
             <div className="flex items-center mb-4 text-white border-b border-gray-600 pb-3">
                 <FaFilter className="mr-3 text-green-400 text-xl" />
-                <h3 className="font-extrabold text-xl tracking-wide">Opciones de Filtrado</h3>
+                <h3 className="font-extrabold text-xl tracking-wide">Filtros de estudios</h3>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 xl:grid-cols-7 gap-4 items-end">

@@ -5,11 +5,6 @@ import type { Patient } from "../interfaz/interfaz";
 import BotonPago from "../Pago/boton-pago";
 import type { PacienteParaPago } from "../interfaz/pago-interfaces";
 
-interface PatientWithLastPayment extends Patient {
-    ultimoPagoParcial?: number;
-    ultimoPagoTotal?: number;
-}
-
 interface PatientTableProps {
     filteredPatients: Patient[];
     onEditClick: (patient: Patient) => void;
@@ -49,11 +44,11 @@ const PatientTable: React.FC<PatientTableProps> = ({
     onEditClick,
     onDeleteClick,
 }) => {
-    const initialPatientsState = filteredPatients as PatientWithLastPayment[];
-    const [patientsState, setPatientsState] = useState<PatientWithLastPayment[]>(initialPatientsState);
+    const initialPatientsState: Patient[] = filteredPatients;
+    const [patientsState, setPatientsState] = useState<Patient[]>(initialPatientsState);
 
     useEffect(() => {
-        setPatientsState(filteredPatients as PatientWithLastPayment[]);
+        setPatientsState(filteredPatients);
     }, [filteredPatients]);
 
     const formatDate = useCallback((dateString: string) => {
@@ -87,7 +82,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
 
     const sortedPatients = [...patientsState].sort((a, b) => b.id - a.id);
 
-    const mapToPago = useCallback((p: PatientWithLastPayment): PacienteParaPago => ({
+    const mapToPago = useCallback((p: Patient): PacienteParaPago => ({
         id: p.id,
         estadoPagoActual: p.estadoPago,
         montoPagadoActual: p.montoPagado,
@@ -106,7 +101,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                     return p;
                 }
 
-                const newPatient: PatientWithLastPayment = {
+                const newPatient: Patient = {
                     ...p,
                     estadoPago: pacienteActualizado.estadoPagoActual,
                     montoPagado: pacienteActualizado.montoPagadoActual,
@@ -163,10 +158,10 @@ const PatientTable: React.FC<PatientTableProps> = ({
 
                                         {(patient.estadoPago === 'parcialmente pagado' || patient.estadoPago === 'pagado') && (
                                             <div className="mt-2 text-sm">
-                                                {fechaParcialFormateada && patient.estadoPago === 'parcialmente pagado' && (
+                                                {fechaParcialFormateada && (patient.estadoPago === 'parcialmente pagado' || patient.estadoPago === 'pagado') && (
                                                     <div className="text-yellow-600 font-medium">
                                                         Pago Parcial: {fechaParcialFormateada}
-                                                        {(patient.ultimoPagoParcial !== undefined && patient.ultimoPagoParcial > 0) && (
+                                                        {(patient.ultimoPagoParcial !== undefined && patient.ultimoPagoParcial > 0) && patient.estadoPago === 'parcialmente pagado' && (
                                                             <span className="ml-2">– {formatCurrency(patient.ultimoPagoParcial)}</span>
                                                         )}
                                                     </div>

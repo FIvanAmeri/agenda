@@ -8,17 +8,46 @@ import VerCirugiasContent from "../components/VerCirugia/VerCirugiasContent";
 import AddCirugiaModal from "../components/Cirugia/AddCirugiaModal";
 import CirugiaDetailModal from "../components/Cirugia/CirugiaDetailModal";
 import AddPatientModal from "../components/Modals/AddPatientModal"; 
+import EstadisticasDetalle from "../components/Estadisticas/EstadisticasDetalle";
 
 export default function PrincipalPage() {
     const searchParams = useSearchParams();
     const currentView = searchParams.get("view");
     const isCirugiasView = currentView === "cirugias";
+    const isEstadisticasView = currentView === "estadisticas";
 
     const [cirugiaRefreshKey, setCirugiaRefreshKey] = React.useState(0);
 
     const handleCirugiaAddedSuccess = (setShowCirugiaModal: (show: boolean) => void) => {
         setShowCirugiaModal(false); 
         setCirugiaRefreshKey(prev => prev + 1); 
+    };
+
+    const renderContent = (props: any) => {
+        if (isEstadisticasView) {
+            return <EstadisticasDetalle />;
+        }
+        
+        if (isCirugiasView) {
+            return (
+                <VerCirugiasContent 
+                    user={props.user} 
+                    key={cirugiaRefreshKey}
+                />
+            );
+        }
+
+        return (
+            <PrincipalContent 
+                user={props.user} 
+                showAddModal={props.showAddModal}
+                setShowAddModal={props.setShowAddModal}
+                showEditModal={props.showEditModal}
+                setShowEditModal={props.setShowEditModal}
+                selectedPatient={props.selectedPatient}
+                setSelectedPatient={props.setSelectedPatient}
+            />
+        );
     };
 
     return (
@@ -28,22 +57,7 @@ export default function PrincipalPage() {
 
                 return (
                     <>
-                        {isCirugiasView ? (
-                            <VerCirugiasContent 
-                                user={props.user} 
-                                key={cirugiaRefreshKey}
-                            />
-                        ) : (
-                            <PrincipalContent 
-                                user={props.user} 
-                                showAddModal={props.showAddModal}
-                                setShowAddModal={props.setShowAddModal}
-                                showEditModal={props.showEditModal}
-                                setShowEditModal={props.setShowEditModal}
-                                selectedPatient={props.selectedPatient}
-                                setSelectedPatient={props.setSelectedPatient}
-                            />
-                        )}
+                        {renderContent(props)}
 
                         {props.showAddModal && (
                             <AddPatientModal
