@@ -96,10 +96,9 @@ interface CirugiaTableProps {
 
 const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDeleteClick }) => {
     const sortedCirugias: Cirugia[] = [...cirugias].sort((a: Cirugia, b: Cirugia) => b.id - a.id);
-    const COLSPAN_COUNT: number = 5; 
     return (
-        <div className="mt-8 w-full rounded-lg shadow-2xl overflow-hidden border border-[#1f3b47]">
-            <table className="w-full table-fixed bg-[#0F2A35]">
+        <div className="mt-8 w-full rounded-lg overflow-hidden border border-[#1f3b47]">
+            <table className="w-full table-fixed bg-[#0F2A35] border-separate border-spacing-y-4 px-2 md:px-4">
                 <thead className="bg-[#0c4a34] text-white uppercase text-[9px] md:text-xs tracking-wider">
                     <tr>
                         <th className="py-3 px-2 text-left w-[10%]">ID</th>
@@ -112,67 +111,72 @@ const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDe
                     </tr>
                 </thead>
                 <tbody className="text-gray-200 text-xs md:text-sm">
-                    {sortedCirugias.map((c: Cirugia, index: number) => (
+                    {sortedCirugias.map((c: Cirugia) => (
                         <React.Fragment key={c.id}>
-                            <tr className={`transition duration-150 ${index % 2 === 0 ? "bg-[#143845]" : "bg-[#1a4553]"} hover:bg-[#1f5666] border-b border-[#1f3b47]`}>
-                                <td className="py-3 px-2 font-bold align-top truncate">{c.id}</td>
-                                <td className="py-3 px-2 align-top text-[10px] md:text-sm whitespace-nowrap">{formatDateForDisplay(c.fecha)}</td>
-                                <td className="py-3 px-2 font-semibold align-top leading-tight break-words">
-                                    {c.paciente}
-                                    <span className="block text-[9px] text-gray-400 font-normal lg:hidden">{c.tipoCirugia}</span>
-                                </td>
-                                <td className="py-3 px-2 align-top">
-                                    <span className="block truncate text-[10px] md:text-xs">{c.medicoOpero || "-"}</span>
-                                    {c.medicoOpero && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.50} />}
-                                </td>
-                                <td className="py-3 px-2 align-top hidden lg:table-cell">
-                                    <span className="block truncate text-[10px] md:text-xs">{c.medicoAyudo1 || "-"}</span>
-                                    {c.medicoAyudo1 && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.25} />}
-                                </td>
-                                <td className="py-3 px-2 align-top hidden lg:table-cell">
-                                    <span className="block truncate text-[10px] md:text-xs">{c.medicoAyudo2 || "-"}</span>
-                                    {c.medicoAyudo2 && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.25} />}
-                                </td>
-                                <td className="py-3 px-1 align-top text-right"></td>
-                            </tr>
-                            <tr className={`${index % 2 === 0 ? "bg-[#143845]" : "bg-[#1a4553]"}`}>
-                                <td colSpan={7} className="pt-0 pb-3 px-2 md:px-4">
-                                    <div className="flex flex-col space-y-3 p-3 bg-[#1f3b47] rounded-b-lg border-t border-gray-700">
-                                        <div className="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
-                                            <div className="flex-1">
-                                                <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Honorarios / Presupuesto</h4>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <PagoCell total={c.montoTotalHonorarios} pagado={c.montoPagadoHonorarios} estado={c.estadoPagoHonorarios} label="Honorarios" moneda="USD" />
-                                                    <PagoCell total={c.montoTotalPresupuesto} pagado={c.montoPagadoPresupuesto} estado={c.estadoPagoPresupuesto} label="Presupuesto" moneda="ARS" />
+                            <tr className="group">
+                                <td colSpan={7} className="p-0">
+                                    <div className="flex flex-col mb-4 transition-all duration-300 border-2 border-transparent group-hover:border-cyan-500/50 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] rounded-xl overflow-hidden bg-[#143845]">
+                                        <div className="flex w-full items-start p-3 md:p-4">
+                                            <div className="w-[10%] font-bold text-cyan-400">{c.id}</div>
+                                            <div className="w-[20%] text-[10px] md:text-sm whitespace-nowrap">{formatDateForDisplay(c.fecha)}</div>
+                                            <div className="w-[35%] font-semibold leading-tight break-words">
+                                                {c.paciente}
+                                                <span className="block text-[9px] text-gray-400 font-normal lg:hidden">{c.tipoCirugia}</span>
+                                            </div>
+                                            <div className="w-[20%]">
+                                                <span className="block truncate text-[10px] md:text-xs">{c.medicoOpero || "-"}</span>
+                                                {c.medicoOpero && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.50} />}
+                                            </div>
+                                            <div className="w-[15%] hidden lg:block">
+                                                <span className="block truncate text-[10px] md:text-xs">{c.medicoAyudo1 || "-"}</span>
+                                                {c.medicoAyudo1 && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.25} />}
+                                            </div>
+                                            <div className="w-[15%] hidden lg:block">
+                                                <span className="block truncate text-[10px] md:text-xs">{c.medicoAyudo2 || "-"}</span>
+                                                {c.medicoAyudo2 && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.25} />}
+                                            </div>
+                                            <div className="w-[15%] lg:w-[10%]"></div>
+                                        </div>
+                                        
+                                        <div className="px-3 md:px-4 pb-4">
+                                            <div className="flex flex-col space-y-3 p-3 bg-[#1f3b47]/50 rounded-lg border border-gray-700/50">
+                                                <div className="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
+                                                    <div className="flex-1">
+                                                        <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Honorarios / Presupuesto</h4>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <PagoCell total={c.montoTotalHonorarios} pagado={c.montoPagadoHonorarios} estado={c.estadoPagoHonorarios} label="Honorarios" moneda="USD" />
+                                                            <PagoCell total={c.montoTotalPresupuesto} pagado={c.montoPagadoPresupuesto} estado={c.estadoPagoPresupuesto} label="Presupuesto" moneda="ARS" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Información</h4>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div className="text-[10px] text-yellow-300 p-2 border border-gray-600 bg-[#0F2A35] rounded font-semibold text-center truncate">
+                                                                {c.obraSocial || "Particular"}
+                                                            </div>
+                                                            <div className="text-[10px] text-cyan-300 p-2 border border-gray-600 bg-[#0F2A35] rounded font-semibold text-center">
+                                                                Edad: {c.edadPaciente !== null ? `${c.edadPaciente}a` : "-"}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full">
+                                                    <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Descripción</h4>
+                                                    <div className="text-[10px] text-gray-300 p-2 border border-gray-700 rounded bg-[#0F2A35]/50 leading-snug italic">
+                                                        {c.descripcion || "Sin descripción adicional."}
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-end items-center space-x-3 pt-2 border-t border-gray-600/30">
+                                                    <button onClick={() => onEditClick(c)} className="flex items-center space-x-2 text-cyan-400 hover:bg-cyan-400/20 px-4 py-2 border border-cyan-700/50 rounded-lg transition text-xs font-bold uppercase">
+                                                        <FaEdit className="text-sm" />
+                                                        <span>Editar</span>
+                                                    </button>
+                                                    <button onClick={() => onDeleteClick(c)} className="flex items-center space-x-2 text-red-400 hover:bg-red-400/20 px-4 py-2 border border-red-700/50 rounded-lg transition text-xs font-bold uppercase">
+                                                        <FaTrash className="text-sm" />
+                                                        <span>Borrar</span>
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Información</h4>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <div className="text-[10px] text-yellow-300 p-2 border border-gray-600 bg-[#0F2A35] rounded font-semibold text-center truncate">
-                                                        {c.obraSocial || "Particular"}
-                                                    </div>
-                                                    <div className="text-[10px] text-cyan-300 p-2 border border-gray-600 bg-[#0F2A35] rounded font-semibold text-center">
-                                                        Edad: {c.edadPaciente !== null ? `${c.edadPaciente}a` : "-"}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="w-full">
-                                            <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Descripción</h4>
-                                            <div className="text-[10px] text-gray-300 p-2 border border-gray-700 rounded bg-[#0F2A35]/50 leading-snug italic">
-                                                {c.descripcion || "Sin descripción adicional."}
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end items-center space-x-3 pt-2 border-t border-gray-600/30">
-                                            <button onClick={() => onEditClick(c)} className="flex items-center space-x-2 text-cyan-400 hover:bg-cyan-400/10 px-4 py-2 border border-cyan-700/50 rounded-lg transition text-xs font-bold uppercase">
-                                                <FaEdit className="text-sm" />
-                                                <span>Editar</span>
-                                            </button>
-                                            <button onClick={() => onDeleteClick(c)} className="flex items-center space-x-2 text-red-400 hover:bg-red-400/10 px-4 py-2 border border-red-700/50 rounded-lg transition text-xs font-bold uppercase">
-                                                <FaTrash className="text-sm" />
-                                                <span>Borrar</span>
-                                            </button>
                                         </div>
                                     </div>
                                 </td>

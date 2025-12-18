@@ -114,7 +114,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                         return (
                             <li
                                 key={patient.id}
-                                className="flex flex-col md:flex-row items-start justify-between border-b border-cyan-800/50 p-4 transition-all duration-300 ease-in-out bg-cyan-900/30 rounded-lg md:bg-transparent"
+                                className="flex flex-col md:flex-row items-start justify-between border-b-2 border-cyan-700/60 p-4 transition-all duration-300 ease-in-out bg-cyan-900/30 rounded-lg md:bg-transparent hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:ring-1 hover:ring-cyan-500/30"
                             >
                                 <div className="flex w-full md:w-auto">
                                     <div className="mr-4 mt-1 flex-shrink-0">
@@ -125,7 +125,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
 
                                     <div className="flex-1 min-w-0">
                                         <div className="text-lg md:text-base text-white"><strong>Paciente:</strong> {patient.paciente}</div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-sm md:text-base mt-1 text-gray-200">
+                                        <div className="flex flex-col text-sm md:text-base mt-1 text-gray-200">
                                             {edad !== null && (
                                                 <div><strong>Edad:</strong> {edad} años</div>
                                             )}
@@ -133,9 +133,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                             <div><strong>Hora:</strong> {formatTime(patient.hora)}</div>
                                             <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
                                             <div><strong>Institución:</strong> {patient.institucion}</div>
-                                        </div>
-                                        <div className="mt-1 text-sm md:text-base text-gray-200">
-                                            <strong>Prácticas:</strong> {patient.practicas}
+                                            <div><strong>Prácticas:</strong> {patient.practicas}</div>
                                         </div>
 
                                         {patient.estadoPago !== 'no pagado' && (
