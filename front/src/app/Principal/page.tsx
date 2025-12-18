@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import MainLayout from "../../layout/MainLayout";
 import PrincipalContent from "../components/content/PrincipalContent";
@@ -9,9 +9,10 @@ import AddCirugiaModal from "../components/Cirugia/AddCirugiaModal";
 import CirugiaDetailModal from "../components/Cirugia/CirugiaDetailModal";
 import AddPatientModal from "../components/Modals/AddPatientModal"; 
 import EstadisticasDetalle from "../components/Estadisticas/EstadisticasDetalle";
+import { User, Patient, Cirugia } from "../components/interfaz/interfaz";
 
 interface MainLayoutProps {
-    user: any; 
+    user: User; 
     showAddModal: boolean;
     setShowAddModal: (show: boolean) => void;
     showEditModal: boolean;
@@ -20,10 +21,10 @@ interface MainLayoutProps {
     setShowCirugiaModal: (show: boolean) => void;
     showViewCirugiaModal: boolean;
     setShowViewCirugiaModal: (show: boolean) => void;
-    selectedPatient: any;
-    setSelectedPatient: (patient: any) => void;
-    selectedCirugia: any;
-    setSelectedCirugia: (cirugia: any) => void;
+    selectedPatient: Patient | null;
+    setSelectedPatient: (patient: Patient | null) => void;
+    selectedCirugia: Cirugia | null;
+    setSelectedCirugia: (cirugia: Cirugia | null) => void;
 }
 
 export default function PrincipalPage() {
@@ -32,39 +33,12 @@ export default function PrincipalPage() {
     const isCirugiasView = currentView === "cirugias";
     const isEstadisticasView = currentView === "estadisticas";
 
-    const [cirugiaRefreshKey, setCirugiaRefreshKey] = React.useState(0);
+    const [cirugiaRefreshKey, setCirugiaRefreshKey] = useState(0);
 
-    const handleCirugiaAddedSuccess = (setShowCirugiaModal: (show: boolean) => void) => {
+    const handleCirugiaAddedSuccess = useCallback((setShowCirugiaModal: (show: boolean) => void) => {
         setShowCirugiaModal(false); 
         setCirugiaRefreshKey(prev => prev + 1); 
-    };
-
-    const renderContent = (props: MainLayoutProps) => {
-        if (isEstadisticasView) {
-            return <EstadisticasDetalle />;
-        }
-        
-        if (isCirugiasView) {
-            return (
-                <VerCirugiasContent 
-                    user={props.user} 
-                    key={cirugiaRefreshKey}
-                />
-            );
-        }
-
-        return (
-            <PrincipalContent 
-                user={props.user} 
-                showAddModal={props.showAddModal}
-                setShowAddModal={props.setShowAddModal}
-                showEditModal={props.showEditModal}
-                setShowEditModal={props.setShowEditModal}
-                selectedPatient={props.selectedPatient}
-                setSelectedPatient={props.setSelectedPatient}
-            />
-        );
-    };
+    }, []);
 
     return (
         <MainLayout>
@@ -73,7 +47,26 @@ export default function PrincipalPage() {
 
                 return (
                     <>
-                        {renderContent(props)}
+                        {isEstadisticasView && <EstadisticasDetalle />}
+                        
+                        {isCirugiasView && (
+                            <VerCirugiasContent 
+                                user={props.user} 
+                                key={`cirugia-view-${cirugiaRefreshKey}`}
+                            />
+                        )}
+
+                        {!isEstadisticasView && !isCirugiasView && (
+                            <PrincipalContent 
+                                user={props.user} 
+                                showAddModal={props.showAddModal}
+                                setShowAddModal={props.setShowAddModal}
+                                showEditModal={props.showEditModal}
+                                setShowEditModal={props.setShowEditModal}
+                                selectedPatient={props.selectedPatient}
+                                setSelectedPatient={props.setSelectedPatient}
+                            />
+                        )}
 
                         {props.showAddModal && (
                             <AddPatientModal
@@ -91,17 +84,16 @@ export default function PrincipalPage() {
                             />
                         )}
 
-                        {props.showViewCirugiaModal &&
-                            props.selectedCirugia && (
-                                <CirugiaDetailModal
-                                    cirugia={props.selectedCirugia}
-                                    onClose={() => {
-                                        props.setShowViewCirugiaModal(false);
-                                        props.setSelectedCirugia(null);
-                                    }}
-                                    showHonorarios={false}
-                                />
-                            )}
+                        {props.showViewCirugiaModal && props.selectedCirugia && (
+                            <CirugiaDetailModal
+                                cirugia={props.selectedCirugia}
+                                onClose={() => {
+                                    props.setShowViewCirugiaModal(false);
+                                    props.setSelectedCirugia(null);
+                                }}
+                                showHonorarios={false}
+                            />
+                        )}
                     </>
                 );
             }}

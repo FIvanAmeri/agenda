@@ -191,8 +191,8 @@ export default function PrincipalContent({
     });
 
     return (
-        <div className="flex flex-col flex-1 p-8">
-            <h1 className="text-center text-2xl font-semibold mb-6 text-gray-50">
+        <div className="flex flex-col flex-1 p-4 md:p-8 w-full max-w-full overflow-x-hidden">
+            <h1 className="text-center text-xl md:text-2xl font-semibold mb-6 text-gray-50">
                 Agenda de Turnos
             </h1>
 
@@ -215,12 +215,12 @@ export default function PrincipalContent({
             />
 
             {patientsError && (
-                <div className="text-red-500 text-center mt-4">
+                <div className="text-red-500 text-center mt-4 text-sm md:text-base">
                     Error al cargar pacientes: {patientsError}
                 </div>
             )}
 
-            <div className="mt-4">
+            <div className="mt-4 w-full">
                 <PatientTable
                     filteredPatients={filteredPatients}
                     onEditClick={handleEditPatient}

@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { User, Cirugia, ApiResponse } from "../../components/interfaz/interfaz";
+import { User, Cirugia } from "../../components/interfaz/interfaz";
 import FiltroCirugiaForm from "../../components/Cirugia/FiltroCirugiaForm";
 import { FiltrosCirugia } from "../../components/interfaz/tipos-cirugia";
-import { FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa"; 
+import { FaEdit, FaTrash } from "react-icons/fa"; 
 import CirugiaDetailModal from "../../components/Cirugia/CirugiaDetailModal"; 
 import ConfirmDeleteModal from "../../components/Cirugia/ConfirmDeleteModal";
 
@@ -60,7 +60,7 @@ interface PagoCellProps {
 const PagoCell: React.FC<PagoCellProps> = ({ total, estado, label, moneda }) => {
     const formatFn = moneda === 'ARS' ? formatCurrencyARS : formatCurrencyUSD;
     return (
-        <div className={`p-1 rounded-md text-xs font-semibold whitespace-nowrap border ${getEstadoClass(estado)}`}>
+        <div className={`p-2 rounded-md text-[10px] md:text-xs font-semibold whitespace-nowrap border w-full md:w-auto ${getEstadoClass(estado)}`}>
             <strong className="text-gray-300 block mb-0.5">{label}</strong>
             {formatFn(total)}
         </div>
@@ -77,11 +77,11 @@ const MedicoPagoDisplay: React.FC<MedicoPagoDisplayProps> = ({ montoHonorarios, 
     const honorarios: number | null = montoHonorarios !== null ? Number(montoHonorarios) * participacion : null;
     const presupuesto: number | null = montoPresupuesto !== null ? Number(montoPresupuesto) * participacion : null;
     return (
-        <div className="flex flex-col text-[10px] font-medium min-w-[70px] pt-1"> 
-            <span className="text-cyan-400 block w-full text-left">
+        <div className="flex flex-col text-[9px] md:text-[10px] font-medium pt-1"> 
+            <span className="text-cyan-400 block truncate">
                 {formatCurrencyUSD(honorarios)}
             </span>
-            <span className="text-yellow-400 block w-full text-left">
+            <span className="text-yellow-400 block truncate">
                 {formatCurrencyARS(presupuesto)}
             </span>
         </div>
@@ -96,114 +96,83 @@ interface CirugiaTableProps {
 
 const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDeleteClick }) => {
     const sortedCirugias: Cirugia[] = [...cirugias].sort((a: Cirugia, b: Cirugia) => b.id - a.id);
-    const COLSPAN_COUNT: number = 9;
+    const COLSPAN_COUNT: number = 5; 
     return (
-        <div className="mt-8 overflow-x-auto">
-            <table className="min-w-full table-auto bg-[#0F2A35] shadow-2xl rounded-lg overflow-hidden border border-[#1f3b47]">
-                <thead className="bg-[#0c4a34] text-white uppercase text-xs tracking-wider">
+        <div className="mt-8 w-full rounded-lg shadow-2xl overflow-hidden border border-[#1f3b47]">
+            <table className="w-full table-fixed bg-[#0F2A35]">
+                <thead className="bg-[#0c4a34] text-white uppercase text-[9px] md:text-xs tracking-wider">
                     <tr>
-                        <th className="py-3 px-4 text-left w-12 min-w-[48px]">ID</th>
-                        <th className="py-3 px-4 text-left w-24 min-w-[96px]">Fecha</th>
-                        <th className="py-3 px-4 text-left min-w-[120px]">Paciente</th>
-                        <th className="py-3 px-4 text-left w-16 min-w-[64px]">Edad</th>
-                        <th className="py-3 px-4 text-left min-w-[120px]">Tipo</th>
-                        <th className="py-3 px-4 text-left w-24 min-w-[96px]">Operó</th>
-                        <th className="py-3 px-4 text-left w-24 min-w-[96px]">Ayud. 1</th>
-                        <th className="py-3 px-4 text-left w-24 min-w-[96px]">Ayud. 2</th>
-                        <th className="py-3 px-4 text-left w-12"></th>
+                        <th className="py-3 px-2 text-left w-[10%]">ID</th>
+                        <th className="py-3 px-2 text-left w-[20%]">Fecha</th>
+                        <th className="py-3 px-2 text-left w-[35%]">Paciente</th>
+                        <th className="py-3 px-2 text-left w-[20%]">Operó</th>
+                        <th className="py-3 px-2 text-left hidden lg:table-cell w-[15%]">Ayud. 1</th>
+                        <th className="py-3 px-2 text-left hidden lg:table-cell w-[15%]">Ayud. 2</th>
+                        <th className="py-3 px-1 w-[15%] lg:w-[10%]"></th>
                     </tr>
                 </thead>
-                <tbody className="text-gray-200 text-sm">
+                <tbody className="text-gray-200 text-xs md:text-sm">
                     {sortedCirugias.map((c: Cirugia, index: number) => (
                         <React.Fragment key={c.id}>
                             <tr className={`transition duration-150 ${index % 2 === 0 ? "bg-[#143845]" : "bg-[#1a4553]"} hover:bg-[#1f5666] border-b border-[#1f3b47]`}>
-                                <td className="py-3 px-4 font-bold align-top break-words">{c.id}</td>
-                                <td className="py-3 px-4 whitespace-nowrap align-top break-words">{formatDateForDisplay(c.fecha)}</td>
-                                <td className="py-3 px-4 font-semibold align-top break-words">{c.paciente}</td>
-                                <td className="py-3 px-4 align-top whitespace-nowrap break-words">{c.edadPaciente !== null ? `${c.edadPaciente} años` : "-"}</td>
-                                <td className="py-3 px-4 align-top break-words">{c.tipoCirugia}</td>
-                                <td className="py-3 px-4 text-xs align-top break-words min-w-[96px] h-full">
-                                    <div className="min-h-[30px] w-full"> 
-                                        <span className="block text-left">{c.medicoOpero || "-"}</span>
-                                    </div>
-                                    {c.medicoOpero && (
-                                        <MedicoPagoDisplay 
-                                            montoHonorarios={c.montoTotalHonorarios} 
-                                            montoPresupuesto={c.montoTotalPresupuesto} 
-                                            participacion={0.50} 
-                                        />
-                                    )}
+                                <td className="py-3 px-2 font-bold align-top truncate">{c.id}</td>
+                                <td className="py-3 px-2 align-top text-[10px] md:text-sm whitespace-nowrap">{formatDateForDisplay(c.fecha)}</td>
+                                <td className="py-3 px-2 font-semibold align-top leading-tight break-words">
+                                    {c.paciente}
+                                    <span className="block text-[9px] text-gray-400 font-normal lg:hidden">{c.tipoCirugia}</span>
                                 </td>
-                                <td className="py-3 px-4 text-xs align-top break-words min-w-[96px] h-full">
-                                    <div className="min-h-[30px] w-full">
-                                        <span className="block text-left">{c.medicoAyudo1 || "-"}</span>
-                                    </div>
-                                    {c.medicoAyudo1 && (
-                                        <MedicoPagoDisplay 
-                                            montoHonorarios={c.montoTotalHonorarios} 
-                                            montoPresupuesto={c.montoTotalPresupuesto} 
-                                            participacion={0.25} 
-                                        />
-                                    )}
+                                <td className="py-3 px-2 align-top">
+                                    <span className="block truncate text-[10px] md:text-xs">{c.medicoOpero || "-"}</span>
+                                    {c.medicoOpero && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.50} />}
                                 </td>
-                                <td className="py-3 px-4 text-xs align-top break-words min-w-[96px] h-full">
-                                    <div className="min-h-[30px] w-full">
-                                        <span className="block text-left">{c.medicoAyudo2 || "-"}</span>
-                                    </div>
-                                    {c.medicoAyudo2 && (
-                                        <MedicoPagoDisplay 
-                                            montoHonorarios={c.montoTotalHonorarios} 
-                                            montoPresupuesto={c.montoTotalPresupuesto} 
-                                            participacion={0.25} 
-                                        />
-                                    )}
+                                <td className="py-3 px-2 align-top hidden lg:table-cell">
+                                    <span className="block truncate text-[10px] md:text-xs">{c.medicoAyudo1 || "-"}</span>
+                                    {c.medicoAyudo1 && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.25} />}
                                 </td>
-                                <td className="py-3 px-4 align-top"></td>
+                                <td className="py-3 px-2 align-top hidden lg:table-cell">
+                                    <span className="block truncate text-[10px] md:text-xs">{c.medicoAyudo2 || "-"}</span>
+                                    {c.medicoAyudo2 && <MedicoPagoDisplay montoHonorarios={c.montoTotalHonorarios} montoPresupuesto={c.montoTotalPresupuesto} participacion={0.25} />}
+                                </td>
+                                <td className="py-3 px-1 align-top text-right"></td>
                             </tr>
                             <tr className={`${index % 2 === 0 ? "bg-[#143845]" : "bg-[#1a4553]"}`}>
-                                <td colSpan={COLSPAN_COUNT} className="pt-0 pb-3 px-4 min-h-[100px]">
-                                    <div className="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0 p-3 bg-[#1f3b47] rounded-b-lg border-t border-gray-700 min-h-[100px]">
-                                        <div className="flex-1 min-w-[250px]">
-                                            <h4 className="text-white text-xs font-bold mb-2 uppercase">Honorarios / Presupuesto</h4>
-                                            <div className="flex space-x-3">
-                                                <PagoCell 
-                                                    total={c.montoTotalHonorarios} 
-                                                    pagado={c.montoPagadoHonorarios} 
-                                                    estado={c.estadoPagoHonorarios}
-                                                    label="Honorarios"
-                                                    moneda="USD"
-                                                />
-                                                <PagoCell 
-                                                    total={c.montoTotalPresupuesto} 
-                                                    pagado={c.montoPagadoPresupuesto} 
-                                                    estado={c.estadoPagoPresupuesto}
-                                                    label="Presupuesto"
-                                                    moneda="ARS"
-                                                />
+                                <td colSpan={7} className="pt-0 pb-3 px-2 md:px-4">
+                                    <div className="flex flex-col space-y-3 p-3 bg-[#1f3b47] rounded-b-lg border-t border-gray-700">
+                                        <div className="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
+                                            <div className="flex-1">
+                                                <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Honorarios / Presupuesto</h4>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <PagoCell total={c.montoTotalHonorarios} pagado={c.montoPagadoHonorarios} estado={c.estadoPagoHonorarios} label="Honorarios" moneda="USD" />
+                                                    <PagoCell total={c.montoTotalPresupuesto} pagado={c.montoPagadoPresupuesto} estado={c.estadoPagoPresupuesto} label="Presupuesto" moneda="ARS" />
+                                                </div>
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Información</h4>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <div className="text-[10px] text-yellow-300 p-2 border border-gray-600 bg-[#0F2A35] rounded font-semibold text-center truncate">
+                                                        {c.obraSocial || "Particular"}
+                                                    </div>
+                                                    <div className="text-[10px] text-cyan-300 p-2 border border-gray-600 bg-[#0F2A35] rounded font-semibold text-center">
+                                                        Edad: {c.edadPaciente !== null ? `${c.edadPaciente}a` : "-"}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex-1 min-w-[150px] flex flex-col justify-center">
-                                            <h4 className="text-white text-xs font-bold mb-2 uppercase">Obra Social</h4>
-                                            <div className="text-sm text-yellow-300 p-2 border border-gray-600 bg-[#0F2A35] rounded-lg flex-grow min-h-[40px] flex items-center justify-center font-semibold">
-                                                {c.obraSocial || "Particular / No especificada"}
+                                        <div className="w-full">
+                                            <h4 className="text-white text-[9px] font-bold mb-2 uppercase tracking-tighter">Descripción</h4>
+                                            <div className="text-[10px] text-gray-300 p-2 border border-gray-700 rounded bg-[#0F2A35]/50 leading-snug italic">
+                                                {c.descripcion || "Sin descripción adicional."}
                                             </div>
                                         </div>
-                                        <div className="flex-1 min-w-[250px] flex flex-col">
-                                            <h4 className="text-white text-xs font-bold mb-2 uppercase">Descripción</h4>
-                                            <div className="text-xs text-gray-300 p-2 border border-gray-700 rounded-lg flex-grow min-h-[60px] break-words whitespace-normal">
-                                                {c.descripcion || "Sin descripción."}
-                                            </div>
-                                        </div>
-                                        <div className="w-full md:w-auto flex flex-col justify-end items-end p-2">
-                                            <h4 className="text-white text-xs font-bold mb-2 uppercase hidden md:block">Acciones</h4>
-                                            <div className="flex justify-end items-center mt-auto">
-                                                <button onClick={() => onEditClick(c)} className="text-cyan-400 hover:text-cyan-600 p-2 mr-2 border border-cyan-700/50 rounded-lg transition" title="Editar">
-                                                    <FaEdit className="inline-block text-base" />
-                                                </button>
-                                                <button onClick={() => onDeleteClick(c)} className="text-red-400 hover:text-red-600 p-2 border border-red-700/50 rounded-lg transition" title="Eliminar">
-                                                    <FaTrash className="inline-block text-base" />
-                                                </button>
-                                            </div>
+                                        <div className="flex justify-end items-center space-x-3 pt-2 border-t border-gray-600/30">
+                                            <button onClick={() => onEditClick(c)} className="flex items-center space-x-2 text-cyan-400 hover:bg-cyan-400/10 px-4 py-2 border border-cyan-700/50 rounded-lg transition text-xs font-bold uppercase">
+                                                <FaEdit className="text-sm" />
+                                                <span>Editar</span>
+                                            </button>
+                                            <button onClick={() => onDeleteClick(c)} className="flex items-center space-x-2 text-red-400 hover:bg-red-400/10 px-4 py-2 border border-red-700/50 rounded-lg transition text-xs font-bold uppercase">
+                                                <FaTrash className="text-sm" />
+                                                <span>Borrar</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </td>
@@ -230,7 +199,7 @@ interface DeleteCirugiaState {
 
 export default function VerCirugiasContent({ user }: Props): JSX.Element {
     const router = useRouter();
-    const [cirugias, setCirugias] = useState<Cirugia[]>([]);
+    const [allCirugias, setAllCirugias] = useState<Cirugia[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [filters, setFilters] = useState<FiltrosCirugia>({
         dateFrom: "",
@@ -287,24 +256,41 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
             params.append("usuarioId", user.id.toString());
             if (currentFilters.dateFrom) params.append("dateFrom", currentFilters.dateFrom);
             if (currentFilters.dateTo) params.append("dateTo", currentFilters.dateTo);
-            if (currentFilters.selectedPatientName) params.append("paciente", currentFilters.selectedPatientName);
-            if (currentFilters.selectedTipoCirugia) params.append("tipoCirugia", currentFilters.selectedTipoCirugia);
-            if (currentFilters.selectedMedico) params.append("medico", currentFilters.selectedMedico);
-            if (currentFilters.selectedStatus) params.append("estadoPago", currentFilters.selectedStatus);
-            if (currentFilters.selectedObraSocial) params.append("obraSocial", currentFilters.selectedObraSocial);
+            
             const res: Response = await fetch(`http://localhost:3001/api/cirugia?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
             const data: { data: Cirugia[] } = await res.json();
             if (res.ok && data && Array.isArray(data.data)) {
-                setCirugias(data.data);
+                setAllCirugias(data.data);
             } else {
-                setCirugias([]);
+                setAllCirugias([]);
             }
         } catch {
-            setCirugias([]);
+            setAllCirugias([]);
         } finally {
             setLoading(false);
         }
     };
+
+    const filteredCirugias = useMemo(() => {
+        return allCirugias.filter((c: Cirugia) => {
+            const matchPaciente = filters.selectedPatientName === "" || 
+                c.paciente.toLowerCase().includes(filters.selectedPatientName.toLowerCase());
+            
+            const matchTipo = filters.selectedTipoCirugia === "" || 
+                c.tipoCirugia.toLowerCase().includes(filters.selectedTipoCirugia.toLowerCase());
+            
+            const matchMedico = filters.selectedMedico === "" || 
+                (c.medicoOpero && c.medicoOpero.toLowerCase().includes(filters.selectedMedico.toLowerCase()));
+            
+            const matchOS = filters.selectedObraSocial === "" || 
+                (c.obraSocial && c.obraSocial.toLowerCase().includes(filters.selectedObraSocial.toLowerCase()));
+            
+            const matchStatus = filters.selectedStatus === "" || 
+                c.estadoPagoHonorarios === filters.selectedStatus;
+
+            return matchPaciente && matchTipo && matchMedico && matchOS && matchStatus;
+        });
+    }, [allCirugias, filters]);
 
     useEffect(() => {
         if (user?.id) {
@@ -318,7 +304,7 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
         if (user?.id) {
             fetchCirugias(filters); 
         }
-    }, [filters, user?.id, fetchTrigger]);
+    }, [filters.dateFrom, filters.dateTo, user?.id, fetchTrigger]);
 
     const handleEditSubmit = async (cirugiaId: number, updatePayload: Partial<Cirugia>): Promise<void> => {
         try {
@@ -367,36 +353,44 @@ export default function VerCirugiasContent({ user }: Props): JSX.Element {
         }
     };
 
-    if (!user || !user.id) return <></>;
-
-    if (loading) return <div className="text-center text-xl py-10 text-white">Cargando cirugías...</div>;
+    if (!user || !user.id) return <div />;
 
     return (
-        <div className="p-6">
-            <h1 className="text-3xl font-bold mb-6 text-white">Cirugías</h1>
+        <div className="w-full max-w-full overflow-x-hidden p-3 md:p-6">
+            <h1 className="text-xl md:text-3xl font-bold mb-6 text-white text-center md:text-left">Cirugías</h1>
             {notification && (
                 <div className={`p-4 mb-4 rounded-lg flex justify-between items-center ${notification.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
-                    <p className="font-semibold">{notification.message}</p>
+                    <p className="font-semibold text-xs md:text-base">{notification.message}</p>
                     <button onClick={() => setNotification(null)} className="ml-4 font-bold text-lg leading-none">&times;</button>
                 </div>
             )}
-            <FiltroCirugiaForm 
-                filters={filters} 
-                setFilters={setFilters} 
-                cirugias={cirugias}
-                medicosOpciones={medicosOpciones}
-                tiposCirugiaOpciones={tiposCirugiaOpciones}
-                obrasSocialesOpciones={obrasSocialesOpciones}
-                onCirugiaAdded={() => { setNotification({ message: "Cirugía agregada.", type: "success" }); setFetchTrigger(prev => prev + 1); }}
-            />
-            {cirugias.length === 0 ? (
-                <div className="text-center text-xl py-10 text-red-300">No hay cirugías que coincidan con los filtros.</div>
-            ) : (
-                <CirugiaTable 
-                    cirugias={cirugias} 
-                    onEditClick={(c: Cirugia) => { setSelectedCirugia(c); setIsEditModalOpen(true); }} 
-                    onDeleteClick={(c: Cirugia) => { setDeleteCirugia({ id: c.id, patientName: c.paciente }); setIsConfirmModalOpen(true); }} 
+            <div className="w-full relative">
+                <FiltroCirugiaForm 
+                    filters={filters} 
+                    setFilters={setFilters} 
+                    cirugias={allCirugias}
+                    medicosOpciones={medicosOpciones}
+                    tiposCirugiaOpciones={tiposCirugiaOpciones}
+                    obrasSocialesOpciones={obrasSocialesOpciones}
+                    onCirugiaAdded={() => { setNotification({ message: "Cirugía agregada.", type: "success" }); setFetchTrigger(prev => prev + 1); }}
                 />
+            </div>
+            {loading && allCirugias.length === 0 ? (
+                <div className="text-center text-lg py-10 text-cyan-400 animate-pulse">Buscando cirugías...</div>
+            ) : filteredCirugias.length === 0 ? (
+                <div className="text-center text-lg py-10 text-red-300">
+                    {filters.selectedMedico && !allCirugias.some(c => c.medicoOpero === filters.selectedMedico) 
+                        ? `${filters.selectedMedico} no tiene cirugías` 
+                        : "No hay cirugías que coincidan."}
+                </div>
+            ) : (
+                <div className="w-full">
+                    <CirugiaTable 
+                        cirugias={filteredCirugias} 
+                        onEditClick={(c: Cirugia) => { setSelectedCirugia(c); setIsEditModalOpen(true); }} 
+                        onDeleteClick={(c: Cirugia) => { setDeleteCirugia({ id: c.id, patientName: c.paciente }); setIsConfirmModalOpen(true); }} 
+                    />
+                </div>
             )}
             {isEditModalOpen && selectedCirugia && (
                 <CirugiaDetailModal

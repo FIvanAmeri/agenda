@@ -1,12 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Patient } from "../interfaz/interfaz";
 import { FaFilter, FaRedo } from "react-icons/fa";
 import AutocompleteInput from "./AutocompleteInput";
-import { useFilterDropdowns } from "../../hooks/Filtro/useFilterDropdowns";
+import { useFilterDropdowns, FilterFieldKey } from "../../hooks/Filtro/useFilterDropdowns";
 import { usePatientLists } from "../../hooks/Filtro/usePatientLists";
 
 interface FilterFormProps {
@@ -49,9 +49,6 @@ const parseDatePickerValue = (date: Date | null): string => {
     return formatISO(date);
 };
 
-const filterSuggestions = (list: string[], value: string) =>
-    value ? list.filter((i) => i.toLowerCase().includes(value.toLowerCase())) : list;
-
 const FilterForm: React.FC<FilterFormProps> = ({
     selectedDateFrom,
     setSelectedDateFrom,
@@ -75,55 +72,63 @@ const FilterForm: React.FC<FilterFormProps> = ({
     const { patientNames, practices, obrasSociales, instituciones } =
         usePatientLists(patients);
 
-    const handleSuggestionClick = (
-        name: string,
-        setValue: React.Dispatch<React.SetStateAction<string>>
-    ) => {
-        setValue(name);
-        closeAllDropdowns();
-    };
+    const fPatients = useMemo(() => 
+        patientNames.filter(n => n.toLowerCase().includes(selectedPatientName.toLowerCase())),
+        [patientNames, selectedPatientName]
+    );
+
+    const fPractices = useMemo(() => 
+        practices.filter(n => n.toLowerCase().includes(selectedPractice.toLowerCase())),
+        [practices, selectedPractice]
+    );
+
+    const fObrasSociales = useMemo(() => 
+        obrasSociales.filter(n => n.toLowerCase().includes(selectedObraSocial.toLowerCase())),
+        [obrasSociales, selectedObraSocial]
+    );
+
+    const fInstituciones = useMemo(() => 
+        instituciones.filter(n => n.toLowerCase().includes(selectedInstitucion.toLowerCase())),
+        [instituciones, selectedInstitucion]
+    );
+
+    const hPatientClick = useCallback((n: string) => { setSelectedPatientName(n); closeAllDropdowns(); }, [setSelectedPatientName, closeAllDropdowns]);
+    const hPracticeClick = useCallback((n: string) => { setSelectedPractice(n); closeAllDropdowns(); }, [setSelectedPractice, closeAllDropdowns]);
+    const hOSClick = useCallback((n: string) => { setSelectedObraSocial(n); closeAllDropdowns(); }, [setSelectedObraSocial, closeAllDropdowns]);
+    const hInstiClick = useCallback((n: string) => { setSelectedInstitucion(n); closeAllDropdowns(); }, [setSelectedInstitucion, closeAllDropdowns]);
 
     const handleResetFilters = () => {
-        setSelectedDateFrom("");
-        setSelectedDateTo("");
-        setSelectedPatientName("");
-        setSelectedPractice("");
-        setSelectedObraSocial("");
-        setSelectedInstitucion("");
-        setSelectedStatus("");
-        closeAllDropdowns();
+        setSelectedDateFrom(""); setSelectedDateTo(""); setSelectedPatientName("");
+        setSelectedPractice(""); setSelectedObraSocial(""); setSelectedInstitucion("");
+        setSelectedStatus(""); closeAllDropdowns();
     };
 
     return (
-        <div ref={formRef} className="bg-gray-800 p-5 rounded-xl shadow-2xl">
+        <div ref={formRef} className="bg-gray-800 p-4 md:p-5 rounded-xl shadow-2xl w-full">
             <div className="flex items-center mb-4 text-white border-b border-gray-600 pb-3">
-                <FaFilter className="mr-3 text-green-400 text-xl" />
-                <h3 className="font-extrabold text-xl tracking-wide">Filtros de estudios</h3>
+                <FaFilter className="mr-3 text-green-400 text-lg md:text-xl" />
+                <h3 className="font-extrabold text-lg md:text-xl tracking-wide">Filtros de estudios</h3>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 xl:grid-cols-7 gap-4 items-end">
-                
-                <div className="flex flex-col">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 items-end">
+                <div className="flex flex-col w-full">
                     <label className="text-xs font-medium text-gray-400 mb-1">Desde</label>
                     <DatePicker
                         selected={parseISO(selectedDateFrom)}
                         onChange={(d) => setSelectedDateFrom(parseDatePickerValue(d))}
                         dateFormat="dd/MM/yyyy"
-                        placeholderText="DD/MM/AAAA"
-                        className="p-2 border border-gray-600 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-green-400 shadow-inner w-full h-10"
+                        className="p-2 border border-gray-600 rounded-lg text-sm text-black w-full h-10"
                         wrapperClassName="w-full"
                     />
                 </div>
 
-        
-                <div className="flex flex-col">
+                <div className="flex flex-col w-full">
                     <label className="text-xs font-medium text-gray-400 mb-1">Hasta</label>
                     <DatePicker
                         selected={parseISO(selectedDateTo)}
                         onChange={(d) => setSelectedDateTo(parseDatePickerValue(d))}
                         dateFormat="dd/MM/yyyy"
-                        placeholderText="DD/MM/AAAA"
-                        className="p-2 border border-gray-600 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-green-400 shadow-inner w-full h-10"
+                        className="p-2 border border-gray-600 rounded-lg text-sm text-black w-full h-10"
                         wrapperClassName="w-full"
                     />
                 </div>
@@ -132,64 +137,64 @@ const FilterForm: React.FC<FilterFormProps> = ({
                     label="Paciente"
                     value={selectedPatientName}
                     setValue={setSelectedPatientName}
-                    fieldKey="patient"
-                    filteredNames={filterSuggestions(patientNames, selectedPatientName)}
-                    placeholder="Escriba o seleccione paciente..."
+                    fieldKey={"patient" as FilterFieldKey}
+                    filteredNames={fPatients}
+                    placeholder="Paciente..."
                     dataTestId="filter-paciente"
                     isShowing={showStates.patient}
                     setter={showSetters.patient}
                     handleOpen={handleOpen}
-                    handleSuggestionClick={handleSuggestionClick}
+                    handleSuggestionClick={hPatientClick}
                 />
 
                 <AutocompleteInput
                     label="Práctica"
                     value={selectedPractice}
                     setValue={setSelectedPractice}
-                    fieldKey="practice"
-                    filteredNames={filterSuggestions(practices, selectedPractice)}
-                    placeholder="Escriba o seleccione práctica..."
+                    fieldKey={"practice" as FilterFieldKey}
+                    filteredNames={fPractices}
+                    placeholder="Práctica..."
                     dataTestId="filter-practice"
                     isShowing={showStates.practice}
                     setter={showSetters.practice}
                     handleOpen={handleOpen}
-                    handleSuggestionClick={handleSuggestionClick}
+                    handleSuggestionClick={hPracticeClick}
                 />
 
                 <AutocompleteInput
                     label="Obra Social"
                     value={selectedObraSocial}
                     setValue={setSelectedObraSocial}
-                    fieldKey="obraSocial"
-                    filteredNames={filterSuggestions(obrasSociales, selectedObraSocial)}
-                    placeholder="Escriba o seleccione obra social..."
+                    fieldKey={"obraSocial" as FilterFieldKey}
+                    filteredNames={fObrasSociales}
+                    placeholder="OS..."
                     dataTestId="filter-obrasocial"
                     isShowing={showStates.obraSocial}
                     setter={showSetters.obraSocial}
                     handleOpen={handleOpen}
-                    handleSuggestionClick={handleSuggestionClick}
+                    handleSuggestionClick={hOSClick}
                 />
 
                 <AutocompleteInput
                     label="Institución"
                     value={selectedInstitucion}
                     setValue={setSelectedInstitucion}
-                    fieldKey="institucion"
-                    filteredNames={filterSuggestions(instituciones, selectedInstitucion)}
-                    placeholder="Escriba o seleccione institución..."
+                    fieldKey={"institucion" as FilterFieldKey}
+                    filteredNames={fInstituciones}
+                    placeholder="Insti..."
                     dataTestId="filter-institucion"
                     isShowing={showStates.institucion}
                     setter={showSetters.institucion}
                     handleOpen={handleOpen}
-                    handleSuggestionClick={handleSuggestionClick}
+                    handleSuggestionClick={hInstiClick}
                 />
 
-                <div className="flex flex-col">
+                <div className="flex flex-col w-full">
                     <label className="text-xs font-medium text-gray-400 mb-1">Estado Pago</label>
                     <select
                         value={selectedStatus}
                         onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="p-2 border border-gray-600 bg-white rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-green-400 shadow-inner w-full h-10 appearance-none pr-8"
+                        className="p-2 border border-gray-600 bg-white rounded-lg text-sm text-black w-full h-10 appearance-none"
                     >
                         <option value="" disabled hidden>Escoja una opción</option>
                         <option value="Pagado">Pagado</option>
@@ -200,10 +205,9 @@ const FilterForm: React.FC<FilterFormProps> = ({
                 <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="flex items-center justify-center p-2 h-10 w-full mt-4 lg:mt-0 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 transform hover:scale-[1.02]"
+                    className="flex items-center justify-center p-2 h-10 w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-200 sm:col-span-2 lg:col-span-1 xl:col-span-1"
                 >
-                    <FaRedo className="mr-1" />
-                    Limpiar
+                    <FaRedo className="mr-1" /> Limpiar
                 </button>
             </div>
         </div>

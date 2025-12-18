@@ -102,7 +102,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
     }, [setPatients]);
 
     return (
-        <div className="mt-10">
+        <div className="mt-6 md:mt-10 px-2 md:px-0">
             {filteredPatients.length > 0 ? (
                 <ul className="space-y-4">
                     {filteredPatients.map((patient, index) => {
@@ -114,28 +114,32 @@ const PatientTable: React.FC<PatientTableProps> = ({
                         return (
                             <li
                                 key={patient.id}
-                                className="flex items-start justify-between border-b p-4 transition-all duration-300 ease-in-out"
+                                className="flex flex-col md:flex-row items-start justify-between border-b border-cyan-800/50 p-4 transition-all duration-300 ease-in-out bg-cyan-900/30 rounded-lg md:bg-transparent"
                             >
-                                <div className="flex">
+                                <div className="flex w-full md:w-auto">
                                     <div className="mr-4 mt-1 flex-shrink-0">
                                         <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-cyan-600 text-white font-bold text-sm">
                                             {index + 1}
                                         </span>
                                     </div>
 
-                                    <div>
-                                        <div><strong>Paciente:</strong> {patient.paciente}</div>
-                                        {edad !== null && (
-                                            <div><strong>Edad:</strong> {edad} años</div>
-                                        )}
-                                        <div><strong>Fecha:</strong> {formatDate(patient.dia)}</div>
-                                        <div><strong>Hora:</strong> {formatTime(patient.hora)}</div>
-                                        <div><strong>Prácticas:</strong> {patient.practicas}</div>
-                                        <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
-                                        <div><strong>Institución:</strong> {patient.institucion}</div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-lg md:text-base"><strong>Paciente:</strong> {patient.paciente}</div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-sm md:text-base mt-1 text-gray-200">
+                                            {edad !== null && (
+                                                <div><strong>Edad:</strong> {edad} años</div>
+                                            )}
+                                            <div><strong>Fecha:</strong> {formatDate(patient.dia)}</div>
+                                            <div><strong>Hora:</strong> {formatTime(patient.hora)}</div>
+                                            <div><strong>Obra Social:</strong> {patient.obraSocial}</div>
+                                            <div><strong>Institución:</strong> {patient.institucion}</div>
+                                        </div>
+                                        <div className="mt-1 text-sm md:text-base text-gray-200">
+                                            <strong>Prácticas:</strong> {patient.practicas}
+                                        </div>
 
                                         {patient.estadoPago !== 'no pagado' && (
-                                            <div>
+                                            <div className="mt-2 p-2 bg-cyan-800/30 rounded border border-cyan-700/30 text-sm">
                                                 <div>
                                                     <strong>Monto Pagado:</strong> {formatCurrency(patient.montoPagado)}
                                                 </div>
@@ -152,17 +156,17 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                             </div>
                                         )}
 
-                                        <div className="mt-4 flex gap-2">
+                                        <div className="mt-4 flex flex-wrap gap-2">
                                             <button
                                                 onClick={() => onEditClick(patient)}
-                                                className="py-2 px-4 bg-emerald-400 text-white rounded-md hover:bg-emerald-600 text-sm"
+                                                className="flex-1 md:flex-none py-2 px-6 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 text-sm font-bold transition-colors"
                                             >
                                                 Editar
                                             </button>
 
                                             <button
                                                 onClick={() => onDeleteClick(patient.id)}
-                                                className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+                                                className="flex-1 md:flex-none py-2 px-6 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-bold transition-colors"
                                             >
                                                 Borrar
                                             </button>
@@ -170,7 +174,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                     </div>
                                 </div>
 
-                                <div className="mt-4">
+                                <div className="mt-4 md:mt-0 w-full md:w-auto flex justify-center md:justify-end border-t md:border-t-0 border-cyan-800/50 pt-4 md:pt-0">
                                     <BotonPago
                                         paciente={pagoData}
                                         onEstadoActualizado={handleEstadoActualizado}
@@ -181,7 +185,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                     })}
                 </ul>
             ) : (
-                <div className="text-center">No se encontraron pacientes.</div>
+                <div className="text-center py-10 text-gray-400">No se encontraron pacientes.</div>
             )}
         </div>
     );

@@ -35,8 +35,8 @@ export default function Form() {
 
   if (token || authLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
-        <p className="text-lg text-gray-500">Iniciando sesión, por favor espere...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4 px-4">
+        <p className="text-lg text-gray-500 text-center">Iniciando sesión, por favor espere...</p>
         <div className="w-24 h-24">
           <svg
             className="w-full h-full animate-spin"
@@ -44,14 +44,11 @@ export default function Form() {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-        
             <path
               d="M32 4C28 4 24 8 24 12V44C24 48 28 52 32 52C36 52 40 48 40 44V12C40 8 36 4 32 4Z"
               fill="#3B82F6"
             />
-        
             <circle cx="32" cy="16" r="6" fill="#FCD34D" />
-       
             <path
               d="M28 44C28 46 36 46 36 44"
               stroke="#10B981"
@@ -65,18 +62,18 @@ export default function Form() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <form
-        className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-sm"
+        className="bg-white p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-sm"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-3xl font-extrabold mb-6 text-center text-blue-600">
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 text-center text-blue-600">
           Iniciar Sesión
         </h2>
 
         {message && (
           <div
-            className={`mb-4 p-3 rounded text-center font-medium ${
+            className={`mb-4 p-3 rounded text-center font-medium text-sm sm:text-base ${
               message.startsWith("Error")
                 ? "bg-red-100 text-red-700 border border-red-300"
                 : "bg-green-100 text-green-700 border border-green-300"
@@ -96,7 +93,7 @@ export default function Form() {
           <input
             id="usuario"
             type="text"
-            className="mt-2 block w-full px-4 py-2 border border-gray-300 text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-2 block w-full px-4 py-2 border border-gray-300 text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
             placeholder="Escribe tu usuario"
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
@@ -114,7 +111,7 @@ export default function Form() {
           <input
             id="contrasena"
             type="password"
-            className="mt-2 block w-full px-4 py-2 border border-gray-300 text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-2 block w-full px-4 py-2 border border-gray-300 text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
             placeholder="Escribe tu contraseña"
             value={contrasena}
             onChange={(e) => setContrasena(e.target.value)}
@@ -124,12 +121,12 @@ export default function Form() {
 
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300"
+          className="w-full py-3 px-4 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors"
         >
           Iniciar sesión
         </button>
 
-        <div className="mt-6 text-center space-y-3">
+        <div className="mt-6 text-center space-y-4">
           <button
             type="button"
             onClick={() => router.push("/registro")}

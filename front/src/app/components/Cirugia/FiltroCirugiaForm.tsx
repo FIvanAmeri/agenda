@@ -1,14 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaFilter, FaRedo } from "react-icons/fa";
-import AutocompleteInput from "./AutocompleteInput";
-import { useFilterDropdowns } from "../../hooks/Filtro/useFilterDropdowns";
+import AutocompleteInput from "../FilterForm/AutocompleteInput";
+import { useFilterDropdowns, FilterFieldKey } from "../../hooks/Filtro/useFilterDropdowns";
 import { useCirugiaLists } from "../../hooks/Cirugia/useCirugiaLists";
 import { PropsFiltroCirugia, FiltrosCirugia } from "../../components/interfaz/tipos-cirugia";
-import { FilterFieldKey } from "../../hooks/Filtro/useFilterDropdowns";
 
 const formatISO = (date: Date | null): string => {
     if (!date) return "";
@@ -32,33 +31,48 @@ const parseDatePickerValue = (date: Date | null): string => {
     return formatISO(date);
 };
 
-const filterSuggestions = (list: string[], value: string): string[] =>
-    value ? list.filter((i: string) => i.toLowerCase().includes(value.toLowerCase())) : list;
-
 const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
     filters,
     setFilters,
     cirugias,
-    medicosOpciones,
-    tiposCirugiaOpciones,
     obrasSocialesOpciones,
 }) => {
-    const { formRef, showStates, closeAllDropdowns, handleOpen } =
+    const { formRef, showStates, showSetters, closeAllDropdowns, handleOpen } =
         useFilterDropdowns();
 
-    const { patientNames } = useCirugiaLists(cirugias);
+    const { patientNames, tiposCirugia, medicos } = useCirugiaLists(cirugias);
 
-    const handleFilterChange = (field: keyof FiltrosCirugia, value: string): void => {
+    const handleFilterChange = useCallback((field: keyof FiltrosCirugia, value: string): void => {
         setFilters((prev: FiltrosCirugia) => ({ ...prev, [field]: value }));
-    };
+    }, [setFilters]);
 
-    const handleSuggestionClick = (
+    const filteredPatients = useMemo(() => 
+        patientNames.filter((name: string) => 
+            name.toLowerCase().includes(filters.selectedPatientName.toLowerCase())
+        ), [patientNames, filters.selectedPatientName]);
+
+    const filteredPractices = useMemo(() => 
+        tiposCirugia.filter((name: string) => 
+            name.toLowerCase().includes(filters.selectedTipoCirugia.toLowerCase())
+        ), [tiposCirugia, filters.selectedTipoCirugia]);
+
+    const filteredMedicos = useMemo(() => 
+        medicos.filter((name: string) => 
+            name.toLowerCase().includes(filters.selectedMedico.toLowerCase())
+        ), [medicos, filters.selectedMedico]);
+
+    const filteredObrasSociales = useMemo(() => 
+        obrasSocialesOpciones.filter((name: string) => 
+            name.toLowerCase().includes(filters.selectedObraSocial.toLowerCase())
+        ), [obrasSocialesOpciones, filters.selectedObraSocial]);
+
+    const handleSuggestionClick = useCallback((
         name: string,
         field: keyof FiltrosCirugia
     ): void => {
-        handleFilterChange(field, name);
+        setFilters((prev: FiltrosCirugia) => ({ ...prev, [field]: name }));
         closeAllDropdowns();
-    };
+    }, [setFilters, closeAllDropdowns]);
 
     const handleResetFilters = (): void => {
         setFilters({
@@ -74,15 +88,14 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
     };
 
     return (
-        <div ref={formRef} className="bg-gray-800 p-5 rounded-xl shadow-2xl">
+        <div ref={formRef} className="bg-gray-800 p-4 md:p-5 rounded-xl shadow-2xl w-full">
             <div className="flex items-center mb-4 text-white border-b border-gray-600 pb-3">
-                <FaFilter className="mr-3 text-cyan-400 text-xl" />
-                <h3 className="font-extrabold text-xl tracking-wide">Filtros de Cirugías</h3>
+                <FaFilter className="mr-3 text-cyan-400 text-lg md:text-xl" />
+                <h3 className="font-extrabold text-lg md:text-xl tracking-wide">Filtros de Cirugías</h3>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4 items-end">
-                
-                <div className="flex flex-col">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-4 items-end">
+                <div className="flex flex-col w-full">
                     <label className="text-xs font-medium text-gray-400 mb-1">Desde</label>
                     <DatePicker
                         selected={parseISO(filters.dateFrom)}
@@ -94,8 +107,7 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
                     />
                 </div>
 
-        
-                <div className="flex flex-col">
+                <div className="flex flex-col w-full">
                     <label className="text-xs font-medium text-gray-400 mb-1">Hasta</label>
                     <DatePicker
                         selected={parseISO(filters.dateTo)}
@@ -107,75 +119,94 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
                     />
                 </div>
 
-                <AutocompleteInput
-                    label="Paciente"
-                    value={filters.selectedPatientName}
-                    setValue={(val: string) => handleFilterChange("selectedPatientName", val)}
-                    fieldKey={"patient" as FilterFieldKey}
-                    filteredNames={filterSuggestions(patientNames, filters.selectedPatientName)}
-                    placeholder="Escriba o seleccione paciente..."
-                    dataTestId="filter-paciente"
-                    isShowing={showStates.patient}
-                    handleOpen={handleOpen}
-                    handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedPatientName")}
-                />
+                <div className="flex flex-col w-full">
+                    <AutocompleteInput
+                        label="Paciente"
+                        value={filters.selectedPatientName}
+                        setValue={(val: string) => handleFilterChange("selectedPatientName", val)}
+                        fieldKey={"patient" as FilterFieldKey}
+                        filteredNames={filteredPatients}
+                        placeholder="Paciente..."
+                        dataTestId="filter-paciente"
+                        isShowing={showStates.patient}
+                        setter={showSetters.patient}
+                        handleOpen={handleOpen}
+                        handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedPatientName")}
+                    />
+                </div>
 
-                <AutocompleteInput
-                    label="Tipo Cirugía"
-                    value={filters.selectedTipoCirugia}
-                    setValue={(val: string) => handleFilterChange("selectedTipoCirugia", val)}
-                    fieldKey={"practice" as FilterFieldKey}
-                    filteredNames={filterSuggestions(tiposCirugiaOpciones, filters.selectedTipoCirugia)}
-                    placeholder="Escriba o seleccione tipo..."
-                    dataTestId="filter-tipo-cirugia"
-                    isShowing={showStates.practice}
-                    handleOpen={handleOpen}
-                    handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedTipoCirugia")}
-                />
+                <div className="flex flex-col w-full">
+                    <AutocompleteInput
+                        label="Tipo Cirugía"
+                        value={filters.selectedTipoCirugia}
+                        setValue={(val: string) => handleFilterChange("selectedTipoCirugia", val)}
+                        fieldKey={"practice" as FilterFieldKey}
+                        filteredNames={filteredPractices}
+                        placeholder="Tipo..."
+                        dataTestId="filter-tipo-cirugia"
+                        isShowing={showStates.practice}
+                        setter={showSetters.practice}
+                        handleOpen={handleOpen}
+                        handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedTipoCirugia")}
+                    />
+                </div>
 
-                <AutocompleteInput
-                    label="Médico"
-                    value={filters.selectedMedico}
-                    setValue={(val: string) => handleFilterChange("selectedMedico", val)}
-                    fieldKey={"institucion" as FilterFieldKey}
-                    filteredNames={filterSuggestions(medicosOpciones, filters.selectedMedico)}
-                    placeholder="Escriba o seleccione médico..."
-                    dataTestId="filter-medico"
-                    isShowing={showStates.institucion}
-                    handleOpen={handleOpen}
-                    handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedMedico")}
-                />
+                <div className="flex flex-col w-full">
+                    <AutocompleteInput
+                        label="Médico"
+                        value={filters.selectedMedico}
+                        setValue={(val: string) => handleFilterChange("selectedMedico", val)}
+                        fieldKey={"institucion" as FilterFieldKey}
+                        filteredNames={filteredMedicos}
+                        placeholder="Médico..."
+                        dataTestId="filter-medico"
+                        isShowing={showStates.institucion}
+                        setter={showSetters.institucion}
+                        handleOpen={handleOpen}
+                        handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedMedico")}
+                    />
+                </div>
                 
-                <AutocompleteInput
-                    label="Obra Social"
-                    value={filters.selectedObraSocial}
-                    setValue={(val: string) => handleFilterChange("selectedObraSocial", val)}
-                    fieldKey={"obraSocial" as FilterFieldKey}
-                    filteredNames={filterSuggestions(obrasSocialesOpciones, filters.selectedObraSocial)}
-                    placeholder="Escriba o seleccione OS..."
-                    dataTestId="filter-obra-social"
-                    isShowing={showStates.obraSocial}
-                    handleOpen={handleOpen}
-                    handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedObraSocial")}
-                />
+                <div className="flex flex-col w-full">
+                    <AutocompleteInput
+                        label="Obra Social"
+                        value={filters.selectedObraSocial}
+                        setValue={(val: string) => handleFilterChange("selectedObraSocial", val)}
+                        fieldKey={"obraSocial" as FilterFieldKey}
+                        filteredNames={filteredObrasSociales}
+                        placeholder="OS..."
+                        dataTestId="filter-obra-social"
+                        isShowing={showStates.obraSocial}
+                        setter={showSetters.obraSocial}
+                        handleOpen={handleOpen}
+                        handleSuggestionClick={(name: string) => handleSuggestionClick(name, "selectedObraSocial")}
+                    />
+                </div>
                 
-                <div className="flex flex-col">
+                <div className="flex flex-col w-full">
                     <label className="text-xs font-medium text-gray-400 mb-1">Estado Pago</label>
-                    <select
-                        value={filters.selectedStatus}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFilterChange("selectedStatus", e.target.value as FiltrosCirugia["selectedStatus"])}
-                        className="p-2 border border-gray-600 bg-white rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-inner w-full h-10 appearance-none pr-8"
-                    >
-                        <option value="" disabled hidden>Escoja una opción</option>
-                        <option value="pagado">Pagado</option>
-                        <option value="no pagado">No Pagado</option>
-                    </select>
+                    <div className="relative">
+                        <select
+                            value={filters.selectedStatus}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFilterChange("selectedStatus", e.target.value)}
+                            className="p-2 border border-gray-600 bg-white rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-inner w-full h-10 appearance-none pr-8"
+                        >
+                            <option value="" disabled hidden>Opción</option>
+                            <option value="pagado">Pagado</option>
+                            <option value="no pagado">No Pagado</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
         
                 <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="flex items-center justify-center p-2 h-10 w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 transform hover:scale-[1.02] col-span-2 sm:col-span-1 lg:col-span-2 xl:col-span-1"
+                    className="flex items-center justify-center p-2 h-10 w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 transform hover:scale-[1.02] sm:col-span-2 md:col-span-1 lg:col-span-1 xl:col-span-1"
                 >
                     <FaRedo className="mr-1" />
                     Limpiar

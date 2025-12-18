@@ -26,18 +26,6 @@ interface MainLayoutProps {
     children: (props: ContentProps) => React.ReactNode;
 }
 
-const API_USERS = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/users";
-
-function parseJwt(token: string): Record<string, unknown> | null {
-    try {
-        const payload = token.split(".")[1];
-        const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-        return JSON.parse(decoded) as Record<string, unknown>;
-    } catch {
-        return null;
-    }
-}
-
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const router = useRouter();
     const { token, loading } = useAuth();
@@ -63,8 +51,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         return <div className="text-center text-gray-300 mt-10">Cargando...</div>;
     }
 
+    const contentProps: ContentProps = {
+        user,
+        showAddModal,
+        setShowAddModal,
+        showEditModal,
+        setShowEditModal,
+        selectedPatient,
+        setSelectedPatient,
+        showCirugiaModal,
+        setShowCirugiaModal,
+        showViewCirugiaModal,
+        setShowViewCirugiaModal,
+        selectedCirugia,
+        setSelectedCirugia,
+    };
+
     return (
-        <div className="flex min-h-screen bg-cyan-900">
+        <div className="flex flex-col md:flex-row min-h-screen bg-cyan-900 w-full overflow-x-hidden items-stretch">
             <Sidebar
                 handleLogout={() => {
                     localStorage.clear();
@@ -75,22 +79,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 userName={user.usuario}
             />
 
-            <main className="flex-1 min-w-0 overflow-x-hidden">
-                {children({
-                    user,
-                    showAddModal,
-                    setShowAddModal,
-                    showEditModal,
-                    setShowEditModal,
-                    selectedPatient,
-                    setSelectedPatient,
-                    showCirugiaModal,
-                    setShowCirugiaModal,
-                    showViewCirugiaModal,
-                    setShowViewCirugiaModal,
-                    selectedCirugia,
-                    setSelectedCirugia
-                })}
+            <main className="flex-1 w-full min-w-0 flex flex-col justify-start">
+                <div className="w-full">
+                    {children(contentProps)}
+                </div>
             </main>
         </div>
     );

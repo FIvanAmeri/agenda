@@ -17,8 +17,6 @@ export const useCirugiaLists = (cirugias: Cirugia[]): CirugiaLists => {
             if (c.paciente) uniquePatientNames.add(c.paciente);
             if (c.tipoCirugia) uniqueTiposCirugia.add(c.tipoCirugia);
             if (c.medicoOpero) uniqueMedicos.add(c.medicoOpero);
-            if (c.medicoAyudo1) uniqueMedicos.add(c.medicoAyudo1 as string);
-            if (c.medicoAyudo2) uniqueMedicos.add(c.medicoAyudo2 as string);
         });
 
         return {

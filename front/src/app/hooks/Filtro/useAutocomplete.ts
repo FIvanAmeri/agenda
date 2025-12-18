@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, RefObject } from 'react';
-
+import { useEffect, useRef, RefObject } from 'react';
 
 interface UseAutocompleteProps {
     isShowing: boolean;
@@ -8,29 +7,30 @@ interface UseAutocompleteProps {
 }
 
 interface UseAutocompleteResult {
-    wrapperRef: RefObject<HTMLDivElement>;
-    inputRef: RefObject<HTMLInputElement>;
+    wrapperRef: RefObject<HTMLDivElement | null>;
+    inputRef: RefObject<HTMLInputElement | null>;
 }
 
-
-export const useAutocomplete = ({ setter, isShowing, value }: UseAutocompleteProps): UseAutocompleteResult => {
-    
+export const useAutocomplete = ({ setter, isShowing }: UseAutocompleteProps): UseAutocompleteResult => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-                setter(false); 
+        if (!isShowing) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node;
+            if (wrapperRef.current && !wrapperRef.current.contains(target)) {
+                setter(false);
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        
+        document.addEventListener('click', handleClickOutside, true);
+
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('click', handleClickOutside, true);
         };
-    }, [setter]);
+    }, [isShowing, setter]);
 
     return { wrapperRef, inputRef };
 };
