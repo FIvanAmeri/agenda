@@ -124,7 +124,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                     </div>
 
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-lg md:text-base"><strong>Paciente:</strong> {patient.paciente}</div>
+                                        <div className="text-lg md:text-base text-white"><strong>Paciente:</strong> {patient.paciente}</div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-sm md:text-base mt-1 text-gray-200">
                                             {edad !== null && (
                                                 <div><strong>Edad:</strong> {edad} años</div>
@@ -139,7 +139,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                         </div>
 
                                         {patient.estadoPago !== 'no pagado' && (
-                                            <div className="mt-2 p-2 bg-cyan-800/30 rounded border border-cyan-700/30 text-sm">
+                                            <div className="mt-2 p-2 bg-cyan-800/30 rounded border border-cyan-700/30 text-sm text-white">
                                                 <div>
                                                     <strong>Monto Pagado:</strong> {formatCurrency(patient.montoPagado)}
                                                 </div>

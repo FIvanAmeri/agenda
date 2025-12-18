@@ -17,28 +17,18 @@ interface NotificationState {
 
 const NotificationModal: React.FC<{ notification: NotificationState, onClose: () => void }> = ({ notification, onClose }) => {
     if (!notification.show) return null;
-
     const bgColor = notification.type === 'success' ? 'bg-[#004d40]' : 'bg-red-700';
     const borderColor = notification.type === 'success' ? 'border-[#009688]' : 'border-red-500';
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-[100] flex justify-center items-center p-4" onClick={onClose}>
-            <div 
-                className={`w-full max-w-md p-6 rounded-lg shadow-2xl text-white transform transition-all duration-300 border-2 ${bgColor} ${borderColor}`}
-                onClick={e => e.stopPropagation()}
-            >
+            <div className={`w-full max-w-md p-6 rounded-lg shadow-2xl text-white border-2 ${bgColor} ${borderColor}`} onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">{notification.type === 'success' ? 'Operación Exitosa' : 'Error'}</h3>
                     <button onClick={onClose} className="text-white hover:text-gray-300 text-2xl leading-none">&times;</button>
                 </div>
                 <p className="text-lg mb-6">{notification.message}</p>
                 <div className="flex justify-end">
-                    <button 
-                        onClick={onClose} 
-                        className={`px-6 py-2 rounded-md font-semibold ${notification.type === 'success' ? 'bg-[#009688] hover:bg-[#00796b]' : 'bg-red-500 hover:bg-red-600'} transition duration-200`}
-                    >
-                        Aceptar
-                    </button>
+                    <button onClick={onClose} className={`px-6 py-2 rounded-md font-semibold ${notification.type === 'success' ? 'bg-[#009688] hover:bg-[#00796b]' : 'bg-red-500 hover:bg-red-600'} transition duration-200`}>Aceptar</button>
                 </div>
             </div>
         </div>
@@ -63,11 +53,8 @@ export default function PrincipalContent({
     setSelectedPatient: (p: Patient | null) => void;
 }) {
     const { patients, setPatients, loading: patientsLoading, error: patientsError } = usePatients();
-    
     const [notification, setNotification] = useState<NotificationState>({ show: false, message: '', type: 'success' });
-
     const closeNotification = () => setNotification({ show: false, message: '', type: 'success' });
-
     const displayNotification = (message: string, type: 'success' | 'error' = 'success') => {
         setNotification({ show: true, message, type });
     };
@@ -101,10 +88,9 @@ export default function PrincipalContent({
         return "";
     };
 
-    const parsePatientDateToISO = (raw?: unknown): string => {
-        if (typeof raw !== "string") return "";
+    const parsePatientDateToISO = (raw?: string | null): string => {
+        if (!raw) return "";
         const trimmed = raw.trim();
-        if (!trimmed) return "";
         if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.split("T")[0];
         if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
             const [d, m, y] = trimmed.split("/");
@@ -118,13 +104,12 @@ export default function PrincipalContent({
     const addPatient = (newPatient: Patient) => {
         setPatients((prev) => {
             const list = Array.isArray(prev) ? prev : [];
-            const updatedList = [...list, newPatient].sort((a, b) => {
+            return [...list, newPatient].sort((a, b) => {
                 const dateA = new Date(a.dia).getTime();
                 const dateB = new Date(b.dia).getTime();
                 if (dateA !== dateB) return dateA - dateB;
                 return a.hora.localeCompare(b.hora);
             });
-            return updatedList;
         });
         displayNotification("Turno agregado exitosamente.", 'success');
         setShowAddModal(false);
@@ -133,14 +118,13 @@ export default function PrincipalContent({
     const updatePatient = (updatedPatient: Patient) => {
         setPatients((prev) => {
             const list = Array.isArray(prev) ? prev : [];
-            const updatedList = list.map((p) => p.id === updatedPatient.id ? updatedPatient : p)
+            return list.map((p) => p.id === updatedPatient.id ? updatedPatient : p)
                 .sort((a, b) => {
                     const dateA = new Date(a.dia).getTime();
                     const dateB = new Date(b.dia).getTime();
                     if (dateA !== dateB) return dateA - dateB;
                     return a.hora.localeCompare(b.hora);
                 });
-            return updatedList;
         });
         displayNotification("Cambios guardados con éxito.", 'success');
         setShowEditModal(false);
@@ -154,9 +138,7 @@ export default function PrincipalContent({
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
             });
-
-            if (!response.ok) throw new Error("Error al eliminar");
-
+            if (!response.ok) throw new Error();
             setPatients((prev) => (Array.isArray(prev) ? prev : []).filter((p) => p.id !== patientId));
             displayNotification("Paciente eliminado de la agenda.", 'success');
         } catch {
@@ -178,24 +160,23 @@ export default function PrincipalContent({
         if (!patientISO) return false;
         const afterFrom = fromISO ? patientISO >= fromISO : true;
         const beforeTo = toISO ? patientISO <= toISO : true;
-        const pacienteValue = p.paciente || "";
+        const matchName = selectedPatientName ? (p.paciente || "").toLowerCase().includes(selectedPatientName.toLowerCase()) : true;
         const matchStatus = selectedStatus === "" 
             ? true 
             : selectedStatus === "Pagado" 
                 ? p.estadoPago === "pagado" 
                 : p.estadoPago === "no pagado" || p.estadoPago === "parcialmente pagado";
-
-        const matchName = selectedPatientName ? pacienteValue.toLowerCase().includes(selectedPatientName.toLowerCase()) : true;
         
-        return afterFrom && beforeTo && matchName && matchStatus;
+        const matchPractice = selectedPractice ? (p.practicas || "").toLowerCase().includes(selectedPractice.toLowerCase()) : true;
+        const matchObraSocial = selectedObraSocial ? (p.obraSocial || "").toLowerCase().includes(selectedObraSocial.toLowerCase()) : true;
+        const matchInstitucion = selectedInstitucion ? (p.institucion || "").toLowerCase().includes(selectedInstitucion.toLowerCase()) : true;
+        
+        return afterFrom && beforeTo && matchName && matchStatus && matchPractice && matchObraSocial && matchInstitucion;
     });
 
     return (
         <div className="flex flex-col flex-1 p-4 md:p-8 w-full max-w-full overflow-x-hidden">
-            <h1 className="text-center text-xl md:text-2xl font-semibold mb-6 text-gray-50">
-                Agenda de Turnos
-            </h1>
-
+            <h1 className="text-center text-xl md:text-2xl font-semibold mb-6 text-gray-50">Agenda de Turnos</h1>
             <FilterForm
                 selectedDateFrom={selectedDateFrom}
                 setSelectedDateFrom={setSelectedDateFrom}
@@ -213,13 +194,7 @@ export default function PrincipalContent({
                 setSelectedStatus={setSelectedStatus}
                 patients={dataToFilter}
             />
-
-            {patientsError && (
-                <div className="text-red-500 text-center mt-4 text-sm md:text-base">
-                    Error al cargar pacientes: {patientsError}
-                </div>
-            )}
-
+            {patientsError && <div className="text-red-500 text-center mt-4 text-sm md:text-base">Error al cargar pacientes</div>}
             <div className="mt-4 w-full">
                 <PatientTable
                     filteredPatients={filteredPatients}
@@ -228,7 +203,6 @@ export default function PrincipalContent({
                     setPatients={setPatients}
                 />
             </div>
-
             {showAddModal && user && (
                 <AddPatientModal
                     user={user}
@@ -236,7 +210,6 @@ export default function PrincipalContent({
                     onAdd={addPatient}
                 />
             )}
-
             {showEditModal && selectedPatient && user && (
                 <EditPatientModal
                     selectedPatient={selectedPatient}
@@ -245,7 +218,6 @@ export default function PrincipalContent({
                     setShowEditModal={setShowEditModal}
                 />
             )}
-            
             <NotificationModal notification={notification} onClose={closeNotification} />
         </div>
     );

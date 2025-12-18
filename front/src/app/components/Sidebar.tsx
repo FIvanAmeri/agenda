@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <aside className={`
                 fixed inset-y-0 left-0 z-[80] w-64 bg-cyan-950 text-gray-100 flex flex-col transition-transform duration-300 ease-in-out transform
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
-                md:translate-x-0 md:static md:h-screen md:flex-shrink-0
+                md:translate-x-0 md:fixed md:h-screen md:flex-shrink-0
             `}>
                 <div className="flex-grow overflow-y-auto custom-scrollbar-subtle p-6">
                     <div className="hidden md:flex items-center mb-10">
@@ -123,6 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                 </div>
             </aside>
+            <div className="hidden md:block md:w-64 md:flex-shrink-0"></div>
         </>
     );
 };

@@ -72,63 +72,93 @@ const FilterForm: React.FC<FilterFormProps> = ({
     const { patientNames, practices, obrasSociales, instituciones } =
         usePatientLists(patients);
 
-    const fPatients = useMemo(() => 
-        patientNames.filter(n => n.toLowerCase().includes(selectedPatientName.toLowerCase())),
-        [patientNames, selectedPatientName]
-    );
+    const fPatients = useMemo(() => {
+        if (!selectedPatientName) return patientNames;
+        return patientNames.filter(n => 
+            n.toLowerCase().includes(selectedPatientName.toLowerCase())
+        );
+    }, [patientNames, selectedPatientName]);
 
-    const fPractices = useMemo(() => 
-        practices.filter(n => n.toLowerCase().includes(selectedPractice.toLowerCase())),
-        [practices, selectedPractice]
-    );
+    const fPractices = useMemo(() => {
+        if (!selectedPractice) return practices;
+        return practices.filter(n => 
+            n.toLowerCase().includes(selectedPractice.toLowerCase())
+        );
+    }, [practices, selectedPractice]);
 
-    const fObrasSociales = useMemo(() => 
-        obrasSociales.filter(n => n.toLowerCase().includes(selectedObraSocial.toLowerCase())),
-        [obrasSociales, selectedObraSocial]
-    );
+    const fObrasSociales = useMemo(() => {
+        if (!selectedObraSocial) return obrasSociales;
+        return obrasSociales.filter(n => 
+            n.toLowerCase().includes(selectedObraSocial.toLowerCase())
+        );
+    }, [obrasSociales, selectedObraSocial]);
 
-    const fInstituciones = useMemo(() => 
-        instituciones.filter(n => n.toLowerCase().includes(selectedInstitucion.toLowerCase())),
-        [instituciones, selectedInstitucion]
-    );
+    const fInstituciones = useMemo(() => {
+        if (!selectedInstitucion) return instituciones;
+        return instituciones.filter(n => 
+            n.toLowerCase().includes(selectedInstitucion.toLowerCase())
+        );
+    }, [instituciones, selectedInstitucion]);
 
-    const hPatientClick = useCallback((n: string) => { setSelectedPatientName(n); closeAllDropdowns(); }, [setSelectedPatientName, closeAllDropdowns]);
-    const hPracticeClick = useCallback((n: string) => { setSelectedPractice(n); closeAllDropdowns(); }, [setSelectedPractice, closeAllDropdowns]);
-    const hOSClick = useCallback((n: string) => { setSelectedObraSocial(n); closeAllDropdowns(); }, [setSelectedObraSocial, closeAllDropdowns]);
-    const hInstiClick = useCallback((n: string) => { setSelectedInstitucion(n); closeAllDropdowns(); }, [setSelectedInstitucion, closeAllDropdowns]);
+    const hPatientClick = useCallback((n: string) => { 
+        setSelectedPatientName(n); 
+        closeAllDropdowns(); 
+    }, [setSelectedPatientName, closeAllDropdowns]);
+
+    const hPracticeClick = useCallback((n: string) => { 
+        setSelectedPractice(n); 
+        closeAllDropdowns(); 
+    }, [setSelectedPractice, closeAllDropdowns]);
+
+    const hOSClick = useCallback((n: string) => { 
+        setSelectedObraSocial(n); 
+        closeAllDropdowns(); 
+    }, [setSelectedObraSocial, closeAllDropdowns]);
+
+    const hInstiClick = useCallback((n: string) => { 
+        setSelectedInstitucion(n); 
+        closeAllDropdowns(); 
+    }, [setSelectedInstitucion, closeAllDropdowns]);
 
     const handleResetFilters = () => {
-        setSelectedDateFrom(""); setSelectedDateTo(""); setSelectedPatientName("");
-        setSelectedPractice(""); setSelectedObraSocial(""); setSelectedInstitucion("");
-        setSelectedStatus(""); closeAllDropdowns();
+        setSelectedDateFrom(""); 
+        setSelectedDateTo(""); 
+        setSelectedPatientName("");
+        setSelectedPractice(""); 
+        setSelectedObraSocial(""); 
+        setSelectedInstitucion("");
+        setSelectedStatus(""); 
+        closeAllDropdowns();
     };
 
     return (
-        <div ref={formRef} className="bg-gray-800 p-4 md:p-5 rounded-xl shadow-2xl w-full">
-            <div className="flex items-center mb-4 text-white border-b border-gray-600 pb-3">
-                <FaFilter className="mr-3 text-green-400 text-lg md:text-xl" />
-                <h3 className="font-extrabold text-lg md:text-xl tracking-wide">Filtros de estudios</h3>
+        <div ref={formRef} className="bg-[#0F2A35] p-4 md:p-5 rounded-xl shadow-2xl w-full border border-[#1f3b47]">
+            <div className="flex items-center mb-4 text-white border-b border-[#1f3b47] pb-3">
+                <FaFilter className="mr-3 text-cyan-400 text-lg md:text-xl" />
+                <h3 className="font-extrabold text-lg md:text-xl tracking-wide uppercase">Filtros de búsqueda</h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3 items-end">
                 <div className="flex flex-col w-full">
-                    <label className="text-xs font-medium text-gray-400 mb-1">Desde</label>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Desde</label>
                     <DatePicker
                         selected={parseISO(selectedDateFrom)}
                         onChange={(d) => setSelectedDateFrom(parseDatePickerValue(d))}
                         dateFormat="dd/MM/yyyy"
-                        className="p-2 border border-gray-600 rounded-lg text-sm text-black w-full h-10"
+                        placeholderText="DD/MM/AAAA"
+                        className="p-2 bg-white border border-gray-600 rounded-lg text-sm text-black w-full h-10 focus:ring-2 focus:ring-cyan-500 outline-none"
                         wrapperClassName="w-full"
                     />
                 </div>
 
                 <div className="flex flex-col w-full">
-                    <label className="text-xs font-medium text-gray-400 mb-1">Hasta</label>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Hasta</label>
                     <DatePicker
                         selected={parseISO(selectedDateTo)}
                         onChange={(d) => setSelectedDateTo(parseDatePickerValue(d))}
                         dateFormat="dd/MM/yyyy"
-                        className="p-2 border border-gray-600 rounded-lg text-sm text-black w-full h-10"
+                        placeholderText="DD/MM/AAAA"
+                        className="p-2 bg-white border border-gray-600 rounded-lg text-sm text-black w-full h-10 focus:ring-2 focus:ring-cyan-500 outline-none"
                         wrapperClassName="w-full"
                     />
                 </div>
@@ -139,7 +169,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                     setValue={setSelectedPatientName}
                     fieldKey={"patient" as FilterFieldKey}
                     filteredNames={fPatients}
-                    placeholder="Paciente..."
+                    placeholder="Nombre..."
                     dataTestId="filter-paciente"
                     isShowing={showStates.patient}
                     setter={showSetters.patient}
@@ -153,7 +183,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                     setValue={setSelectedPractice}
                     fieldKey={"practice" as FilterFieldKey}
                     filteredNames={fPractices}
-                    placeholder="Práctica..."
+                    placeholder="Estudio..."
                     dataTestId="filter-practice"
                     isShowing={showStates.practice}
                     setter={showSetters.practice}
@@ -167,7 +197,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                     setValue={setSelectedObraSocial}
                     fieldKey={"obraSocial" as FilterFieldKey}
                     filteredNames={fObrasSociales}
-                    placeholder="OS..."
+                    placeholder="Entidad..."
                     dataTestId="filter-obrasocial"
                     isShowing={showStates.obraSocial}
                     setter={showSetters.obraSocial}
@@ -181,7 +211,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                     setValue={setSelectedInstitucion}
                     fieldKey={"institucion" as FilterFieldKey}
                     filteredNames={fInstituciones}
-                    placeholder="Insti..."
+                    placeholder="Lugar..."
                     dataTestId="filter-institucion"
                     isShowing={showStates.institucion}
                     setter={showSetters.institucion}
@@ -190,13 +220,13 @@ const FilterForm: React.FC<FilterFormProps> = ({
                 />
 
                 <div className="flex flex-col w-full">
-                    <label className="text-xs font-medium text-gray-400 mb-1">Estado Pago</label>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Estado</label>
                     <select
                         value={selectedStatus}
                         onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="p-2 border border-gray-600 bg-white rounded-lg text-sm text-black w-full h-10 appearance-none"
+                        className="p-2 border border-gray-600 bg-white rounded-lg text-sm text-black w-full h-10 appearance-none focus:ring-2 focus:ring-cyan-500 outline-none"
                     >
-                        <option value="" disabled hidden>Escoja una opción</option>
+                        <option value="">Todos</option>
                         <option value="Pagado">Pagado</option>
                         <option value="No Pagado">No Pagado</option>
                     </select>
@@ -205,9 +235,9 @@ const FilterForm: React.FC<FilterFormProps> = ({
                 <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="flex items-center justify-center p-2 h-10 w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition duration-200 sm:col-span-2 lg:col-span-1 xl:col-span-1"
+                    className="flex items-center justify-center p-2 h-10 w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition duration-200 sm:col-span-2 lg:col-span-1 xl:col-span-1 uppercase text-xs"
                 >
-                    <FaRedo className="mr-1" /> Limpiar
+                    <FaRedo className="mr-2" /> Limpiar
                 </button>
             </div>
         </div>
