@@ -1,6 +1,8 @@
+"use client";
+
 import React from "react";
-import { PropsCampoSeleccionDinamico } from "../../components/interfaz/interfaz";
 import { FaPlus } from "react-icons/fa";
+import { PropsCampoSeleccionDinamico } from "../../components/interfaz/interfaz";
 
 export const CampoSeleccionDinamico: React.FC<PropsCampoSeleccionDinamico> = ({
     nombre,
@@ -13,37 +15,33 @@ export const CampoSeleccionDinamico: React.FC<PropsCampoSeleccionDinamico> = ({
     deshabilitado = false
 }) => {
     return (
-        <div className="relative">
-            <label htmlFor={nombre} className="block text-sm font-medium text-gray-300 mb-1">{etiqueta}</label>
-            <div className="flex items-center space-x-2"> 
-                
-                <div className="flex-1 overflow-hidden"> 
-                    <select
-                        id={nombre}
-                        name={nombre}
-                        value={valor}
-                        onChange={onChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
-                        required={requerido}
-                        className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white focus:ring-cyan-500 focus:border-cyan-500 appearance-none"
-                        disabled={deshabilitado}
-                    >
-                        <option value="" disabled>Seleccione un {etiqueta.toLowerCase()}</option>
-                        {opciones.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                
+        <div className="flex flex-col w-full">
+            <label className="block text-xs font-medium text-gray-300 mb-1">
+                {etiqueta} {requerido && <span className="text-red-500">*</span>}
+            </label>
+            <div className="flex space-x-2">
+                <select
+                    name={nombre}
+                    value={valor}
+                    onChange={onChange}
+                    required={requerido}
+                    disabled={deshabilitado}
+                    className="flex-1 p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500 disabled:opacity-50"
+                >
+                    <option value="">Seleccione una opción</option>
+                    {opciones.map((opcion, index) => (
+                        <option key={index} value={opcion}>
+                            {opcion}
+                        </option>
+                    ))}
+                </select>
                 <button
                     type="button"
                     onClick={onAgregarOpcion}
-                    title={`Agregar nuevo ${etiqueta.toLowerCase()}`}
-                    className="p-2 bg-[#0c4a34] text-white rounded-md hover:bg-[#1f5666] transition duration-200 flex-shrink-0"
-                    disabled={deshabilitado}
+                    title={`Agregar ${etiqueta}`}
+                    className="p-2 bg-cyan-700 text-white rounded-md hover:bg-cyan-600 transition flex-shrink-0"
                 >
-                    <FaPlus className="text-lg" />
+                    <FaPlus className="text-sm" />
                 </button>
             </div>
         </div>

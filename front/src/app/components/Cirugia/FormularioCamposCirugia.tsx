@@ -1,13 +1,25 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { PropsFormularioCirugia, ListaDinamica } from "../../components/interfaz/interfaz";
-import { usarFormularioCirugia } from "../../hooks/Cirugia/useFormularioCirugia";
-import { CampoSeleccionDinamico } from "./CampoSeleccionDinamico";
+import React, { useState, useCallback, useMemo } from "react";
+import { PropsFormularioCirugia, ListaDinamica, Patient } from "../../components/interfaz/interfaz";
+import { useFormularioCirugia } from "../../hooks/Cirugia/useFormularioCirugia";
 import { FaTimes } from "react-icons/fa";
 import { ModalAgregarOpcion } from "./ModalAgregarOpcion";
+import { CirugiaFormGeneral } from "./CirugiaFormGeneral";
+import { CirugiaFormDoctors } from "./CirugiaFormDoctors";
+import { CirugiaFormFinance } from "./CirugiaFormFinance";
 
-export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user, onAdded, onClose }) => {
+interface PropsExtendidasCirugia extends PropsFormularioCirugia {
+    existingPatients?: Patient[];
+}
+
+export const FormularioCamposCirugia: React.FC<PropsExtendidasCirugia> = ({ 
+    user, 
+    onAdded, 
+    onClose, 
+    existingPatients = [] 
+}) => {
+    // Usamos el hook con el nombre corregido
     const {
         formData,
         medicos,
@@ -17,11 +29,22 @@ export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user
         handleInputChange,
         handleAddOption,
         handleSubmit
-    } = usarFormularioCirugia({ user, onAdded, onClose });
+    } = useFormularioCirugia({ user, onAdded, onClose });
 
     const [modalAbierto, setModalAbierto] = useState(false);
     const [etiquetaModal, setEtiquetaModal] = useState("");
     const [tipoColeccionModal, setTipoColeccionModal] = useState<ListaDinamica>("medicos");
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+
+    const suggestions = useMemo(() => {
+        const term = formData.paciente.toLowerCase().trim();
+        if (term.length < 2 || !existingPatients.length) return [];
+        const uniqueNames = Array.from(new Set(existingPatients.map(p => p.paciente)));
+        return uniqueNames
+            .filter(name => name.toLowerCase().includes(term))
+            .slice(0, 5);
+    }, [formData.paciente, existingPatients]);
 
     const abrirModalAgregar = useCallback((tipoColeccion: ListaDinamica, etiqueta: string) => () => {
         setTipoColeccionModal(tipoColeccion);
@@ -37,6 +60,14 @@ export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user
     const guardarNuevaOpcion = (nuevoValor: string) => {
         handleAddOption(tipoColeccionModal, nuevoValor);
         cerrarModalAgregar();
+    };
+
+    const handleSelectSuggestion = (name: string) => {
+        const fakeEvent = {
+            target: { name: "paciente", value: name }
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        handleInputChange(fakeEvent);
+        setShowSuggestions(false);
     };
 
     return (
@@ -66,151 +97,29 @@ export const FormularioCamposCirugia: React.FC<PropsFormularioCirugia> = ({ user
                             </div>
                         )}
 
-                        <div className="space-y-4">
-                            <h3 className="text-md font-semibold text-cyan-400">Datos Generales</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CirugiaFormGeneral 
+                            formData={formData}
+                            tiposCirugia={tiposCirugia}
+                            obrasSociales={obrasSociales}
+                            suggestions={suggestions}
+                            showSuggestions={showSuggestions}
+                            handleInputChange={handleInputChange}
+                            handleSelectSuggestion={handleSelectSuggestion}
+                            setShowSuggestions={setShowSuggestions}
+                            abrirModalAgregar={abrirModalAgregar}
+                        />
 
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-300 mb-1">Fecha de Cirugía</label>
-                                    <input
-                                        type="date"
-                                        name="fecha"
-                                        value={formData.fecha}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
-                                    />
-                                </div>
+                        <CirugiaFormDoctors 
+                            formData={formData}
+                            medicos={medicos}
+                            handleInputChange={handleInputChange as unknown as (e: React.ChangeEvent<HTMLSelectElement>) => void}
+                            abrirModalAgregar={abrirModalAgregar}
+                        />
 
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-300 mb-1">Nombre del Paciente</label>
-                                    <input
-                                        type="text"
-                                        name="paciente"
-                                        value={formData.paciente}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-300 mb-1">Fecha de Nacimiento</label>
-                                    <input
-                                        type="date"
-                                        name="fechaNacimientoPaciente"
-                                        value={formData.fechaNacimientoPaciente}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
-                                    />
-                                </div>
-                                
-                                <div className="md:col-span-2">
-                                    <CampoSeleccionDinamico
-                                        nombre="tipoCirugia"
-                                        etiqueta="Tipo de Cirugía"
-                                        valor={formData.tipoCirugia}
-                                        opciones={tiposCirugia}
-                                        onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
-                                        onAgregarOpcion={abrirModalAgregar("tiposCirugia", "Tipo de Cirugía")}
-                                        requerido={true}
-                                    />
-                                </div>
-                                
-                                <div className="md:col-span-2">
-                                    <CampoSeleccionDinamico
-                                        nombre="obraSocial"
-                                        etiqueta="Obra Social"
-                                        valor={formData.obraSocial}
-                                        opciones={obrasSociales}
-                                        onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
-                                        onAgregarOpcion={abrirModalAgregar("obrasSociales", "Obra Social")}
-                                        requerido={false}
-                                    />
-                                </div>
-
-                                <div className="col-span-full">
-                                    <label className="block text-xs font-medium text-gray-300 mb-1">Descripción</label>
-                                    <textarea
-                                        name="descripcion"
-                                        value={formData.descripcion}
-                                        onChange={handleInputChange}
-                                        rows={2}
-                                        className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <fieldset className="p-4 border border-cyan-800/30 rounded-lg space-y-4">
-                            <legend className="text-sm font-semibold text-cyan-400 px-2">Médicos Participantes</legend>
-
-                            <div className="grid grid-cols-1 gap-4">
-                                <CampoSeleccionDinamico
-                                    nombre="medicoOpero"
-                                    etiqueta="Médico que Operó"
-                                    valor={formData.medicoOpero}
-                                    opciones={medicos}
-                                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
-                                    onAgregarOpcion={abrirModalAgregar("medicos", "Médico que Operó")}
-                                    requerido={true}
-                                />
-
-                                <CampoSeleccionDinamico
-                                    nombre="medicoAyudo1"
-                                    etiqueta="Médico Ayudante 1"
-                                    valor={formData.medicoAyudo1}
-                                    opciones={medicos}
-                                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
-                                    onAgregarOpcion={abrirModalAgregar("medicos", "Médico Ayudante 1")}
-                                    requerido={false}
-                                />
-
-                                <CampoSeleccionDinamico
-                                    nombre="medicoAyudo2"
-                                    etiqueta="Médico Ayudante 2"
-                                    valor={formData.medicoAyudo2}
-                                    opciones={medicos}
-                                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
-                                    onAgregarOpcion={abrirModalAgregar("medicos", "Médico Ayudante 2")}
-                                    requerido={false}
-                                />
-                            </div>
-                        </fieldset>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <fieldset className="p-4 border border-cyan-800/30 rounded-lg space-y-4">
-                                <legend className="text-sm font-semibold text-cyan-400 px-2">Honorarios</legend>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-300 mb-1">Monto Total</label>
-                                    <input
-                                        type="number"
-                                        name="montoTotalHonorarios"
-                                        value={formData.montoTotalHonorarios}
-                                        onChange={handleInputChange}
-                                        min="0"
-                                        step="0.01"
-                                        className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
-                                    />
-                                </div>
-                            </fieldset>
-
-                            <fieldset className="p-4 border border-cyan-800/30 rounded-lg space-y-4">
-                                <legend className="text-sm font-semibold text-cyan-400 px-2">Presupuesto</legend>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-300 mb-1">Monto Total</label>
-                                    <input
-                                        type="number"
-                                        name="montoTotalPresupuesto"
-                                        value={formData.montoTotalPresupuesto}
-                                        onChange={handleInputChange}
-                                        min="0"
-                                        step="0.01"
-                                        className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
-                                    />
-                                </div>
-                            </fieldset>
-                        </div>
+                        <CirugiaFormFinance 
+                            formData={formData}
+                            handleInputChange={handleInputChange as unknown as (e: React.ChangeEvent<HTMLInputElement>) => void}
+                        />
 
                         <div className="flex justify-end space-x-3 pt-4 border-t border-cyan-800/50">
                             <button

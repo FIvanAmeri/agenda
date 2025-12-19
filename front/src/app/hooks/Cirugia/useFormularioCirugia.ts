@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { 
     DatosFormularioCirugia, 
@@ -5,11 +7,11 @@ import {
     PropsFormularioCirugia, 
     ResultadoUsarFormularioCirugia,
     ListaDinamica
-} from "../../components/interfaz/tipos-cirugia";
+} from "../../components/interfaz/interfaz";
 import { useObrasSociales } from "../../context/ObrasSocialesContext";
 import { formatDate } from "../../utilidades/dateTimeHelpers"; 
 
-export const usarFormularioCirugia = ({ user, onAdded, onClose }: PropsFormularioCirugia): ResultadoUsarFormularioCirugia => {
+export const useFormularioCirugia = ({ user, onAdded, onClose }: PropsFormularioCirugia): ResultadoUsarFormularioCirugia => {
     
     const { obrasSociales, setObrasSociales } = useObrasSociales();
 
