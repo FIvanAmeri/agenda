@@ -30,7 +30,12 @@ export const PopUpMonto: React.FC<PopUpMontoProps> = ({
     const [fecha, setFecha] = useState("")
 
     useEffect(() => {
-        setFecha(new Date().toISOString().split('T')[0])
+        const hoy = new Date()
+        const year = hoy.getFullYear()
+        const month = String(hoy.getMonth() + 1).padStart(2, '0')
+        const day = String(hoy.getDate()).padStart(2, '0')
+        const fechaLocal = `${year}-${month}-${day}`
+        setFecha(fechaLocal)
     }, [])
 
     const handleGuardar = () => {
@@ -43,7 +48,7 @@ export const PopUpMonto: React.FC<PopUpMontoProps> = ({
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
             <div className="w-96 p-6 rounded-2xl shadow-[0_8px_25px_rgba(0,0,0,0.15)] 
-                             bg-[#f7efe5] border border-[#e2d6c9]">
+                            bg-[#f7efe5] border border-[#e2d6c9]">
 
                 <h2 className="text-2xl font-semibold text-[#5c4a3f] mb-5">
                     {titulo}
@@ -59,8 +64,8 @@ export const PopUpMonto: React.FC<PopUpMontoProps> = ({
                 <input
                     type="number"
                     className="w-full p-3 rounded-lg border border-[#d4c7ba] 
-                                     bg-[#fffaf5] text-[#4a3c31] focus:outline-none
-                                     focus:ring-2 focus:ring-[#c7a27e] mb-4"
+                               bg-[#fffaf5] text-[#4a3c31] focus:outline-none
+                               focus:ring-2 focus:ring-[#c7a27e] mb-4"
                     value={monto}
                     onChange={(e) => setMonto(e.target.value)}
                     placeholder="Ingrese el monto a pagar ahora"
@@ -69,8 +74,8 @@ export const PopUpMonto: React.FC<PopUpMontoProps> = ({
                 <input
                     type="date"
                     className="w-full p-3 rounded-lg border border-[#d4c7ba] 
-                                     bg-[#fffaf5] text-[#4a3c31] focus:outline-none
-                                     focus:ring-2 focus:ring-[#c7a27e]"
+                               bg-[#fffaf5] text-[#4a3c31] focus:outline-none
+                               focus:ring-2 focus:ring-[#c7a27e]"
                     value={fecha}
                     onChange={(e) => setFecha(e.target.value)}
                 />

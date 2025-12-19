@@ -1,21 +1,23 @@
 import React from 'react';
 import { generarHoras } from '../utilidades/dateTimeHelpers';
 import { DatosFormularioPaciente } from './interfaz/tipos-paciente';
+import { Patient } from "./interfaz/interfaz";
 
 interface PatientFormFieldsProps {
     formData: DatosFormularioPaciente;
     obrasSociales: string[];
     onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    suggestions: Patient[];
+    showSuggestions: boolean;
+    onSelectPatient: (p: Patient) => void;
 }
-
 
 const PRACTICAS_OPTIONS = [
     "Consulta General",
     "Estudio Urodinámico",
     "Flujometría"
 ];
-
 
 const INSTITUCION_OPTIONS = [
     "Alto Rosario",
@@ -27,21 +29,43 @@ export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
     formData,
     obrasSociales,
     onInputChange,
-    onCheckboxChange
+    onCheckboxChange,
+    suggestions,
+    showSuggestions,
+    onSelectPatient
 }) => {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3 overflow-visible">
             
-            <div>
+            <div className="relative">
                 <label className="block text-sm font-medium text-gray-300 mb-1">Nombre del Paciente</label>
                 <input
                     type="text"
                     name="paciente"
                     value={formData.paciente}
                     onChange={onInputChange}
+                    autoComplete="off"
                     required
                     className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white focus:ring-cyan-500 focus:border-cyan-500"
                 />
+                
+                {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-[#0d2a35] border-2 border-cyan-500 rounded-md shadow-2xl z-[9999] max-h-60 overflow-y-auto">
+                        {suggestions.map((p) => (
+                            <div
+                                key={p.id}
+                                onClick={() => onSelectPatient(p)}
+                                className="w-full text-left p-3 hover:bg-cyan-800 border-b border-cyan-900 last:border-0 cursor-pointer"
+                            >
+                                <div className="font-bold text-white text-sm">{p.paciente}</div>
+                                <div className="text-[10px] text-cyan-400 flex justify-between">
+                                    <span>{p.obraSocial}</span>
+                                    <span>{p.fechaNacimiento || ""}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             
             <div>

@@ -10,6 +10,7 @@ import CirugiaDetailModal from "../components/Cirugia/CirugiaDetailModal";
 import AddPatientModal from "../components/Modals/AddPatientModal"; 
 import EstadisticasDetalle from "../components/Estadisticas/EstadisticasDetalle";
 import { User, Patient, Cirugia } from "../components/interfaz/interfaz";
+import usePatients from "../hooks/usePatients";
 
 interface MainLayoutProps {
     user: User; 
@@ -34,11 +35,28 @@ export default function PrincipalPage() {
     const isEstadisticasView = currentView === "estadisticas";
 
     const [cirugiaRefreshKey, setCirugiaRefreshKey] = useState(0);
+    const [patientRefreshKey, setPatientRefreshKey] = useState(0);
+
+    const { patients, setPatients } = usePatients();
 
     const handleCirugiaAddedSuccess = useCallback((setShowCirugiaModal: (show: boolean) => void) => {
         setShowCirugiaModal(false); 
         setCirugiaRefreshKey(prev => prev + 1); 
     }, []);
+
+    const handlePatientAddedSuccess = useCallback((newPatient: Patient, setShowAddModal: (show: boolean) => void) => {
+        setPatients((prev) => {
+            const list = Array.isArray(prev) ? prev : [];
+            return [...list, newPatient].sort((a, b) => {
+                const dateA = new Date(a.dia).getTime();
+                const dateB = new Date(b.dia).getTime();
+                if (dateA !== dateB) return dateA - dateB;
+                return a.hora.localeCompare(b.hora);
+            });
+        });
+        setShowAddModal(false);
+        setPatientRefreshKey(prev => prev + 1);
+    }, [setPatients]);
 
     return (
         <MainLayout>
@@ -65,6 +83,7 @@ export default function PrincipalPage() {
                                 setShowEditModal={props.setShowEditModal}
                                 selectedPatient={props.selectedPatient}
                                 setSelectedPatient={props.setSelectedPatient}
+                                key={`patient-content-${patientRefreshKey}`}
                             />
                         )}
 
@@ -72,7 +91,8 @@ export default function PrincipalPage() {
                             <AddPatientModal
                                 user={props.user}
                                 onClose={() => props.setShowAddModal(false)}
-                                onAdd={() => props.setShowAddModal(false)} 
+                                onAdd={(newPatient: Patient) => handlePatientAddedSuccess(newPatient, props.setShowAddModal)}
+                                existingPatients={Array.isArray(patients) ? patients : []}
                             />
                         )}
 

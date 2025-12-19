@@ -6,12 +6,20 @@ interface DetalleEstadistica {
     pacientes: string[];
 }
 
+export interface PagoDetallado {
+    fecha: string;
+    monto: number;
+    paciente: string;
+    institucion: string;
+}
+
 export class EstadisticasService {
     private patientRepository = AppDataSource.getRepository(Paciente);
 
     async obtenerEstadisticasGenerales(userId: number, anio: number) {
         const todosLosPacientes = await this.patientRepository.find({
-            where: { userId }
+            where: { userId },
+            order: { id: "DESC" }
         });
 
         const pacientesPagadosAnio = todosLosPacientes.filter(p => {
@@ -26,15 +34,25 @@ export class EstadisticasService {
         );
 
         return {
-            resumenPagos: this.calcularPagosMensuales(pacientesPagadosAnio, anio),
+            resumenPagos: this.calcularPagosMensuales(pacientesPagadosAnio),
             distribucionEdades: this.calcularRangosEtarios(pacientesPagadosAnio),
             porObraSocial: this.agruparPorObraSocial(pacientesPagadosAnio),
             metricasPracticas: this.analizarPracticas(pacientesPagadosAnio),
-            metricasNoPagados: this.analizarPracticas(pacientesNoPagados)
+            metricasNoPagados: this.analizarPracticas(pacientesNoPagados),
+            pagosDetallados: this.mapearPagosDetallados(pacientesPagadosAnio)
         };
     }
 
-    private calcularPagosMensuales(pacientes: Paciente[], anio: number) {
+    private mapearPagosDetallados(pacientes: Paciente[]): PagoDetallado[] {
+        return pacientes.map(p => ({
+            fecha: (p.fechaPagoTotal || p.fechaPagoParcial) as string,
+            monto: Number(p.montoPagado) || 0,
+            paciente: p.paciente,
+            institucion: p.institucion || "Sin Institución"
+        }));
+    }
+
+    private calcularPagosMensuales(pacientes: Paciente[]) {
         const meses = Array(12).fill(null).map(() => ({ monto: 0, pacientes: [] as string[] }));
         let totalAnual = 0;
 

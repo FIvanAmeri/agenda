@@ -51,14 +51,22 @@ const BotonPago: React.FC<BotonPagoProps> = ({ paciente, onEstadoActualizado }) 
         onEstadoActualizado(mapPatientToPacienteParaPago(actualizado))
     }
 
-    const handleGuardarMonto = async (monto: number, fecha: string) => {
+    const handleGuardarMonto = async (monto: number, fechaInput: string) => {
         if (!estadoSeleccionado) return
 
+        const hoy = new Date()
+        const year = hoy.getFullYear()
+        const month = String(hoy.getMonth() + 1).padStart(2, '0')
+        const day = String(hoy.getDate()).padStart(2, '0')
+        const fechaLocal = `${year}-${month}-${day}`
+
+        const fechaFinal = fechaInput || fechaLocal
+
         const fechaParcial =
-            estadoSeleccionado === "parcialmente pagado" ? fecha : paciente.fechaPagoParcial ?? null
+            estadoSeleccionado === "parcialmente pagado" ? fechaFinal : paciente.fechaPagoParcial ?? null
 
         const fechaTotal =
-            estadoSeleccionado === "pagado" ? fecha : paciente.fechaPagoTotal ?? null
+            estadoSeleccionado === "pagado" ? fechaFinal : paciente.fechaPagoTotal ?? null
 
         const montoDelta = monto
 

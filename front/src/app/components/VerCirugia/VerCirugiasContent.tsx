@@ -95,13 +95,19 @@ interface CirugiaTableProps {
 }
 
 const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDeleteClick }) => {
-    const sortedCirugias: Cirugia[] = [...cirugias].sort((a: Cirugia, b: Cirugia) => b.id - a.id);
+    const sortedCirugias: Cirugia[] = [...cirugias].sort((a: Cirugia, b: Cirugia) => {
+        const dateA = new Date(a.fecha).getTime();
+        const dateB = new Date(b.fecha).getTime();
+        if (dateB !== dateA) return dateB - dateA;
+        return b.id - a.id;
+    });
+
     return (
         <div className="mt-8 w-full rounded-lg overflow-hidden border border-[#1f3b47]">
             <table className="w-full table-fixed bg-[#0F2A35] border-separate border-spacing-y-4 px-2 md:px-4">
                 <thead className="bg-[#0c4a34] text-white uppercase text-[9px] md:text-xs tracking-wider">
                     <tr>
-                        <th className="py-3 px-2 text-left w-[10%]">ID</th>
+                        <th className="py-3 px-2 text-left w-[10%]">N°</th>
                         <th className="py-3 px-2 text-left w-[20%]">Fecha</th>
                         <th className="py-3 px-2 text-left w-[35%]">Paciente</th>
                         <th className="py-3 px-2 text-left w-[20%]">Operó</th>
@@ -111,13 +117,13 @@ const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDe
                     </tr>
                 </thead>
                 <tbody className="text-gray-200 text-xs md:text-sm">
-                    {sortedCirugias.map((c: Cirugia) => (
+                    {sortedCirugias.map((c: Cirugia, index: number) => (
                         <React.Fragment key={c.id}>
                             <tr className="group">
                                 <td colSpan={7} className="p-0">
                                     <div className="flex flex-col mb-4 transition-all duration-300 border-2 border-transparent group-hover:border-cyan-500/50 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] rounded-xl overflow-hidden bg-[#143845]">
                                         <div className="flex w-full items-start p-3 md:p-4">
-                                            <div className="w-[10%] font-bold text-cyan-400">{c.id}</div>
+                                            <div className="w-[10%] font-bold text-cyan-400">{sortedCirugias.length - index}</div>
                                             <div className="w-[20%] text-[10px] md:text-sm whitespace-nowrap">{formatDateForDisplay(c.fecha)}</div>
                                             <div className="w-[35%] font-semibold leading-tight break-words">
                                                 {c.paciente}

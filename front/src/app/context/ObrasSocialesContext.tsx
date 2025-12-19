@@ -47,7 +47,9 @@ export const ObrasSocialesProvider = ({ children }: { children: ReactNode }) => 
     "MUTUALYF",
     "OSIAD",
     "OSDOP",
-    "PREVENCION ART"
+    "PREVENCION ART",
+    "CAJA DE INGENIERO",
+    "ACA SALUD"
   ]);
 
   return (

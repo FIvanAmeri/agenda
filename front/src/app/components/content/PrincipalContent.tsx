@@ -208,6 +208,7 @@ export default function PrincipalContent({
                     user={user}
                     onClose={() => setShowAddModal(false)}
                     onAdd={addPatient}
+                    existingPatients={dataToFilter}
                 />
             )}
             {showEditModal && selectedPatient && user && (

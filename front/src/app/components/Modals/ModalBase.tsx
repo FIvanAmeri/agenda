@@ -14,10 +14,10 @@ export const ModalBase: React.FC<ModalBaseProps> = ({ children, title, onClose }
             onClick={onClose}
         >
             <div 
-                className="bg-[#0F2A35] rounded-xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300 border-2 border-[#004d40]"
+                className="bg-[#0F2A35] rounded-xl shadow-2xl w-full max-w-5xl mx-4 flex flex-col transform transition-all duration-300 border-2 border-[#004d40] overflow-visible"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="sticky top-0 bg-gradient-to-r from-[#004d40] to-[#1a4553] p-4 flex justify-between items-center text-white flex-shrink-0">
+                <div className="bg-gradient-to-r from-[#004d40] to-[#1a4553] p-4 flex justify-between items-center text-white rounded-t-xl">
                     <h2 className="text-2xl font-bold">{title}</h2>
                     <button
                         onClick={onClose}
@@ -27,7 +27,7 @@ export const ModalBase: React.FC<ModalBaseProps> = ({ children, title, onClose }
                         <FaTimes className="text-xl" />
                     </button>
                 </div>
-                <div className="flex-1 p-6 space-y-4">
+                <div className="p-6 overflow-visible">
                     {children}
                 </div>
             </div>

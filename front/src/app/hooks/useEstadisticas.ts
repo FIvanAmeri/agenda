@@ -11,6 +11,13 @@ export interface ResumenMensual {
     pacientes: string[];
 }
 
+export interface PagoDetallado {
+    fecha: string;
+    monto: number;
+    paciente: string;
+    institucion: string;
+}
+
 export interface EstadisticasData {
     resumenPagos: {
         mensuales: ResumenMensual[];
@@ -20,6 +27,7 @@ export interface EstadisticasData {
     porObraSocial: Record<string, DetalleEstadistica>;
     metricasPracticas: Record<string, DetalleEstadistica>;
     metricasNoPagados: Record<string, DetalleEstadistica>;
+    pagosDetallados: PagoDetallado[];
 }
 
 export interface UseEstadisticasResult {
