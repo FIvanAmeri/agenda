@@ -270,7 +270,7 @@ const EstadisticasDetalle: React.FC = () => {
             </div>
 
             <div className="mt-8 bg-cyan-950 p-5 rounded-xl border border-gray-700">
-                <h3 className="text-lg font-semibold mb-3 text-cyan-100 border-b border-gray-700 pb-2 text-center">Obras Sociales</h3>
+                <h3 className="text-lg font-semibold mb-3 text-cyan-100 border-b border-gray-700 pb-2 text-center">Obras Sociales no pagadas</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     {dataObras.map((item, idx) => (
                         <div 

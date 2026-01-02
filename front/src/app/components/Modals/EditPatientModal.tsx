@@ -81,7 +81,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                 practicas: `${basePractica} (U)`
             }));
         } else {
-            setFormData(prev => ({ ...prev, [name as keyof DatosFormularioPaciente]: value }));
+            setFormData(prev => ({ ...prev, [name]: value }));
         }
     };
 
@@ -153,6 +153,10 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         }
     };
 
+    const handleSelectPatientStub = (p: Patient) => {
+        return p;
+    };
+
     if (!selectedPatient) return null;
 
     return (
@@ -163,6 +167,9 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                     obrasSociales={obrasSociales}
                     onInputChange={handleInputChange}
                     onCheckboxChange={handleCheckboxChange}
+                    suggestions={[]}
+                    showSuggestions={false}
+                    onSelectPatient={handleSelectPatientStub}
                 />
                 <ErrorDisplay error={error} />
                 <FormActions onCancel={closeModal} submitText="Guardar Cambios" />

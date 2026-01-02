@@ -1,19 +1,20 @@
 import { Request, Response } from "express";
 import { CirugiaService } from "../services/cirugia.service";
+import { Cirugia } from "../entities/Cirugia.entity";
 
 const service = new CirugiaService();
 
 export class CirugiaController {
     async crear(req: Request, res: Response) {
-        const usuarioId = (req as any).user.userId || (req as any).user.id;
-        const body = req.body;
+        const usuarioId = req.user.userId;
+        const body = req.body as Omit<Cirugia, "id" | "usuarioId">;
         const cirugia = await service.crear({ ...body, usuarioId });
         return res.json({ cirugia });
     }
 
     async obtenerPorId(req: Request, res: Response) {
         const id = parseInt(req.params.id);
-        const usuarioId = (req as any).user.userId || (req as any).user.id;
+        const usuarioId = req.user.userId;
         try {
             const cirugia = await service.obtenerPorId(id, usuarioId);
             if (!cirugia) return res.status(404).json({ message: "No encontrado" });
@@ -24,7 +25,7 @@ export class CirugiaController {
     }
 
     async listar(req: Request, res: Response) {
-        const usuarioId = (req as any).user.userId || (req as any).user.id;
+        const usuarioId = req.user.userId;
         const filters = {
             usuarioId,
             dateFrom: req.query.dateFrom as string,
@@ -40,9 +41,10 @@ export class CirugiaController {
     
     async actualizar(req: Request, res: Response) {
         const id = parseInt(req.params.id);
-        const usuarioId = (req as any).user.userId || (req as any).user.id;
+        const usuarioId = req.user.userId;
         try {
-            const data = await service.actualizar(id, usuarioId, req.body);
+            const updateBody = req.body as Partial<Cirugia>;
+            const data = await service.actualizar(id, usuarioId, updateBody);
             return res.json({ data });
         } catch {
             return res.status(500).json({ message: "Error" });
@@ -51,7 +53,7 @@ export class CirugiaController {
 
     async eliminar(req: Request, res: Response) {
         const id = parseInt(req.params.id);
-        const usuarioId = (req as any).user.userId || (req as any).user.id;
+        const usuarioId = req.user.userId;
         try {
             await service.eliminar(id, usuarioId);
             return res.status(204).send();
@@ -61,7 +63,7 @@ export class CirugiaController {
     }
 
     async obtenerMedicos(req: Request, res: Response) {
-        const usuarioId = (req as any).user.userId || (req as any).user.id;
+        const usuarioId = req.user.userId;
         try {
             const medicos = await service.obtenerMedicosUnicos(usuarioId);
             return res.json({ medicos });
@@ -71,7 +73,7 @@ export class CirugiaController {
     }
 
     async obtenerTiposCirugia(req: Request, res: Response) {
-        const usuarioId = (req as any).user.userId || (req as any).user.id;
+        const usuarioId = req.user.userId;
         try {
             const tiposCirugia = await service.obtenerTiposCirugiaUnicos(usuarioId);
             return res.json({ tiposCirugia });

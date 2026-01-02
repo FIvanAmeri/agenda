@@ -22,30 +22,34 @@ export class EstadisticasService {
             order: { id: "DESC" }
         });
 
-        const pacientesPagadosAnio = todosLosPacientes.filter(p => {
-            const fechaIso = p.fechaPagoTotal || p.fechaPagoParcial;
-            if (!fechaIso) return false;
-            const fecha = new Date(fechaIso);
+        const pacientesDelAnio = todosLosPacientes.filter(p => {
+            const fechaReferencia = p.fechaPagoTotal || p.fechaPagoParcial || p.dia;
+            if (!fechaReferencia) return false;
+            const fecha = new Date(fechaReferencia);
             return fecha.getFullYear() === anio;
         });
 
-        const pacientesNoPagados = todosLosPacientes.filter(p => 
+        const pacientesPagadosAnio = pacientesDelAnio.filter(p => 
+            p.estadoPago === EstadoPago.PAGADO || p.estadoPago === EstadoPago.PARCIALMENTE_PAGADO
+        );
+
+        const pacientesNoPagadosAnio = pacientesDelAnio.filter(p => 
             p.estadoPago === EstadoPago.NO_PAGADO
         );
 
         return {
             resumenPagos: this.calcularPagosMensuales(pacientesPagadosAnio),
-            distribucionEdades: this.calcularRangosEtarios(pacientesPagadosAnio),
-            porObraSocial: this.agruparPorObraSocial(pacientesPagadosAnio),
+            distribucionEdades: this.calcularRangosEtarios(pacientesDelAnio),
+            porObraSocial: this.agruparPorObraSocial(pacientesDelAnio),
             metricasPracticas: this.analizarPracticas(pacientesPagadosAnio),
-            metricasNoPagados: this.analizarPracticas(pacientesNoPagados),
+            metricasNoPagados: this.analizarPracticas(pacientesNoPagadosAnio),
             pagosDetallados: this.mapearPagosDetallados(pacientesPagadosAnio)
         };
     }
 
     private mapearPagosDetallados(pacientes: Paciente[]): PagoDetallado[] {
         return pacientes.map(p => ({
-            fecha: (p.fechaPagoTotal || p.fechaPagoParcial) as string,
+            fecha: (p.fechaPagoTotal || p.fechaPagoParcial || p.dia) as string,
             monto: Number(p.montoPagado) || 0,
             paciente: p.paciente,
             institucion: p.institucion || "Sin Institución"
@@ -58,7 +62,7 @@ export class EstadisticasService {
 
         pacientes.forEach(p => {
             const monto = Number(p.montoPagado) || 0;
-            const fechaIso = p.fechaPagoTotal || p.fechaPagoParcial;
+            const fechaIso = p.fechaPagoTotal || p.fechaPagoParcial || p.dia;
             if (fechaIso) {
                 const fecha = new Date(fechaIso);
                 const mesIndex = fecha.getMonth();
@@ -120,7 +124,7 @@ export class EstadisticasService {
             const nombre = p.obraSocial || "Particular";
             if (!obras[nombre]) obras[nombre] = { cantidad: 0, pacientes: [] };
             obras[nombre].cantidad++;
-            obras[nombre].pacientes.push(p.paciente);
+            obras[nombre].pacientes.push(`${p.paciente} (${p.estadoPago})`);
         });
         return obras;
     }
@@ -130,7 +134,7 @@ export class EstadisticasService {
         pacientes.forEach(p => {
             const institucion = p.institucion || "Sin Institución";
             const texto = (p.practicas || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            let tipo = "Otros";
+            let tipo = "Consulta General";
             if (texto.includes("urodinamia") || texto.includes("urodinamico")) tipo = "Estudio Urodinámico";
             else if (texto.includes("flujometria")) tipo = "Flujometría";
             const clave = `${institucion} - ${tipo}`;

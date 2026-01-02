@@ -3,7 +3,7 @@
 import React, { memo } from "react";
 import AutocompleteDropdown from "./AutocompleteDropdown";
 import { FilterFieldKey } from "../../hooks/Filtro/useFilterDropdowns";
-import { FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaTimesCircle } from "react-icons/fa";
 
 interface AutocompleteInputProps {
   label: string;
@@ -42,29 +42,47 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = memo(({
           autoComplete="off"
           value={value}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
-          onFocus={() => {
-            if (!isShowing) handleOpen(fieldKey);
-          }}
+          onFocus={() => handleOpen(fieldKey)}
+          onClick={() => handleOpen(fieldKey)}
           placeholder={placeholder}
           data-testid={dataTestId}
-          className="p-2 border border-gray-600 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-inner w-full h-10 pr-10"
+          className="p-2 border border-gray-600 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-inner w-full h-10 pr-16"
         />
-        <button
-          type="button"
-          tabIndex={-1}
-          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (isShowing) {
-              setter(false);
-            } else {
-              handleOpen(fieldKey);
-            }
-          }}
-          className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-cyan-400"
-        >
-          <FaChevronDown className={`transform transition-transform duration-200 ${isShowing ? "rotate-180" : "rotate-0"}`} />
-        </button>
+        
+        <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+          {value && (
+            <button
+              type="button"
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setValue("");
+                handleOpen(fieldKey);
+              }}
+              className="text-red-500 hover:text-red-700 transition-colors p-1"
+            >
+              <FaTimesCircle />
+            </button>
+          )}
+          
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isShowing) {
+                setter(false);
+              } else {
+                handleOpen(fieldKey);
+              }
+            }}
+            className="text-gray-400 hover:text-cyan-400 p-1"
+          >
+            <FaChevronDown className={`transform transition-transform duration-200 ${isShowing ? "rotate-180" : "rotate-0"}`} />
+          </button>
+        </div>
+
         {isShowing && (
           <div className="absolute z-50 w-full">
             <AutocompleteDropdown

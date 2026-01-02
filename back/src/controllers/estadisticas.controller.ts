@@ -1,22 +1,12 @@
 import { Request, Response } from "express";
 import { EstadisticasService } from "../services/estadisticas.service";
 
-interface RequestConUsuario extends Request {
-    user?: {
-        userId: number;
-    };
-}
-
 export class EstadisticasController {
     private estadisticasService = new EstadisticasService();
 
-    obtenerEstadisticas = async (req: RequestConUsuario, res: Response): Promise<void> => {
+    obtenerEstadisticas = async (req: Request, res: Response): Promise<void> => {
         try {
-            const userId = req.user?.userId;
-            if (!userId) {
-                res.status(401).json({ message: "Usuario no identificado" });
-                return;
-            }
+            const userId = req.user.userId;
 
             const anioQuery = req.query.anio as string;
             const anio = anioQuery ? parseInt(anioQuery) : new Date().getFullYear();

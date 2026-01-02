@@ -8,6 +8,7 @@ import { ErrorDisplay } from "../components/ErrorDisplay";
 import { ModalBase } from "./Modals/ModalBase";
 import { PropsEditPatientModal } from "../components/interfaz/tipos-paciente";
 import { useFormularioPaciente } from "../hooks/Pacientes/useFormularioPaciente";
+import { Patient } from "../components/interfaz/interfaz";
 
 export const EditPatientModal: React.FC<PropsEditPatientModal> = ({
     selectedPatient,
@@ -38,6 +39,10 @@ export const EditPatientModal: React.FC<PropsEditPatientModal> = ({
         };
     }, [closeModal]);
 
+    const handleSelectPatientStub = (p: Patient) => {
+        return p;
+    };
+
     return (
         <ModalBase title="Editar Paciente" onClose={closeModal}>
             <form onSubmit={handleSubmit}>
@@ -46,6 +51,9 @@ export const EditPatientModal: React.FC<PropsEditPatientModal> = ({
                     obrasSociales={obrasSociales}
                     onInputChange={handleInputChange}
                     onCheckboxChange={handleCheckboxChange}
+                    suggestions={[]}
+                    showSuggestions={false}
+                    onSelectPatient={handleSelectPatientStub}
                 />
                 
                 <ErrorDisplay error={error} />

@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <>
-            <div className="md:hidden bg-cyan-950 text-white p-4 flex justify-between items-center sticky top-0 z-[60] border-b border-gray-700 w-full">
+            <div className="md:hidden bg-cyan-950 text-white p-4 flex justify-between items-center sticky top-0 z-[50] border-b border-gray-700 w-full">
                 <div className="flex items-center">
                     <FaHospitalAlt className="text-2xl text-green-400 mr-2" />
                     <span className="font-bold">Control Honorarios</span>
@@ -55,13 +55,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             {isOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/60 z-[70] md:hidden" 
+                    className="fixed inset-0 bg-black/60 z-[55] md:hidden" 
                     onClick={toggleMenu}
                 />
             )}
 
             <aside className={`
-                fixed inset-y-0 left-0 z-[80] w-64 bg-cyan-950 text-gray-100 flex flex-col transition-transform duration-300 ease-in-out transform
+                fixed inset-y-0 left-0 z-[40] w-64 bg-cyan-950 text-gray-100 flex flex-col transition-transform duration-300 ease-in-out transform
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
                 md:translate-x-0 md:fixed md:h-screen md:flex-shrink-0
             `}>

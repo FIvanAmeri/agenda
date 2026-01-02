@@ -1,3 +1,5 @@
+"use client";
+
 import React, { ReactNode } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
@@ -10,7 +12,7 @@ interface ModalBaseProps {
 export const ModalBase: React.FC<ModalBaseProps> = ({ children, title, onClose }) => {
     return (
         <div 
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 transition-opacity duration-300"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-[9999] transition-opacity duration-300 backdrop-blur-sm"
             onClick={onClose}
         >
             <div 
