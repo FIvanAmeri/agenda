@@ -57,8 +57,11 @@ export const useFilterDropdowns = (): UseFilterDropdownsResult => {
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent): void => {
             const target = e.target as HTMLElement;
-            if (target.tagName === "INPUT") return;
-            if (formRef.current && !formRef.current.contains(target)) {
+
+            const isInput = target.tagName === "INPUT";
+            const isMenu = target.closest(".autocomplete-menu");
+
+            if (!isInput && !isMenu) {
                 closeAllDropdowns();
             }
         };
