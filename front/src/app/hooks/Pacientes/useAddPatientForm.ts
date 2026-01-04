@@ -104,7 +104,7 @@ export const useAddPatientForm = ({ user, onAdd, onClose, existingPatients }: Us
             setTimeout((): void => {
                 onAdd(result.paciente);
                 onClose();
-            }, 2000);
+            }, 500);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Hubo un error');
         }

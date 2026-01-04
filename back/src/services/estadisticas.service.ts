@@ -25,9 +25,13 @@ export class EstadisticasService {
         const pacientesDelAnio = todosLosPacientes.filter(p => {
             const fechaReferencia = p.fechaPagoTotal || p.fechaPagoParcial || p.dia;
             if (!fechaReferencia) return false;
-            const fecha = new Date(fechaReferencia);
+            const fecha = new Date(fechaIso(fechaReferencia));
             return fecha.getFullYear() === anio;
         });
+
+        function fechaIso(f: string | Date): string {
+            return typeof f === "string" ? f : f.toISOString();
+        }
 
         const pacientesPagadosAnio = pacientesDelAnio.filter(p => 
             p.estadoPago === EstadoPago.PAGADO || p.estadoPago === EstadoPago.PARCIALMENTE_PAGADO
@@ -140,7 +144,7 @@ export class EstadisticasService {
             const clave = `${institucion} - ${tipo}`;
             if (!conteo[clave]) conteo[clave] = { cantidad: 0, pacientes: [] };
             conteo[clave].cantidad++;
-            conteo[clave].pacientes.push(p.paciente);
+            conteo[clave].pacientes.push(`${p.paciente} (${institucion})`);
         });
         return conteo;
     }
