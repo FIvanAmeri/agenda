@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@source "../layout/**/*.{ts,tsx}";
+@source "../components/**/*.{ts,tsx}";
+@source "./**/*.{ts,tsx}";
+
+:root {
+  --background: #020617;
+  --foreground: #ffffff;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+select, 
+option, 
+input {
+  background-color: #164e63 !important;
+  color: #ffffff !important;
+}
+
+.aurora-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at bottom, #020617 0%, #000000 100%);
+  z-index: 0;
+}
+
+.aurora-blob {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  top: -10%;
+  left: -10%;
+  opacity: 0.6;
+  filter: blur(120px);
+  mix-blend-mode: screen;
+  animation: aurora-wave 20s infinite ease-in-out alternate;
+  will-change: transform, opacity;
+}
+
+.aurora-1 {
+  background: radial-gradient(circle at 30% 30%, rgba(0, 255, 200, 0.8), transparent 60%);
+}
+
+.aurora-2 {
+  background: radial-gradient(circle at 70% 40%, rgba(80, 150, 255, 0.7), transparent 60%);
+}
+
+.aurora-3 {
+  background: radial-gradient(circle at 40% 70%, rgba(160, 255, 120, 0.7), transparent 60%);
+}
+
+.aurora-4 {
+  background: radial-gradient(circle at 60% 60%, rgba(255, 140, 255, 0.5), transparent 60%);
+}
+
+@keyframes aurora-wave {
+  0% { transform: translate(-5%, -5%) scale(1); opacity: 0.5; }
+  25% { transform: translate(5%, 10%) scale(1.1) rotate(5deg); opacity: 0.7; }
+  50% { transform: translate(-10%, 5%) scale(1.05) rotate(-3deg); opacity: 0.8; }
+  75% { transform: translate(10%, -5%) scale(1.1) rotate(2deg); opacity: 0.6; }
+  100% { transform: translate(-5%, -10%) scale(1.05); opacity: 0.5; }
+}
+
+.main-with-aurora {
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  min-height: 100vh;
+}
+
+.custom-scrollbar-subtle::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar-subtle::-webkit-scrollbar-thumb {
+  background-color: rgba(52, 211, 153, 0.2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar-subtle:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(52, 211, 153, 0.7);
+}

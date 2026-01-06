@@ -1,13 +1,14 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { User } from "../components/interfaz/interfaz";
+import { User } from "@/app/components/interfaz/interfaz";
 
-export interface AuthContextType {
+interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (credenciales: Pick<User, "usuario" | "contrasena">) => Promise<void>;
+  login: (credenciales: { usuario: string; contrasena: string }) => Promise<void>;
+  register: (data: { usuario: string; email: string; contrasena: string }) => Promise<void>;
   logout: () => void;
 }
 
@@ -16,7 +17,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -28,12 +29,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (
-    credenciales: Pick<User, "usuario" | "contrasena">
-  ): Promise<void> => {
+  const login = async (credenciales: { usuario: string; contrasena: string }) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3001/api/users/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credenciales),
@@ -52,7 +51,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = (): void => {
+  const register = async (data: { usuario: string; email: string; contrasena: string }) => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Error al registrar usuario");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken(null);
@@ -60,16 +75,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth(): AuthContextType {
+export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth debe usarse dentro de <AuthProvider>");
-  }
+  if (!ctx) throw new Error("useAuth debe usarse dentro de <AuthProvider>");
   return ctx;
 }
