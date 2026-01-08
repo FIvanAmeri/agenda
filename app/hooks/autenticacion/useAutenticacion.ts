@@ -6,19 +6,19 @@ export interface AuthUser {
     nombre: string;
 }
 
-export const useUser = () => {
+export const useUser = (): AuthUser | null | undefined => {
     const [user, setUser] = useState<AuthUser | null | undefined>(undefined);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        const token: string | null = localStorage.getItem("token");
         if (!token) {
             setUser(null); 
             return;
         }
 
-        const fetchUser = async () => {
+        const fetchUser = async (): Promise<void> => {
             try {
-                const res = await fetch("http://localhost:3001/auth/me", {
+                const res: Response = await fetch("/api/auth/me", {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
@@ -30,9 +30,9 @@ export const useUser = () => {
                     return;
                 }
 
-                const data = await res.json();
+                const data: { user: AuthUser } = await res.json();
                 setUser(data.user);
-            } catch {
+            } catch (err: unknown) {
                 setUser(null);
             }
         };

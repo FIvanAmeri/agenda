@@ -19,7 +19,6 @@ export const FormularioCamposCirugia: React.FC<PropsExtendidasCirugia> = ({
     onClose, 
     existingPatients = [] 
 }) => {
-    // Usamos el hook con el nombre corregido
     const {
         formData,
         medicos,
@@ -31,18 +30,17 @@ export const FormularioCamposCirugia: React.FC<PropsExtendidasCirugia> = ({
         handleSubmit
     } = useFormularioCirugia({ user, onAdded, onClose });
 
-    const [modalAbierto, setModalAbierto] = useState(false);
-    const [etiquetaModal, setEtiquetaModal] = useState("");
+    const [modalAbierto, setModalAbierto] = useState<boolean>(false);
+    const [etiquetaModal, setEtiquetaModal] = useState<string>("");
     const [tipoColeccionModal, setTipoColeccionModal] = useState<ListaDinamica>("medicos");
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
 
-
-    const suggestions = useMemo(() => {
+    const suggestions = useMemo((): string[] => {
         const term = formData.paciente.toLowerCase().trim();
         if (term.length < 2 || !existingPatients.length) return [];
-        const uniqueNames = Array.from(new Set(existingPatients.map(p => p.paciente)));
+        const uniqueNames = Array.from(new Set(existingPatients.map((p: Patient) => p.paciente)));
         return uniqueNames
-            .filter(name => name.toLowerCase().includes(term))
+            .filter((name: string) => name.toLowerCase().includes(term))
             .slice(0, 5);
     }, [formData.paciente, existingPatients]);
 
@@ -52,26 +50,31 @@ export const FormularioCamposCirugia: React.FC<PropsExtendidasCirugia> = ({
         setModalAbierto(true);
     }, []);
 
-    const cerrarModalAgregar = () => {
+    const cerrarModalAgregar = (): void => {
         setModalAbierto(false);
         setEtiquetaModal("");
     };
 
-    const guardarNuevaOpcion = (nuevoValor: string) => {
+    const guardarNuevaOpcion = (nuevoValor: string): void => {
         handleAddOption(tipoColeccionModal, nuevoValor);
         cerrarModalAgregar();
     };
 
-    const handleSelectSuggestion = (name: string) => {
+    const handleSelectSuggestion = (name: string): void => {
         const fakeEvent = {
             target: { name: "paciente", value: name }
-        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        } as React.ChangeEvent<HTMLInputElement>;
         handleInputChange(fakeEvent);
         setShowSuggestions(false);
     };
 
+    const onFormSubmit = (e: React.FormEvent): void => {
+        e.preventDefault();
+        handleSubmit(e);
+    };
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-hidden">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-hidden">
             <div className="bg-[#0F2A35] rounded-xl shadow-2xl w-full max-w-sm md:max-w-xl lg:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300 md:ml-64 border border-cyan-800/50">
                 
                 {modalAbierto && (
@@ -82,15 +85,15 @@ export const FormularioCamposCirugia: React.FC<PropsExtendidasCirugia> = ({
                     />
                 )}
                 
-                <div className="sticky top-0 bg-[#1a4553] p-4 flex justify-between items-center text-white flex-shrink-0 border-b border-cyan-800/50">
+                <div className="sticky top-0 bg-[#1a4553] p-4 flex justify-between items-center text-white shrink-0 border-b border-cyan-800/50">
                     <h2 className="text-xl font-bold">Nueva Cirugía</h2>
-                    <button onClick={onClose} className="text-white hover:text-red-400 transition p-1 rounded-full hover:bg-black hover:bg-opacity-20">
+                    <button onClick={onClose} className="text-white hover:text-red-400 transition p-1 rounded-full hover:bg-black/20">
                         <FaTimes className="text-xl" />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={onFormSubmit} className="space-y-6">
                         {error && (
                             <div className="p-3 bg-red-700 text-white rounded-md text-sm">
                                 Error: {error}
@@ -112,13 +115,13 @@ export const FormularioCamposCirugia: React.FC<PropsExtendidasCirugia> = ({
                         <CirugiaFormDoctors 
                             formData={formData}
                             medicos={medicos}
-                            handleInputChange={handleInputChange as unknown as (e: React.ChangeEvent<HTMLSelectElement>) => void}
+                            handleInputChange={handleInputChange}
                             abrirModalAgregar={abrirModalAgregar}
                         />
 
                         <CirugiaFormFinance 
                             formData={formData}
-                            handleInputChange={handleInputChange as unknown as (e: React.ChangeEvent<HTMLInputElement>) => void}
+                            handleInputChange={handleInputChange}
                         />
 
                         <div className="flex justify-end space-x-3 pt-4 border-t border-cyan-800/50">

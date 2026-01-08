@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Cirugia } from "../../components/interfaz/interfaz";
+import { useState, useEffect, useCallback } from "react";
+import { Cirugia, DatosFormularioCirugia } from "../../components/interfaz/interfaz";
 import { format } from 'date-fns';
 
 interface UseCirugiaDetailLogicProps {
@@ -11,24 +11,44 @@ interface UseCirugiaDetailLogicProps {
 
 const formatDateForInput = (isoDate: string | null | undefined): string => {
     if (!isoDate) return "";
-    return format(new Date(isoDate + 'T00:00:00'), 'yyyy-MM-dd');
+    try {
+        return format(new Date(isoDate + 'T00:00:00'), 'yyyy-MM-dd');
+    } catch {
+        return "";
+    }
 };
 
 export const useCirugiaDetailLogic = ({ cirugia, onSubmit }: UseCirugiaDetailLogicProps) => {
-    const [formData, setFormData] = useState<Partial<Cirugia>>({});
+    const [formData, setFormData] = useState<DatosFormularioCirugia>({
+        fecha: "",
+        paciente: "",
+        fechaNacimientoPaciente: "",
+        tipoCirugia: "",
+        obraSocial: "",
+        medicoOpero: "",
+        medicoAyudo1: "",
+        medicoAyudo2: "",
+        montoTotalHonorarios: "0",
+        montoTotalPresupuesto: "0",
+        descripcion: ""
+    });
+    
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         if (cirugia) {
             setFormData({
-                ...cirugia,
+                fecha: formatDateForInput(cirugia.fecha),
+                paciente: cirugia.paciente || "",
+                fechaNacimientoPaciente: formatDateForInput(cirugia.fechaNacimientoPaciente),
                 tipoCirugia: cirugia.tipoCirugia || "",
+                obraSocial: cirugia.obraSocial || "",
                 medicoOpero: cirugia.medicoOpero || "",
                 medicoAyudo1: cirugia.medicoAyudo1 || "",
                 medicoAyudo2: cirugia.medicoAyudo2 || "",
-                obraSocial: cirugia.obraSocial || "",
-                fecha: formatDateForInput(cirugia.fecha),
-                fechaNacimientoPaciente: formatDateForInput(cirugia.fechaNacimientoPaciente)
+                montoTotalHonorarios: cirugia.montoTotalHonorarios?.toString() || "0",
+                montoTotalPresupuesto: cirugia.montoTotalPresupuesto?.toString() || "0",
+                descripcion: cirugia.descripcion || ""
             });
         }
     }, [cirugia]);
@@ -38,35 +58,46 @@ export const useCirugiaDetailLogic = ({ cirugia, onSubmit }: UseCirugiaDetailLog
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        const { name, value } = e.target;
-        const numericValue = value === "" ? null : Number(value);
-        setFormData((prev) => ({ ...prev, [name]: numericValue }));
-    };
-
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         if (cirugia.id === undefined || !onSubmit) return;
         setLoading(true);
-        await onSubmit(cirugia.id, formData);
-        setLoading(false);
+        
+        // Transformamos DatosFormularioCirugia de nuevo a Partial<Cirugia> para el submit
+        const payload: Partial<Cirugia> = {
+            ...formData,
+            montoTotalHonorarios: Number(formData.montoTotalHonorarios),
+            montoTotalPresupuesto: Number(formData.montoTotalPresupuesto),
+        };
+
+        try {
+            await onSubmit(cirugia.id, payload);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const isDirty = Object.keys(formData).some(key => {
-        const formValue = formData[key as keyof Partial<Cirugia>];
-        const originalValue = cirugia[key as keyof Cirugia];
-        const normalizedFormValue = (formValue === null || formValue === undefined) ? "" : String(formValue);
-        const normalizedOriginalValue = (originalValue === null || originalValue === undefined) ? "" : String(originalValue);
-        
-        return normalizedFormValue !== normalizedOriginalValue;
+        const currentVal = formData[key as keyof DatosFormularioCirugia];
+        let originalVal: any = cirugia[key as keyof Cirugia];
+
+        if (key === 'fecha' || key === 'fechaNacimientoPaciente') {
+            originalVal = formatDateForInput(originalVal);
+        } else if (key === 'montoTotalHonorarios' || key === 'montoTotalPresupuesto') {
+            originalVal = originalVal?.toString() || "0";
+        } else {
+            originalVal = originalVal || "";
+        }
+
+        return String(currentVal) !== String(originalVal);
     });
 
     return {
         formData,
         loading,
         handleInputChange,
-        handleNumericChange,
         handleSubmit,
-        isDirty
+        isDirty,
+        setFormData
     };
 };

@@ -15,6 +15,8 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
     setFilters,
     cirugias,
     obrasSocialesOpciones,
+    medicosOpciones,
+    tiposCirugiaOpciones
 }) => {
     const { formRef, showStates, showSetters, closeAllDropdowns, handleOpen } = useFilterDropdowns();
 
@@ -26,7 +28,15 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
         filteredPractices,
         filteredMedicos,
         filteredObrasSociales
-    } = useFiltroCirugiaLogic(filters, setFilters, cirugias, obrasSocialesOpciones, closeAllDropdowns);
+    } = useFiltroCirugiaLogic({
+        filters,
+        setFilters,
+        cirugias,
+        obrasSocialesOpciones,
+        medicosOpciones,
+        tiposCirugiaOpciones,
+        closeAllDropdowns
+    });
 
     const suggestionsMap = {
         patient: filteredPatients,

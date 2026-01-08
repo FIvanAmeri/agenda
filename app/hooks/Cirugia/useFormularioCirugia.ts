@@ -37,16 +37,16 @@ export const useFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulario
     const fetchLists = useCallback(async (): Promise<void> => {
         const token: string | null = localStorage.getItem("token");
         if (!token) {
-            setError("Usuario no autenticado. Por favor, inicie sesión.");
+            setError("Usuario no autenticado.");
             setLoadingLists(false);
             return;
         }
 
         const headers: HeadersInit = { Authorization: `Bearer ${token}` };
-        const queryParams = `?usuarioId=${user.id}`;
+        const queryParams: string = `?usuarioId=${user.id}`;
 
         try {
-            const [medicosRes, tiposRes, osRes] = await Promise.all([
+            const [medicosRes, tiposRes, osRes]: Response[] = await Promise.all([
                 fetch(`/api/cirugias/medicos${queryParams}`, { headers }),
                 fetch(`/api/cirugias/tipos${queryParams}`, { headers }),
                 fetch(`/api/cirugias/obras-sociales${queryParams}`, { headers })
@@ -65,8 +65,8 @@ export const useFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulario
             setObrasSociales(Array.isArray(osData.obrasSociales) ? osData.obrasSociales : []);
             
             setError(null);
-        } catch (err) {
-            setError("No se pudieron cargar las listas dinámicas (Médicos/Tipos de Cirugía)");
+        } catch (err: unknown) {
+            setError("Error al cargar listas dinámicas");
         } finally {
             setLoadingLists(false);
         }
@@ -94,13 +94,13 @@ export const useFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulario
             
         if (listName === "medicos") {
             setMedicos((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
-            setFormData(prev => ({ ...prev, medicoOpero: trimmedOption }));
+            setFormData((prev: DatosFormularioCirugia) => ({ ...prev, medicoOpero: trimmedOption }));
         } else if (listName === "tiposCirugia") {
             setTiposCirugia((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
-            setFormData(prev => ({ ...prev, tipoCirugia: trimmedOption }));
+            setFormData((prev: DatosFormularioCirugia) => ({ ...prev, tipoCirugia: trimmedOption }));
         } else if (listName === "obrasSociales") {
             setObrasSociales((prev: string[]) => (prev.includes(trimmedOption) ? prev : [...prev, trimmedOption].sort()));
-            setFormData(prev => ({ ...prev, obraSocial: trimmedOption }));
+            setFormData((prev: DatosFormularioCirugia) => ({ ...prev, obraSocial: trimmedOption }));
         }
     }, [setObrasSociales]);
 
@@ -109,8 +109,8 @@ export const useFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulario
         setError(null);
 
         const token: string | null = localStorage.getItem("token");
-        if (!token) {
-            setError("Sesión expirada.");
+        if (!token || !user.id) {
+            setError("Sesión inválida.");
             return;
         }
         
@@ -140,15 +140,14 @@ export const useFormularioCirugia = ({ user, onAdded, onClose }: PropsFormulario
             });
 
             if (!response.ok) {
-                const text = await response.text();
+                const text: string = await response.text();
                 throw new Error(text || "Error al guardar");
             }
 
-            window.alert("Cirugía ingresada correctamente");
             onAdded();
             onClose();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Error al guardar la cirugía");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Error al guardar");
         }
     }, [formData, user.id, onAdded, onClose]);
 

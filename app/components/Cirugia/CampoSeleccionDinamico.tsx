@@ -24,8 +24,8 @@ export const CampoSeleccionDinamico: React.FC<PropsCampoSeleccionDinamico> = ({
             <div className="flex space-x-2">
                 <select
                     name={nombre}
-                    value={valor}
-                    onChange={onChange}
+                    value={valor ?? ""}
+                    onChange={onChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                     required={requerido}
                     disabled={deshabilitado}
                     className="flex-1 p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500 disabled:opacity-50 appearance-none cursor-pointer"
@@ -41,7 +41,7 @@ export const CampoSeleccionDinamico: React.FC<PropsCampoSeleccionDinamico> = ({
                     type="button"
                     onClick={onAgregarOpcion}
                     title={`Agregar ${etiqueta}`}
-                    className="p-2 bg-cyan-700 text-white rounded-md hover:bg-cyan-600 transition flex-shrink-0 flex items-center justify-center min-w-[38px]"
+                    className="p-2 bg-cyan-700 text-white rounded-md hover:bg-cyan-600 transition shrink-0 flex items-center justify-center min-w-9.5"
                 >
                     <FaPlus className="text-sm" />
                 </button>

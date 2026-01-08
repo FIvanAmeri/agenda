@@ -59,7 +59,7 @@ export const CirugiaFormGeneral: React.FC<Props> = ({
                         className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
                     />
                     {showSuggestions && suggestions.length > 0 && (
-                        <ul className="absolute z-[110] w-full mt-1 bg-[#1a4553] border border-cyan-800/50 rounded-md shadow-lg max-h-40 overflow-auto">
+                        <ul className="absolute z-9999 w-full mt-1 bg-[#1a4553] border border-cyan-800/50 rounded-md shadow-lg max-h-40 overflow-auto">
                             {suggestions.map((name, index) => (
                                 <li
                                     key={index}
@@ -90,7 +90,7 @@ export const CirugiaFormGeneral: React.FC<Props> = ({
                         etiqueta="Tipo de Cirugía"
                         valor={formData.tipoCirugia}
                         opciones={tiposCirugia}
-                        onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
+                        onChange={handleInputChange}
                         onAgregarOpcion={abrirModalAgregar("tiposCirugia", "Tipo de Cirugía")}
                         requerido={true}
                     />
@@ -102,7 +102,7 @@ export const CirugiaFormGeneral: React.FC<Props> = ({
                         etiqueta="Obra Social"
                         valor={formData.obraSocial}
                         opciones={obrasSociales}
-                        onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
+                        onChange={handleInputChange}
                         onAgregarOpcion={abrirModalAgregar("obrasSociales", "Obra Social")}
                         requerido={false}
                     />

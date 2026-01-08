@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export interface DetalleEstadistica {
     cantidad: number;
@@ -38,22 +39,29 @@ export interface UseEstadisticasResult {
 }
 
 const useEstadisticas = (): UseEstadisticasResult => {
+    const { user } = useAuth();
     const [stats, setStats] = useState<EstadisticasData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     const fetchStats = useCallback(async (anio: number) => {
+        if (!user?.id) return;
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get<EstadisticasData>(`/estadisticas?anio=${anio}`);
+            const response = await api.get<EstadisticasData>(`/estadisticas`, {
+                params: {
+                    usuarioId: user.id,
+                    anio: anio
+                }
+            });
             setStats(response.data);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Error al cargar estadísticas");
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user?.id]);
 
     return { stats, loading, error, fetchStats };
 };

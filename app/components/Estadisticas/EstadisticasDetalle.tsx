@@ -15,25 +15,31 @@ import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import * as XLSX from "xlsx"
 
+interface PacienteDetalle {
+    nombre: string
+    fecha: string
+    monto: number
+}
+
 interface BarDataPoint {
     mes: string
     monto: number
-    pacientes: string[]
-    [key: string]: string | number | string[]
+    pacientes: PacienteDetalle[]
+    [key: string]: string | number | PacienteDetalle[]
 }
 
 interface PieDataPoint {
     name: string
     value: number
-    pacientes: string[]
-    [key: string]: string | number | string[]
+    pacientes: PacienteDetalle[]
+    [key: string]: string | number | PacienteDetalle[]
 }
 
 interface AuditoriaObra {
     pagados: number
     pendientes: number
-    pacientesPagados: string[]
-    pacientesPendientes: string[]
+    pacientesPagados: PacienteDetalle[]
+    pacientesPendientes: PacienteDetalle[]
 }
 
 interface LastAutoTable {
@@ -59,7 +65,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
     const { stats, loading, error, fetchStats } = useEstadisticas()
     const [modalOpen, setModalOpen] = useState(false)
     const [modalTitle, setModalTitle] = useState("")
-    const [modalContent, setModalContent] = useState<string[]>([])
+    const [modalContent, setModalContent] = useState<PacienteDetalle[]>([])
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -84,6 +90,10 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
     useEffect(() => {
         refreshData()
     }, [refreshData])
+
+    const formatCurrency = (value: number) => {
+        return `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    }
 
     const institucionesDisponibles = useMemo(() => {
         if (!stats?.pagosDetallados) return ["Todas"]
@@ -110,7 +120,11 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                 if (selectedInstitucion === "Todas" || pago.institucion === selectedInstitucion) {
                     const mesIndex = fechaPago.getMonth()
                     acumulador[mesIndex].monto += pago.monto
-                    acumulador[mesIndex].pacientes.push(`${pago.paciente}`)
+                    acumulador[mesIndex].pacientes.push({
+                        nombre: pago.paciente,
+                        fecha: new Date(pago.fecha).toLocaleDateString("es-AR"),
+                        monto: pago.monto
+                    })
                 }
             }
         })
@@ -126,7 +140,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
         return Object.entries(stats.distribucionEdades).map(([rango, info]) => ({
             name: rango,
             value: info.cantidad,
-            pacientes: info.pacientes
+            pacientes: info.pacientes.map(p => ({ nombre: p, fecha: "N/A", monto: 0 }))
         }))
     }, [stats])
 
@@ -135,7 +149,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
         return Object.entries(stats.porObraSocial).map(([nombre, info]) => ({
             name: nombre,
             value: info.cantidad,
-            pacientes: info.pacientes
+            pacientes: info.pacientes.map(p => ({ nombre: p, fecha: "N/A", monto: 0 }))
         }))
     }, [stats])
 
@@ -152,7 +166,8 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
             if (!obrasMap.has(obra)) obrasMap.set(obra, { pagados: 0, pendientes: 0, pacientesPagados: [], pacientesPendientes: [] })
             const data = obrasMap.get(obra)!
             data.pagados += info.cantidad
-            data.pacientesPagados = Array.from(new Set([...data.pacientesPagados, ...info.pacientes]))
+            const nuevosPacientes = info.pacientes.map(p => ({ nombre: p, fecha: "Pagado", monto: 0 }))
+            data.pacientesPagados = [...data.pacientesPagados, ...nuevosPacientes]
         })
 
         Object.entries(stats.metricasNoPagados).forEach(([clave, info]) => {
@@ -164,15 +179,12 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
             if (!obrasMap.has(obra)) obrasMap.set(obra, { pagados: 0, pendientes: 0, pacientesPagados: [], pacientesPendientes: [] })
             const data = obrasMap.get(obra)!
             data.pendientes += info.cantidad
-            data.pacientesPendientes = Array.from(new Set([...data.pacientesPendientes, ...info.pacientes]))
+            const nuevosPacientes = info.pacientes.map(p => ({ nombre: p, fecha: "Pendiente", monto: 0 }))
+            data.pacientesPendientes = [...data.pacientesPendientes, ...nuevosPacientes]
         })
 
         return Array.from(institucionesMap.entries())
     }, [stats])
-
-    const formatCurrency = (value: number) => {
-        return `$${value.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    }
 
     const exportToPDF = () => {
         const doc = new jsPDF() as JsPDFWithPlugin
@@ -260,17 +272,10 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
         XLSX.writeFile(wb, `Auditoria_${selectedInstitucion}_${selectedYear}.xlsx`)
     }
 
-    const openModal = (title: string, pacientes: string[]) => {
+    const openModal = (title: string, pacientes: PacienteDetalle[]) => {
         setModalTitle(title)
-        setModalContent(Array.from(new Set(pacientes)))
+        setModalContent(pacientes)
         setModalOpen(true)
-    }
-
-    const handlePatientRedirect = (paciente: string) => {
-        setModalOpen(false)
-        if (onSelectPatient) {
-            onSelectPatient(paciente)
-        }
     }
 
     if (authLoading || loading) return <div className="p-10 text-white font-bold">Cargando estadísticas...</div>
@@ -289,13 +294,13 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                 <div className="flex flex-wrap gap-3">
                     <button onClick={exportToPDF} className="flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-600/50 rounded-lg transition-all font-bold text-xs"><FaFilePdf /> PDF</button>
                     <button onClick={exportToExcel} className="flex items-center gap-2 px-4 py-2 bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white border border-green-600/50 rounded-lg transition-all font-bold text-xs"><FaFileExcel /> EXCEL</button>
-                    <div className="flex items-center bg-cyan-950 border border-gray-700 rounded-lg px-3 py-2 shadow-inner">
+                    <div className="flex items-center bg-cyan-950 border border-gray-700 rounded-lg px-3 py-2">
                         <FaHospital className="text-cyan-400 mr-3" />
                         <select value={selectedInstitucion} onChange={(e) => setSelectedInstitucion(e.target.value)} className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-bold outline-none text-sm">
                             {institucionesDisponibles.map(inst => <option key={inst} value={inst} className="bg-gray-800 text-white">{inst}</option>)}
                         </select>
                     </div>
-                    <div className="flex items-center bg-cyan-950 border border-gray-700 rounded-lg px-3 py-2 shadow-inner">
+                    <div className="flex items-center bg-cyan-950 border border-gray-700 rounded-lg px-3 py-2">
                         <FaCalendarAlt className="text-cyan-400 mr-3" />
                         <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="bg-transparent border-none text-white focus:ring-0 cursor-pointer font-bold outline-none">
                             {availableYears.map(y => <option key={y} value={y} className="bg-gray-800 text-white">{y}</option>)}
@@ -305,7 +310,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
             </div>
 
             <div className="mb-8">
-                <div className="bg-green-900/20 p-5 rounded-xl border border-green-700/50 inline-block min-w-[280px] shadow-lg">
+                <div className="bg-green-900/20 p-5 rounded-xl border border-green-700/50 inline-block min-w-70 shadow-lg">
                     <div className="flex items-center text-green-400 mb-1 gap-2">
                         <FaMoneyBillWave className="text-sm" />
                         <span className="text-xs font-bold uppercase tracking-wider">Total Cobrado {selectedInstitucion}</span>
@@ -324,12 +329,13 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                                 <XAxis dataKey="mes" stroke="#9ca3af" />
                                 <YAxis stroke="#9ca3af" tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
                                 <Tooltip 
-                                    formatter={(value: number | string | Array<string | number> | undefined) => [formatCurrency(Number(value || 0)), "Monto"]} 
+                                    formatter={(value: number | string | (string | number)[] | undefined) => [formatCurrency(Number(value || 0)), "Monto"]} 
                                     contentStyle={{ backgroundColor: "#083344", borderColor: "#155e75", color: "#fff" }} 
                                 />
                                 <Bar 
                                     dataKey="monto" 
                                     fill="#4ade80" 
+                                    radius={[4, 4, 0, 0]}
                                     className="cursor-pointer" 
                                     onClick={(data) => { if (data && data.payload) openModal(`Cobros ${String(data.payload.mes)}`, data.payload.pacientes) }} 
                                 />
@@ -356,7 +362,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                                     {dataEdades.map((_, index) => <Cell key={`cell-${index}`} fill={COLORES[index % COLORES.length]} />)}
                                 </Pie>
                                 <Tooltip 
-                                    formatter={(value: number | string | Array<string | number> | undefined) => [value || 0, "Pacientes"]}
+                                    formatter={(value: number | string | (string | number)[] | undefined) => [value || 0, "Pacientes"]}
                                 />
                                 <Legend />
                             </PieChart>
@@ -404,7 +410,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                         {Object.entries(stats.metricasPracticas)
                             .filter(([clave]) => selectedInstitucion === "Todas" || clave.startsWith(selectedInstitucion))
                             .map(([clave, info]) => (
-                            <div key={clave} onClick={() => openModal(clave, info.pacientes)} className="bg-cyan-900/40 p-4 rounded-xl border border-cyan-800 flex items-center justify-between cursor-pointer hover:bg-cyan-800 transition-all">
+                            <div key={clave} onClick={() => openModal(clave, info.pacientes.map(p => ({ nombre: p, fecha: "Pagado", monto: 0 })))} className="bg-cyan-900/40 p-4 rounded-xl border border-cyan-800 flex items-center justify-between cursor-pointer hover:bg-cyan-800 transition-all">
                                 <div className="flex flex-col min-w-0 flex-1">
                                     <span className="text-[10px] font-bold text-cyan-300 uppercase truncate">{clave.split(" - ")[0]}</span>
                                     <span className="text-sm font-medium text-gray-200 truncate leading-tight">{clave.split(" - ")[1]}</span>
@@ -421,7 +427,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                         {Object.entries(stats.metricasNoPagados)
                             .filter(([clave]) => selectedInstitucion === "Todas" || clave.startsWith(selectedInstitucion))
                             .map(([clave, info]) => (
-                            <div key={clave} onClick={() => openModal(`PENDIENTE: ${clave}`, info.pacientes)} className="bg-red-950/20 p-4 rounded-xl border border-red-900/30 flex items-center justify-between cursor-pointer hover:bg-red-900/30 transition-all">
+                            <div key={clave} onClick={() => openModal(`PENDIENTE: ${clave}`, info.pacientes.map(p => ({ nombre: p, fecha: "Pendiente", monto: 0 })))} className="bg-red-950/20 p-4 rounded-xl border border-red-900/30 flex items-center justify-between cursor-pointer hover:bg-red-900/30 transition-all">
                                 <div className="flex flex-col min-w-0 flex-1">
                                     <span className="text-[10px] font-bold text-red-300 uppercase truncate">{clave.split(" - ")[0]}</span>
                                     <span className="text-sm font-medium text-gray-200 truncate leading-tight">{clave.split(" - ")[1]}</span>
@@ -447,17 +453,32 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
 
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-                    <div className="bg-cyan-950 border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh]">
-                        <div className="p-4 border-b border-gray-700 flex justify-between items-center"><h4 className="text-lg font-bold text-green-400">{modalTitle}</h4><button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-white"><FaTimes size={20} /></button></div>
-                        <div className="p-4 overflow-y-auto flex-grow space-y-2">
+                    <div className="bg-cyan-950 border border-gray-700 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[80vh]">
+                        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+                            <h4 className="text-lg font-bold text-green-400">{modalTitle}</h4>
+                            <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-white">
+                                <FaTimes size={20} />
+                            </button>
+                        </div>
+                        <div className="p-4 overflow-y-auto grow space-y-2">
                             {modalContent.length > 0 ? modalContent.map((p, i) => (
-                                <div key={i} onClick={() => handlePatientRedirect(p)} className="flex items-center p-3 bg-cyan-900/50 rounded border border-cyan-800 cursor-pointer hover:bg-cyan-800 hover:border-green-500/50 transition-all group">
-                                    <FaUser className="text-green-400 mr-3 text-xs group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium group-hover:text-green-400">{p}</span>
+                                <div key={i} className="flex items-center justify-between p-3 bg-cyan-900/50 rounded border border-cyan-800 transition-all">
+                                    <div className="flex items-center min-w-0 flex-1">
+                                        <FaUser className="text-green-400 mr-3 text-xs shrink-0" />
+                                        <span className="text-sm font-medium truncate">{p.nombre}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4 ml-4 shrink-0">
+                                        <div className="text-right">
+                                            <p className="text-[10px] text-cyan-400 font-bold uppercase">{p.fecha}</p>
+                                            {p.monto > 0 && <p className="text-xs font-black text-white">{formatCurrency(p.monto)}</p>}
+                                        </div>
+                                    </div>
                                 </div>
                             )) : <div className="text-center py-4 text-gray-400 text-sm">Sin registros.</div>}
                         </div>
-                        <div className="p-4 border-t border-gray-700 text-right"><button onClick={() => setModalOpen(false)} className="px-4 py-2 bg-cyan-800 hover:bg-cyan-700 rounded text-sm font-bold">Cerrar</button></div>
+                        <div className="p-4 border-t border-gray-700 text-right">
+                            <button onClick={() => setModalOpen(false)} className="px-4 py-2 bg-cyan-800 hover:bg-cyan-700 rounded text-sm font-bold">Cerrar</button>
+                        </div>
                     </div>
                 </div>
             )}

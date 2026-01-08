@@ -16,11 +16,11 @@ export const useCirugias = (user: User | null, filters: FiltrosCirugia, fetchTri
             const res = await fetch(`/api/cirugias/${tipo}?usuarioId=${user.id}`);
             if (!res.ok) return [];
             const data = await res.json();
-            
+
             if (tipo === "medicos") return Array.isArray(data.medicos) ? data.medicos : [];
             if (tipo === "tipos") return Array.isArray(data.tiposCirugia) ? data.tiposCirugia : [];
-            if (tipo === "obrassociales") return Array.isArray(data.obrasSociales) ? data.obrasSociales : [];
-            
+            if (tipo === "obras-sociales") return Array.isArray(data.obrasSociales) ? data.obrasSociales : [];
+
             return [];
         } catch {
             return [];
@@ -44,16 +44,31 @@ export const useCirugias = (user: User | null, filters: FiltrosCirugia, fetchTri
     }, [user?.id]);
 
     useEffect(() => {
-        if (user?.id) {
-            Promise.all([
-                fetchOptions("medicos"),
-                fetchOptions("tipos"),
-                fetchOptions("obrassociales")
-            ]).then(([medicos, tipos, obras]) => {
-                setOptions({ medicos, tipos, obrasSociales: obras });
+        if (!user?.id) return;
+
+        Promise.all([
+            fetchOptions("medicos"),
+            fetchOptions("tipos"),
+            fetchOptions("obras-sociales")
+        ]).then(([medicosApi, tipos, obrasApi]) => {
+
+            const medicosDesdeCirugias = allCirugias.flatMap(c =>
+                [c.medicoOpero, c.medicoAyudo1, c.medicoAyudo2].filter(
+                    (m): m is string => !!m && m.trim() !== ""
+                )
+            );
+
+            const obrasDesdeCirugias = allCirugias
+                .map(c => c.obraSocial)
+                .filter((o): o is string => !!o && o.trim() !== "");
+
+            setOptions({
+                tipos,
+                medicos: Array.from(new Set([...medicosApi, ...medicosDesdeCirugias])),
+                obrasSociales: Array.from(new Set([...obrasApi, ...obrasDesdeCirugias]))
             });
-        }
-    }, [user?.id, fetchTrigger, fetchOptions]);
+        });
+    }, [user?.id, fetchTrigger, fetchOptions, allCirugias]);
 
     useEffect(() => {
         fetchCirugias();

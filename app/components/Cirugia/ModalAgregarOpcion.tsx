@@ -10,11 +10,11 @@ interface PropsModalAgregarOpcion {
 }
 
 export const ModalAgregarOpcion: React.FC<PropsModalAgregarOpcion> = ({ etiqueta, onClose, onSave }) => {
-    const [nuevoValor, setNuevoValor] = useState("");
-    const [error, setError] = useState("");
+    const [nuevoValor, setNuevoValor] = useState<string>("");
+    const [error, setError] = useState<string>("");
 
-    const handleSave = () => {
-        const valorLimpio = nuevoValor.trim();
+    const handleSave = (): void => {
+        const valorLimpio: string = nuevoValor.trim();
         if (valorLimpio === "") {
             setError("El valor no puede estar vacío.");
             return;
@@ -24,22 +24,22 @@ export const ModalAgregarOpcion: React.FC<PropsModalAgregarOpcion> = ({ etiqueta
         setNuevoValor("");
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+        if (e.key === "Enter") {
             e.preventDefault();
             handleSave();
-        } else if (e.key === 'Escape') {
+        } else if (e.key === "Escape") {
             onClose();
         }
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
             <div 
                 className="bg-[#1f3b47] rounded-xl shadow-2xl w-full max-w-sm mx-auto transform scale-100 border border-cyan-900/50 overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
             >
-                <div className="bg-gradient-to-r from-[#004d40] to-[#1a4553] p-4 flex justify-between items-center text-white">
+                <div className="bg-linear-to-r from-[#004d40] to-[#1a4553] p-4 flex justify-between items-center text-white">
                     <h3 className="text-lg font-semibold">Agregar {etiqueta}</h3>
                     <button 
                         onClick={onClose} 
@@ -54,7 +54,7 @@ export const ModalAgregarOpcion: React.FC<PropsModalAgregarOpcion> = ({ etiqueta
                         <input
                             type="text"
                             value={nuevoValor}
-                            onChange={(e) => {
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 setNuevoValor(e.target.value);
                                 if (error) setError("");
                             }}

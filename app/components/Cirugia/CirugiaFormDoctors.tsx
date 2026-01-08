@@ -26,7 +26,7 @@ export const CirugiaFormDoctors: React.FC<Props> = ({
                     etiqueta="Médico que Operó"
                     valor={formData.medicoOpero}
                     opciones={medicos}
-                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
+                    onChange={handleInputChange}
                     onAgregarOpcion={abrirModalAgregar("medicos", "Médico que Operó")}
                     requerido={true}
                 />
@@ -36,7 +36,7 @@ export const CirugiaFormDoctors: React.FC<Props> = ({
                     etiqueta="Médico Ayudante 1"
                     valor={formData.medicoAyudo1}
                     opciones={medicos}
-                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
+                    onChange={handleInputChange}
                     onAgregarOpcion={abrirModalAgregar("medicos", "Médico Ayudante 1")}
                     requerido={false}
                 />
@@ -46,7 +46,7 @@ export const CirugiaFormDoctors: React.FC<Props> = ({
                     etiqueta="Médico Ayudante 2"
                     valor={formData.medicoAyudo2}
                     opciones={medicos}
-                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
+                    onChange={handleInputChange}
                     onAgregarOpcion={abrirModalAgregar("medicos", "Médico Ayudante 2")}
                     requerido={false}
                 />

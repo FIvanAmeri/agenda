@@ -6,7 +6,7 @@ import MainLayout from "../../layout/MainLayout"
 import PrincipalContent from "../components/content/PrincipalContent"
 import VerCirugiasContent from "../components/VerCirugia/VerCirugiasContent"
 import { FormularioCamposCirugia } from "../components/Cirugia/FormularioCamposCirugia"
-import CirugiaDetailModal from "../components/Cirugia/CirugiaDetailModal"
+import {CirugiaDetailModal} from "../components/Cirugia/CirugiaDetailModal"
 import AddPatientModal from "../components/Modals/AddPatientModal"
 import EstadisticasDetalle from "../components/Estadisticas/EstadisticasDetalle"
 import EditPatientModal from "../components/Modals/EditPatientModal"
@@ -24,7 +24,7 @@ const initialFilters: FiltrosCirugia = {
     selectedObraSocial: "",
 }
 
-export default function PrincipalPage(): JSX.Element {
+export default function PrincipalPage(): React.ReactElement {
     const searchParams = useSearchParams()
     const view = searchParams.get("view")
 
@@ -68,7 +68,11 @@ export default function PrincipalPage(): JSX.Element {
     }, [setPatients])
 
     if (!user) {
-        return <div className="min-h-screen bg-cyan-950 flex items-center justify-center text-white font-semibold">Cargando sesión...</div>
+        return (
+            <div className="min-h-screen bg-cyan-950 flex items-center justify-center text-white font-semibold">
+                Cargando sesión...
+            </div>
+        )
     }
 
     return (
@@ -81,7 +85,7 @@ export default function PrincipalPage(): JSX.Element {
             <div className="w-full min-h-screen bg-cyan-900 text-white">
                 {isEstadisticasView && (
                     <EstadisticasDetalle
-                        onSelectPatient={() => { }}
+                        onSelectPatient={() => {}}
                     />
                 )}
 
@@ -131,7 +135,7 @@ export default function PrincipalPage(): JSX.Element {
                     <CirugiaDetailModal
                         cirugia={selectedCirugia}
                         onClose={() => setShowViewCirugiaModal(false)}
-                        onSubmit={async () => { }}
+                        onSubmit={async () => {}}
                         medicosOpciones={[]}
                         tiposCirugiaOpciones={[]}
                         obrasSocialesOpciones={[]}
