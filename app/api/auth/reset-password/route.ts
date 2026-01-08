@@ -23,18 +23,20 @@ export async function POST(req: Request) {
 
         const ahora = new Date();
         if (!user.resetTokenExpires || user.resetTokenExpires < ahora) {
-            return NextResponse.json({ error: "El token ha expirado (máximo 1 hora)" }, { status: 400 });
+            return NextResponse.json({ error: "Token expirado" }, { status: 400 });
         }
 
-        user.contrasena = await bcrypt.hash(newContrasena, 10);
-        
+        const salt = await bcrypt.genSalt(12);
+        user.contrasena = await bcrypt.hash(newContrasena, salt);
         user.resetToken = null;
         user.resetTokenExpires = null;
 
         await userRepository.save(user);
 
-        return NextResponse.json({ message: "Contraseña actualizada correctamente" });
+        return NextResponse.json({ message: "Contraseña actualizada" }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ error: "Error al procesar la solicitud" }, { status: 500 });
+        const message = error instanceof Error ? error.message : "Error desconocido";
+        console.error("Reset Error:", message);
+        return NextResponse.json({ error: "Error interno" }, { status: 500 });
     }
 }
