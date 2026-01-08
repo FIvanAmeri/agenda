@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { authenticateUser } from "@/app/repositories/auth.repo";
 import { AppDataSource } from "@/app/lib/data-source";
+import { User } from "@/app/entities/User.entity";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function POST(req: NextRequest) {
       await AppDataSource.initialize();
     }
 
-    const body = await req.json();
+    const body: { usuario: string; contrasena: string } = await req.json();
 
     if (!body.usuario || !body.contrasena) {
       return NextResponse.json(
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await authenticateUser(body.usuario, body.contrasena);
+    const user: User = await authenticateUser(body.usuario, body.contrasena);
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -31,13 +32,17 @@ export async function POST(req: NextRequest) {
       { expiresIn: "8h" }
     );
 
-    const { contrasena, ...userWithoutPass } = user;
+    const userResponse = {
+      id: user.id,
+      usuario: user.usuario,
+      email: user.email
+    };
 
     return NextResponse.json(
-      { message: "Usuario autenticado", user: userWithoutPass, token },
+      { message: "Usuario autenticado", user: userResponse, token },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       { error: message },

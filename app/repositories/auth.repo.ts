@@ -3,7 +3,7 @@ import { User } from "@/app/entities/User.entity";
 import bcrypt from "bcryptjs";
 
 export async function authenticateUser(
-  usuario: string,
+  identifier: string,
   contrasena: string
 ): Promise<User> {
   if (!AppDataSource.isInitialized) {
@@ -11,7 +11,12 @@ export async function authenticateUser(
   }
 
   const repo = AppDataSource.getRepository(User);
-  const user = await repo.findOne({ where: { usuario } });
+  const user = await repo.findOne({
+    where: [
+      { usuario: identifier },
+      { email: identifier }
+    ]
+  });
 
   if (!user) {
     throw new Error("Usuario o contraseña incorrectos");

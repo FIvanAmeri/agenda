@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       await AppDataSource.initialize();
     }
 
-    const { usuario, email, contrasena } = await req.json();
+    const { usuario, email, contrasena }: { usuario: string; email: string; contrasena: string } = await req.json();
     const userRepo = AppDataSource.getRepository(User);
 
     const existingUser = await userRepo.findOne({ 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const hashedContrasena = await bcrypt.hash(contrasena, 10);
+    const hashedContrasena = await bcrypt.hash(contrasena, 12);
     
     const newUser = userRepo.create({
       usuario,
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       { message: "Usuario creado con éxito" }, 
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error interno";
     return NextResponse.json(
       { error: message }, 
