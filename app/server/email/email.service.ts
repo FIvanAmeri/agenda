@@ -6,37 +6,41 @@ class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT as string),
-      secure: false, 
+      port: Number(process.env.EMAIL_PORT),
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASSWORD, 
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD?.replace(/\s/g, ''),
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   }
 
   async sendPasswordResetEmail(to: string, userName: string, resetLink: string): Promise<void> {
     const mailOptions = {
-      from: `Agenda <${process.env.EMAIL_USER}>`,
+      from: `"Agenda" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: 'Recuperación de Contraseña para Agenda',
       html: `
-        <p>Hola ${userName},</p>
-        <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el siguiente botón:</p>
-        <p style="text-align: center; margin: 20px 0;">
-          <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
-            Cambiar contraseña
-          </a>
-        </p>
-        <p>Si no solicitaste este cambio, por favor ignora este correo.</p>
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <p>Hola ${userName},</p>
+          <p>Has solicitado restablecer tu contraseña. Este enlace es válido por 1 hora y se puede usar una sola vez.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+              Restablecer Contraseña
+            </a>
+          </div>
+          <p style="color: #666; font-size: 12px;">Si no solicitaste este cambio, ignora este correo.</p>
+        </div>
       `,
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.error(`Error sending password reset email to ${to}:`, error);
-      throw new Error('Failed to communicate with email provider.');
+      throw new Error('Error al enviar el correo de recuperación.');
     }
   }
 }

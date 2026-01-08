@@ -8,9 +8,11 @@ export async function POST(req: Request) {
     try {
         const { email } = await req.json();
 
-        if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+        if (!AppDataSource.isInitialized) {
+            await AppDataSource.initialize();
+        }
+        
         const userRepository = AppDataSource.getRepository(User);
-
         const user = await userRepository.findOneBy({ email });
 
         if (!user) {
@@ -18,12 +20,15 @@ export async function POST(req: Request) {
         }
 
         const resetToken = crypto.randomBytes(32).toString("hex");
+        
         user.resetToken = resetToken;
         user.resetTokenExpires = new Date(Date.now() + 3600000);
         
         await userRepository.save(user);
 
-        const resetLink = `${process.env.NEXT_PUBLIC_FRONTEND_URL}/reset-password?token=${resetToken}`;
+        const baseUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL;
+        const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
+        
         await emailService.sendPasswordResetEmail(user.email, user.usuario, resetLink);
 
         return NextResponse.json({ message: "Email enviado" });
