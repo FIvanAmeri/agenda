@@ -7,7 +7,7 @@ import { CampoSeleccionDinamico } from "./CampoSeleccionDinamico";
 interface Props {
     formData: DatosFormularioCirugia;
     medicos: string[];
-    handleInputChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
     abrirModalAgregar: (tipoColeccion: ListaDinamica, etiqueta: string) => () => void;
 }
 
@@ -26,7 +26,7 @@ export const CirugiaFormDoctors: React.FC<Props> = ({
                     etiqueta="Médico que Operó"
                     valor={formData.medicoOpero}
                     opciones={medicos}
-                    onChange={handleInputChange}
+                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                     onAgregarOpcion={abrirModalAgregar("medicos", "Médico que Operó")}
                     requerido={true}
                 />
@@ -36,7 +36,7 @@ export const CirugiaFormDoctors: React.FC<Props> = ({
                     etiqueta="Médico Ayudante 1"
                     valor={formData.medicoAyudo1}
                     opciones={medicos}
-                    onChange={handleInputChange}
+                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                     onAgregarOpcion={abrirModalAgregar("medicos", "Médico Ayudante 1")}
                     requerido={false}
                 />
@@ -46,7 +46,7 @@ export const CirugiaFormDoctors: React.FC<Props> = ({
                     etiqueta="Médico Ayudante 2"
                     valor={formData.medicoAyudo2}
                     opciones={medicos}
-                    onChange={handleInputChange}
+                    onChange={handleInputChange as (e: React.ChangeEvent<HTMLSelectElement>) => void}
                     onAgregarOpcion={abrirModalAgregar("medicos", "Médico Ayudante 2")}
                     requerido={false}
                 />

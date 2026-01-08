@@ -28,6 +28,13 @@ export const usePatientForm = (
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const saveNewOption = (target: 'obraSocial' | 'institucion' | 'practicas', newValue: string): void => {
+        setFormData(prev => ({
+            ...prev,
+            [target]: newValue
+        }));
+    };
+
     const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const isChecked = e.target.checked;
         setFormData(prev => {
@@ -48,9 +55,7 @@ export const usePatientForm = (
 
     const triggerSuccessToast = (): void => {
         setShowSuccessToast(true);
-        setTimeout(() => {
-            setShowSuccessToast(false);
-        }, 3000);
+        setTimeout(() => setShowSuccessToast(false), 3000);
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
@@ -63,13 +68,13 @@ export const usePatientForm = (
             });
 
             if (response.ok) {
-                const newPatient = await response.json();
+                const data: Patient = await response.json();
                 triggerSuccessToast();
-                onAdd(newPatient);
+                onAdd(data);
             } else {
                 setError("Error al guardar");
             }
-        } catch (err) {
+        } catch (err: unknown) {
             setError("Error de red");
         }
     };
@@ -85,6 +90,7 @@ export const usePatientForm = (
         handleSubmit,
         showSuggestions,
         setShowSuggestions,
-        triggerSuccessToast
+        triggerSuccessToast,
+        saveNewOption
     };
 };

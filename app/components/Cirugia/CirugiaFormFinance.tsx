@@ -5,7 +5,7 @@ import { DatosFormularioCirugia } from "../../components/interfaz/interfaz";
 
 interface Props {
     formData: DatosFormularioCirugia;
-    handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 export const CirugiaFormFinance: React.FC<Props> = ({ formData, handleInputChange }) => {
@@ -22,6 +22,7 @@ export const CirugiaFormFinance: React.FC<Props> = ({ formData, handleInputChang
                         onChange={handleInputChange}
                         min="0"
                         step="0.01"
+                        placeholder="0.00"
                         className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
                     />
                 </div>
@@ -38,6 +39,7 @@ export const CirugiaFormFinance: React.FC<Props> = ({ formData, handleInputChang
                         onChange={handleInputChange}
                         min="0"
                         step="0.01"
+                        placeholder="0.00"
                         className="w-full p-2 bg-[#1a4553] border border-gray-600 rounded-md text-white text-sm focus:ring-cyan-500 focus:border-cyan-500"
                     />
                 </div>

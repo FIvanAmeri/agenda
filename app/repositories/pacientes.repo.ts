@@ -1,5 +1,5 @@
 import { AppDataSource } from "../lib/data-source";
-import { Paciente } from "../entities/paciente.entity";
+import { Paciente, EstadoPago } from "../entities/paciente.entity";
 import { Repository } from "typeorm";
 
 export class PacientesRepository {
@@ -33,6 +33,45 @@ export class PacientesRepository {
         }
 
         await repo.update(id, data);
+        return await repo.findOneBy({ id });
+    }
+
+    async actualizarPago(
+        id: number, 
+        estadoPago: string, 
+        montoNuevo: number, 
+        fechaParcial: string | null, 
+        fechaTotal: string | null
+    ): Promise<Paciente | null> {
+        const repo = await this.getRepo();
+        const paciente = await repo.findOneBy({ id });
+
+        if (!paciente) {
+            throw new Error("Paciente no encontrado");
+        }
+
+        const montoAnterior = paciente.montoPagado ? Number(paciente.montoPagado) : 0;
+        const montoAcumulado = montoAnterior + Number(montoNuevo);
+
+        const updates: Partial<Paciente> = {
+            estadoPago: estadoPago as EstadoPago,
+            montoPagado: estadoPago === 'no pagado' ? 0 : montoAcumulado,
+        };
+
+        if (fechaParcial) {
+            updates.fechaPagoParcial = fechaParcial;
+        }
+
+        if (fechaTotal) {
+            updates.fechaPagoTotal = fechaTotal;
+        }
+
+        if (estadoPago === 'no pagado') {
+            updates.fechaPagoParcial = null;
+            updates.fechaPagoTotal = null;
+        }
+
+        await repo.update(id, updates);
         return await repo.findOneBy({ id });
     }
 

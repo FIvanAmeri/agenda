@@ -85,8 +85,8 @@ const PatientTable: React.FC<PatientTableProps> = ({
                     estadoPago: pacienteActualizado.estadoPagoActual,
                     montoPagado: pacienteActualizado.montoPagadoActual,
                     montoTotal: pacienteActualizado.montoTotalActual,
-                    fechaPagoParcial: pacienteActualizado.fechaPagoParcial || null,
-                    fechaPagoTotal: pacienteActualizado.fechaPagoTotal || null,
+                    fechaPagoParcial: pacienteActualizado.fechaPagoParcial || p.fechaPagoParcial,
+                    fechaPagoTotal: pacienteActualizado.fechaPagoTotal || p.fechaPagoTotal,
                     ultimoPagoParcial: pacienteActualizado.ultimoPagoParcial,
                     ultimoPagoTotal: pacienteActualizado.ultimoPagoTotal,
                 };
@@ -100,8 +100,8 @@ const PatientTable: React.FC<PatientTableProps> = ({
                     estadoPago: pacienteActualizado.estadoPagoActual,
                     montoPagado: pacienteActualizado.montoPagadoActual,
                     montoTotal: pacienteActualizado.montoTotalActual,
-                    fechaPagoParcial: pacienteActualizado.fechaPagoParcial || null,
-                    fechaPagoTotal: pacienteActualizado.fechaPagoTotal || null,
+                    fechaPagoParcial: pacienteActualizado.fechaPagoParcial || p.fechaPagoParcial,
+                    fechaPagoTotal: pacienteActualizado.fechaPagoTotal || p.fechaPagoTotal,
                     ultimoPagoParcial: pacienteActualizado.ultimoPagoParcial,
                     ultimoPagoTotal: pacienteActualizado.ultimoPagoTotal,
                 } : p) : null
@@ -117,11 +117,14 @@ const PatientTable: React.FC<PatientTableProps> = ({
         const groups: Record<string, Patient[]> = {};
         const order: string[] = [];
         sortedPatients.forEach(patient => {
-            if (!groups[patient.paciente]) {
-                groups[patient.paciente] = [];
-                order.push(patient.paciente);
+            const dateKey = patient.dia.split('T')[0];
+            const groupKey = `${patient.paciente}_${dateKey}`;
+            
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+                order.push(groupKey);
             }
-            groups[patient.paciente].push(patient);
+            groups[groupKey].push(patient);
         });
         return { groups, order };
     }, [sortedPatients]);
@@ -144,12 +147,15 @@ const PatientTable: React.FC<PatientTableProps> = ({
         <div className="mt-6 md:mt-10 px-2 md:px-0">
             {groupedPatients.order.length > 0 ? (
                 <ul className="space-y-4">
-                    {groupedPatients.order.map((patientName, index) => {
-                        const patients = groupedPatients.groups[patientName];
-                        const tieneFechaNacimiento = !!patients[0].fechaNacimiento;
+                    {groupedPatients.order.map((groupKey, index) => {
+                        const patients = groupedPatients.groups[groupKey];
+                        const patientData = patients[0];
+                        const tieneFechaNacimiento = !!patientData.fechaNacimiento;
+                        const fechaConsulta = formatDateForDisplay(patientData.dia);
+
                         return (
                             <li
-                                key={patientName}
+                                key={groupKey}
                                 className={`flex flex-col md:flex-row items-center justify-between border-2 p-4 rounded-lg transition-all duration-300 hover:scale-[1.01] cursor-pointer ${getGroupStatusClasses(patients)}`}
                                 onClick={() => setSelectedPatientGroup(patients)}
                             >
@@ -157,13 +163,16 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                     <span className="mr-4 inline-flex items-center justify-center h-8 w-8 rounded-full bg-cyan-600 text-white font-bold text-sm">
                                         {index + 1}
                                     </span>
-                                    <div className="text-lg font-bold text-white transition-colors text-left flex items-center gap-2">
-                                        {patientName} 
+                                    <div className="text-lg font-bold text-white transition-colors text-left flex flex-wrap items-center gap-2">
+                                        {patientData.paciente} 
                                         {tieneFechaNacimiento && (
                                             <span className="text-xs font-normal text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/40">
                                                 (Paciente)
                                             </span>
                                         )}
+                                        <span className="text-xs font-medium text-gray-400 ml-1">
+                                            - {fechaConsulta}
+                                        </span>
                                     </div>
                                 </div>
                             </li>
@@ -214,13 +223,24 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                             </div>
 
                                             {patient.estadoPago !== 'no pagado' && (
-                                                <div className="mt-2 p-2 bg-black/40 rounded border border-cyan-700/40 text-[10px] sm:text-xs">
-                                                    <div><strong className="text-emerald-400/90">Monto Pagado:</strong> {formatCurrency(patient.montoPagado)}</div>
-                                                    {patient.estadoPago === 'parcialmente pagado' && fechaParcialFormateada && (
-                                                        <div><strong className="text-yellow-400/90">Fecha Pago Parcial:</strong> {fechaParcialFormateada}</div>
+                                                <div className="mt-2 p-2 bg-black/40 rounded border border-cyan-700/40 text-[10px] sm:text-xs space-y-1">
+                                                    <div className="flex justify-between items-center mb-1 border-b border-cyan-800/50 pb-1">
+                                                        <strong className="text-emerald-400/90">MONTO ACUMULADO:</strong>
+                                                        <span className="text-white font-bold">{formatCurrency(patient.montoPagado)}</span>
+                                                    </div>
+                                                    
+                                                    {patient.fechaPagoParcial && (
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-yellow-400/80 font-medium">Pago Parcial:</span>
+                                                            <span className="text-gray-300">{fechaParcialFormateada}</span>
+                                                        </div>
                                                     )}
-                                                    {patient.estadoPago === 'pagado' && fechaTotalFormateada && (
-                                                        <div><strong className="text-emerald-400/90">Fecha Pago Total:</strong> {fechaTotalFormateada}</div>
+                                                    
+                                                    {patient.fechaPagoTotal && (
+                                                        <div className="flex justify-between items-center border-t border-cyan-900/30 pt-1">
+                                                            <span className="text-emerald-400/80 font-medium">Cancelación Total:</span>
+                                                            <span className="text-gray-300">{fechaTotalFormateada}</span>
+                                                        </div>
                                                     )}
                                                 </div>
                                             )}

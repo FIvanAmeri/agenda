@@ -63,17 +63,15 @@ const BotonPago: React.FC<BotonPagoProps> = ({ paciente, onEstadoActualizado }) 
         const fechaFinal = fechaInput || fechaLocal
 
         const fechaParcial =
-            estadoSeleccionado === "parcialmente pagado" ? fechaFinal : paciente.fechaPagoParcial ?? null
+            estadoSeleccionado === "parcialmente pagado" ? fechaFinal : null
 
         const fechaTotal =
-            estadoSeleccionado === "pagado" ? fechaFinal : paciente.fechaPagoTotal ?? null
-
-        const montoDelta = monto
+            estadoSeleccionado === "pagado" ? fechaFinal : null
 
         const actualizado: Patient = await actualizarPagoConMonto(
             paciente.id,
             estadoSeleccionado,
-            montoDelta,
+            monto,
             fechaParcial,
             fechaTotal
         )

@@ -21,6 +21,21 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         const pacientesRepo = new PacientesRepository();
+
+        if (body.estadoPago !== undefined && body.monto !== undefined) {
+            const actualizado = await pacientesRepo.actualizarPago(
+                idId,
+                body.estadoPago,
+                parseFloat(body.monto),
+                body.fechaPagoParcial || null,
+                body.fechaPagoTotal || null
+            );
+
+            return NextResponse.json({ 
+                message: "Pago actualizado correctamente",
+                paciente: actualizado 
+            });
+        }
         
         const dataParaActualizar: Partial<Paciente> = {};
         
@@ -32,14 +47,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         if (body.institucion !== undefined) dataParaActualizar.institucion = body.institucion;
         if (body.fechaNacimiento !== undefined) dataParaActualizar.fechaNacimiento = body.fechaNacimiento;
         if (body.userId !== undefined) dataParaActualizar.userId = parseInt(body.userId, 10);
-
-        if (body.estadoPago !== undefined) dataParaActualizar.estadoPago = body.estadoPago;
-        if (body.fechaPagoParcial !== undefined) dataParaActualizar.fechaPagoParcial = body.fechaPagoParcial;
-        if (body.fechaPagoTotal !== undefined) dataParaActualizar.fechaPagoTotal = body.fechaPagoTotal;
-
-        if (body.monto !== undefined) {
-            dataParaActualizar.montoPagado = parseFloat(body.monto);
-        }
 
         if (dataParaActualizar.userId && isNaN(dataParaActualizar.userId)) {
             return NextResponse.json({ message: "userId inválido" }, { status: 400 });

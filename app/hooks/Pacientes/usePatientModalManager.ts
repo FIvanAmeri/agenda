@@ -25,9 +25,32 @@ export const usePatientModalManager = ({ saveNewOption }: UsePatientModalManager
         setModalConfig((prev: ModalConfig) => ({ ...prev, isOpen: false }));
     };
 
-    const handleConfirmSave = (newValue: string): void => {
-        saveNewOption(modalConfig.target, newValue);
-        closeAddModal();
+    const handleConfirmSave = async (newValue: string): Promise<void> => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch('/api/opciones', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ 
+                    tipo: modalConfig.target, 
+                    nombre: newValue 
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData: { message: string } = await response.json();
+                throw new Error(errorData.message || 'Error al guardar');
+            }
+
+            saveNewOption(modalConfig.target, newValue);
+            closeAddModal();
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            console.error('Error al guardar opción:', errorMessage);
+        }
     };
 
     return {
