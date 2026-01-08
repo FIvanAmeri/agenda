@@ -55,13 +55,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             {isOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/60 z-55 md:hidden" 
+                    className="fixed inset-0 bg-black/60 z-40 md:hidden" 
                     onClick={toggleMenu}
                 />
             )}
 
-            <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-cyan-950 text-gray-100 flex flex-col transition-transform duration-300 ease-in-out transform
+           <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 bg-cyan-950 text-gray-100 flex flex-col transition-transform duration-300 ease-in-out transform
                 ${isOpen ? "translate-x-0" : "-translate-x-full"}
                 md:translate-x-0 md:fixed md:h-screen md:shrink-0
             `}>
