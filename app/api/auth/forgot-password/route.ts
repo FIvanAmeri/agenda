@@ -6,7 +6,7 @@ import crypto from "crypto";
 
 export async function POST(req: Request) {
     try {
-        const { email } = await req.json();
+        const { email }: { email: string } = await req.json();
 
         if (!AppDataSource.isInitialized) {
             await AppDataSource.initialize();
@@ -20,19 +20,24 @@ export async function POST(req: Request) {
         }
 
         const resetToken = crypto.randomBytes(32).toString("hex");
-        
         user.resetToken = resetToken;
         user.resetTokenExpires = new Date(Date.now() + 3600000);
         
         await userRepository.save(user);
 
-        const baseUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL;
+        const baseUrl = process.env.FRONTEND_URL || "https://agenda-ten-sable.vercel.app";
         const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
         
         await emailService.sendPasswordResetEmail(user.email, user.usuario, resetLink);
 
         return NextResponse.json({ message: "Email enviado" });
-    } catch (error) {
-        return NextResponse.json({ error: "Error en el servidor" }, { status: 500 });
+
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+        console.error("Error en forgot-password:", errorMessage);
+        return NextResponse.json({ 
+            error: "Error en el servidor", 
+            details: errorMessage 
+        }, { status: 500 });
     }
 }
