@@ -22,7 +22,7 @@ const useFetchData = () => {
       try {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser?.usuario) {
-          const nombre = parsedUser.usuario.trim();
+          const nombre = (parsedUser.usuario as string).trim();
           setUser(nombre.charAt(0).toUpperCase() + nombre.slice(1));
         }
       } catch {
@@ -35,8 +35,14 @@ const useFetchData = () => {
     const fetchPatients = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3001/api/paciente");
+        const response = await fetch("/api/paciente", {
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          }
+        });
+        
         if (!response.ok) throw new Error("No se pudo obtener los pacientes");
+        
         const data: Patient[] = await response.json();
         if (isMounted) setPatients(data);
       } catch (err) {
@@ -49,7 +55,7 @@ const useFetchData = () => {
     fetchPatients();
 
     return () => { isMounted = false; };
-  }, []);
+  }, [router]); 
 
   return { patients, setPatients, user, error, loading };
 };
