@@ -72,7 +72,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = memo(({
   return (
     <div className="flex flex-col w-full relative">
       <label className="text-[11px] uppercase font-black text-cyan-500/70 mb-1.5 ml-1 tracking-widest">{label}</label>
-      <div className="relative w-full group">
+      <div className="relative w-full">
         <input
           key={`stable-input-${fieldKey}`}
           type="text"
@@ -121,17 +121,15 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = memo(({
           </button>
         </div>
 
-        {isShowing && filteredNames.length > 0 && (
-          <div className="absolute z-50 w-full mt-2 shadow-[0_10px_25px_rgba(0,0,0,0.5)] rounded-xl overflow-hidden border border-[#1f3b47]">
-            <AutocompleteDropdown
-              filteredNames={filteredNames}
-              activeIndex={activeIndex}
-              onSelect={(name: string) => {
-                handleSuggestionClick(name);
-                setter(false);
-              }}
-            />
-          </div>
+        {isShowing && (
+          <AutocompleteDropdown
+            filteredNames={filteredNames}
+            activeIndex={activeIndex}
+            onSelect={(name: string) => {
+              handleSuggestionClick(name);
+              setter(false);
+            }}
+          />
         )}
       </div>
     </div>

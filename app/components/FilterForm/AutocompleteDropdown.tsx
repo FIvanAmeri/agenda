@@ -11,8 +11,8 @@ interface Props {
 const AutocompleteDropdown: React.FC<Props> = memo(({ filteredNames, activeIndex, onSelect }) => {
     return (
         <div
-            className="absolute z-50 w-full bg-[#0F2A35] border border-[#1f3b47] rounded-xl mt-1 shadow-[0_10px_25px_rgba(0,0,0,0.5)] max-h-60 overflow-y-auto custom-scrollbar"
-            style={{ top: "100%", left: 0 }}
+            className="absolute left-0 right-0 z-50 bg-[#0F2A35] border border-[#1f3b47] rounded-xl mt-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-h-60 overflow-y-auto custom-scrollbar"
+            style={{ top: "100%" }}
         >
             <style>
                 {`
