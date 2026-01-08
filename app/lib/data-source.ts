@@ -11,16 +11,24 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    synchronize: false,
+    synchronize: false, 
     logging: true,
     entities: [Paciente, User, Cirugia],
     subscribers: [],
     migrations: [],
+    ssl: process.env.NODE_ENV === "production" 
+        ? { rejectUnauthorized: false } 
+        : false,
 });
 
 export const initializeDatabase = async (): Promise<DataSource> => {
     if (!AppDataSource.isInitialized) {
-        return await AppDataSource.initialize();
+        try {
+            return await AppDataSource.initialize();
+        } catch (error) {
+            console.error("Error inicializando la base de datos:", error);
+            throw error;
+        }
     }
     return AppDataSource;
 };
