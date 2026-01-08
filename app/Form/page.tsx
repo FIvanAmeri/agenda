@@ -127,13 +127,13 @@ export default function Form() {
         </button>
 
         <div className="mt-6 text-center space-y-4">
-          <button
+          {/* <button
             type="button"
             onClick={() => router.push("/registro")}
             className="text-sm text-green-600 hover:text-green-700 block w-full font-medium"
           >
             ¿No tienes cuenta? <strong>Regístrate aquí</strong>
-          </button>
+          </button> */}
           <button
             type="button"
             onClick={() => router.push("/recuperacion")}
