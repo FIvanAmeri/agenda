@@ -118,9 +118,28 @@ const CirugiaTable: React.FC<CirugiaTableProps> = ({ cirugias, onEditClick, onDe
 
                             <div className="lg:hidden flex items-center justify-between pt-2 md:pt-0">
                                 <span className="md:hidden text-[10px] font-bold uppercase text-gray-400">Ayudantes</span>
-                                <div className="flex flex-col text-right md:text-center text-[10px]">
-                                    <span className="truncate">{c.medicoAyudo1 || "-"}</span>
-                                    <span className="truncate">{c.medicoAyudo2 || "-"}</span>
+                                <div className="flex flex-col text-right md:text-center space-y-2">
+                                    {c.medicoAyudo1 && (
+                                        <div className="flex flex-col items-end md:items-center">
+                                            <span className="text-[10px] truncate">{c.medicoAyudo1}</span>
+                                            <MedicoPagoDisplay
+                                                montoHonorarios={c.montoTotalHonorarios}
+                                                montoPresupuesto={c.montoTotalPresupuesto}
+                                                participacion={0.25}
+                                            />
+                                        </div>
+                                    )}
+                                    {c.medicoAyudo2 && (
+                                        <div className="flex flex-col items-end md:items-center border-t border-gray-700/30 pt-1">
+                                            <span className="text-[10px] truncate">{c.medicoAyudo2}</span>
+                                            <MedicoPagoDisplay
+                                                montoHonorarios={c.montoTotalHonorarios}
+                                                montoPresupuesto={c.montoTotalPresupuesto}
+                                                participacion={0.25}
+                                            />
+                                        </div>
+                                    )}
+                                    {!c.medicoAyudo1 && !c.medicoAyudo2 && <span className="text-[10px]">-</span>}
                                 </div>
                             </div>
                         </div>
