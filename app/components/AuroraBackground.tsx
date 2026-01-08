@@ -2,7 +2,7 @@
 
 import React from "react";
 
-export default function AuroraBackground(): JSX.Element {
+export default function AuroraBackground() {
   return (
     <div className="aurora-container">
       <div className="aurora-blob aurora-1" />

@@ -19,23 +19,23 @@ const FiltroCirugiaForm: React.FC<PropsFiltroCirugia> = ({
 }) => {
     const { formRef, showStates, showSetters, closeAllDropdowns, handleOpen } = useFilterDropdowns();
 
-    const {
-        handleFilterChange,
-        handleSuggestionClick,
-        handleResetFilters,
-        filteredPatients,
-        filteredPractices,
-        filteredMedicos,
-        filteredObrasSociales
-    } = useFiltroCirugiaLogic(
-        filters, 
-        setFilters, 
-        cirugias, 
-        obrasSocialesOpciones, 
-        medicosOpciones, 
-        tiposCirugiaOpciones, 
-        closeAllDropdowns
-    );
+   const {
+    handleFilterChange,
+    handleSuggestionClick,
+    handleResetFilters,
+    filteredPatients,
+    filteredPractices,
+    filteredMedicos,
+    filteredObrasSociales
+} = useFiltroCirugiaLogic({ 
+    filters, 
+    setFilters, 
+    cirugias, 
+    obrasSocialesOpciones, 
+    medicosOpciones, 
+    tiposCirugiaOpciones, 
+    closeAllDropdowns
+});
 
     return (
         <div ref={formRef} className="bg-gray-800 p-4 md:p-5 rounded-xl shadow-2xl w-full">

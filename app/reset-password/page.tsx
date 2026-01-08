@@ -1,11 +1,25 @@
 "use client";
 
 import AuroraBackground from "../components/AuroraBackground";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import useResetPassword from "../hooks/Recuperacion/useResetPassword";
 
+
 export default function ResetPassword() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+        Cargando...
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}
+
+
+function ResetPasswordContent() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [token, setToken] = useState("");
@@ -18,7 +32,7 @@ export default function ResetPassword() {
     const t = searchParams.get("token");
     if (t) {
       setToken(t);
-      router.replace("/reset-password");
+       router.replace("/reset-password");
     }
   }, [searchParams, router]);
 
