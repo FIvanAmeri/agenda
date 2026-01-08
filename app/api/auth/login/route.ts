@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { authenticateUser } from "@/app/repositories/auth.repo";
 import { AppDataSource } from "@/app/lib/data-source";
+import { User } from "@/app/entities/User.entity";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,8 +11,8 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const identifier = body.usuario || body.email;
-    const contrasena = body.contrasena;
+    const identifier = (body.usuario || body.email || "") as string;
+    const contrasena = (body.contrasena || "") as string;
 
     if (!identifier || !contrasena) {
       return NextResponse.json(
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await authenticateUser(identifier, contrasena);
+    const user: User = await authenticateUser(identifier, contrasena);
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error";
     return NextResponse.json(
       { error: message },

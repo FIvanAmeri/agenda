@@ -6,8 +6,12 @@ import bcrypt from "bcryptjs";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const token = body.token as string;
-    const newContrasena = body.newContrasena as string;
+    const token = String(body.token || "");
+    const newContrasena = String(body.newContrasena || "");
+
+    if (!token || !newContrasena) {
+      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
+    }
 
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
@@ -32,8 +36,8 @@ export async function POST(req: Request) {
 
     await repo.update(user.id, {
       contrasena: hashed,
-      resetToken: null,
-      resetTokenExpires: null
+      resetToken: null as unknown as string,
+      resetTokenExpires: null as unknown as Date
     });
 
     return NextResponse.json({ message: "Éxito" }, { status: 200 });
