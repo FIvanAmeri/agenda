@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     const ahora = new Date();
-    if (!user.resetTokenExpires || user.resetTokenExpires < ahora) {
+    if (!user.resetTokenExpires || new Date(user.resetTokenExpires) < ahora) {
       return NextResponse.json({ error: "Token expirado" }, { status: 400 });
     }
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ message: "Éxito" }, { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error fatal";
     return NextResponse.json({ error: message }, { status: 500 });
   }
