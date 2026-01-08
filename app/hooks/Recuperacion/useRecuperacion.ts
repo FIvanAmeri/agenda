@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ForgotPasswordRequest, ForgotPasswordResponse } from "../../components/interfaz/interfaz";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/auth";
+
+const API_URL = "/api/auth"; 
 
 export default function useRecuperacion() {
   const [loading, setLoading] = useState(false);
@@ -15,12 +16,12 @@ export default function useRecuperacion() {
         body: JSON.stringify({ email } as ForgotPasswordRequest),
       });
 
+      const data: ForgotPasswordResponse = await response.json();
+
       if (!response.ok) {
-        const errorData: ForgotPasswordResponse = await response.json();
-        throw new Error(errorData.error || "Error al procesar la solicitud.");
+        throw new Error(data.error || "Error al procesar la solicitud.");
       }
 
-      const data: ForgotPasswordResponse = await response.json();
       return data;
     } catch (error) {
       if (error instanceof Error) {
