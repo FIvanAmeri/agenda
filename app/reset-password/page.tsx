@@ -1,115 +1,40 @@
-"use client";
+import { NextResponse } from "next/server";
+import { AppDataSource } from "@/app/lib/data-source";
+import { User } from "@/app/entities/User.entity";
+import bcrypt from "bcryptjs";
 
-import AuroraBackground from "../components/AuroraBackground";
-import React, { useEffect, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import useResetPassword from "../hooks/Recuperacion/useResetPassword";
+export async function POST(req: Request) {
+  try {
+    const { token, newContrasena } = await req.json();
 
-export default function ResetPassword() {
-    return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-                Cargando...
-            </div>
-        }>
-            <ResetPasswordContent />
-        </Suspense>
-    );
-}
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
 
-function ResetPasswordContent() {
-    const [password, setPassword] = useState("");
-    const [confirm, setConfirm] = useState("");
-    const [token, setToken] = useState("");
-    const [done, setDone] = useState(false);
-    const { resetPassword } = useResetPassword();
-    const searchParams = useSearchParams();
-    const router = useRouter();
+    const repo = AppDataSource.getRepository(User);
+    const user = await repo.findOneBy({ resetToken: token });
 
-    useEffect(() => {
-        const t = searchParams.get("token");
-        if (t) {
-            setToken(t);
-        }
-    }, [searchParams]);
+    if (!user) {
+      return NextResponse.json({ error: "Token inválido" }, { status: 400 });
+    }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const ahora = new Date();
+    if (!user.resetTokenExpires || user.resetTokenExpires < ahora) {
+      return NextResponse.json({ error: "Token expirado" }, { status: 400 });
+    }
 
-        if (!token) {
-            alert("El token de recuperación no es válido o ha expirado.");
-            return;
-        }
+    const salt = await bcrypt.genSalt(12);
+    const hashed = await bcrypt.hash(newContrasena, salt);
 
-        if (password !== confirm) {
-            alert("Las contraseñas no coinciden.");
-            return;
-        }
+    await repo.update(user.id, {
+      contrasena: hashed,
+      resetToken: null,
+      resetTokenExpires: null
+    });
 
-        try {
-            await resetPassword(token, password);
-            setDone(true);
-            setTimeout(() => router.push("/"), 3000);
-        } catch {
-            alert("Error al restablecer la contraseña. El enlace puede haber expirado.");
-        }
-    };
-
-    return (
-        <div className="relative min-h-screen">
-            <AuroraBackground />
-            <main className="main-with-aurora flex items-center justify-center">
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm"
-                >
-                    <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-                        Restablecer Contraseña
-                    </h2>
-
-                    {!token && !done && (
-                        <p className="text-center text-red-500 text-sm mb-4">
-                            No se detectó un token válido. Por favor, solicita un nuevo enlace.
-                        </p>
-                    )}
-
-                    {done ? (
-                        <p className="text-center text-green-600 font-medium">
-                            Contraseña modificada correctamente. Redirigiendo al inicio...
-                        </p>
-                    ) : (
-                        <>
-                            <input
-                                id="password"
-                                type="password"
-                                className="mt-2 block w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:ring-2 focus:ring-indigo-500 outline-none"
-                                placeholder="Nueva contraseña"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            <input
-                                id="confirm"
-                                type="password"
-                                className="mt-2 block w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:ring-2 focus:ring-indigo-500 outline-none"
-                                placeholder="Confirmar contraseña"
-                                value={confirm}
-                                onChange={(e) => setConfirm(e.target.value)}
-                                required
-                            />
-                            <button
-                                type="submit"
-                                disabled={!token}
-                                className={`w-full py-2 mt-4 text-white rounded-md transition-colors ${
-                                    !token ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
-                                }`}
-                            >
-                                Cambiar Contraseña
-                            </button>
-                        </>
-                    )}
-                </form>
-            </main>
-        </div>
-    );
+    return NextResponse.json({ message: "Éxito" }, { status: 200 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error fatal";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

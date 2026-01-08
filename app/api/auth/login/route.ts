@@ -9,21 +9,23 @@ export async function POST(req: NextRequest) {
       await AppDataSource.initialize();
     }
 
-    const rawBody = await req.json();
-    const usuario = rawBody.usuario || rawBody.Usuario || rawBody.identifier;
-    const contrasena = rawBody.contrasena || rawBody.Contrasena || rawBody.password;
+    const body = await req.json();
+    const identifier = body.usuario || body.email;
+    const contrasena = body.contrasena;
 
-    if (!usuario || !contrasena) {
+    if (!identifier || !contrasena) {
       return NextResponse.json(
-        { error: "Faltan credenciales en el body" },
+        { error: "Credenciales incompletas" },
         { status: 400 }
       );
     }
 
-    const user = await authenticateUser(usuario, contrasena);
+    const user = await authenticateUser(identifier, contrasena);
 
     const secret = process.env.JWT_SECRET;
-    if (!secret) throw new Error("JWT_SECRET missing");
+    if (!secret) {
+      return NextResponse.json({ error: "Config Error" }, { status: 500 });
+    }
 
     const token = jwt.sign(
       { userId: user.id },
@@ -33,14 +35,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { 
-        message: "Usuario autenticado", 
+        message: "Login exitoso", 
         user: { id: user.id, usuario: user.usuario, email: user.email }, 
         token 
       },
       { status: 200 }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Error desconocido";
+    const message = error instanceof Error ? error.message : "Error";
     return NextResponse.json(
       { error: message },
       { status: 401 }
