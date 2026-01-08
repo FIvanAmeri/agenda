@@ -15,12 +15,12 @@ export async function POST(req: Request) {
     const user = await repo.findOneBy({ resetToken: token });
 
     if (!user) {
-      return NextResponse.json({ error: "Token inexistente" }, { status: 400 });
+      return NextResponse.json({ error: "Token inválido" }, { status: 400 });
     }
 
     const ahora = new Date();
     if (!user.resetTokenExpires || user.resetTokenExpires < ahora) {
-      return NextResponse.json({ error: "Token vencido" }, { status: 400 });
+      return NextResponse.json({ error: "Token expirado" }, { status: 400 });
     }
 
     const salt = await bcrypt.genSalt(12);
