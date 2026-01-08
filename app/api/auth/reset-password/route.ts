@@ -11,11 +11,8 @@ export async function POST(req: Request) {
             await AppDataSource.initialize();
         }
 
-        const userRepository = AppDataSource.getRepository(User);
-
-        const user = await userRepository.findOne({
-            where: { resetToken: token }
-        });
+        const repo = AppDataSource.getRepository(User);
+        const user = await repo.findOneBy({ resetToken: token });
 
         if (!user) {
             return NextResponse.json({ error: "Token inválido" }, { status: 400 });
@@ -26,17 +23,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Token expirado" }, { status: 400 });
         }
 
-        const salt = await bcrypt.genSalt(12);
-        user.contrasena = await bcrypt.hash(newContrasena, salt);
-        user.resetToken = null;
-        user.resetTokenExpires = null;
+        const hashed = await bcrypt.hash(newContrasena, 12);
 
-        await userRepository.save(user);
+        await repo.update(user.id, {
+            contrasena: hashed,
+            resetToken: null,
+            resetTokenExpires: null
+        });
 
         return NextResponse.json({ message: "Contraseña actualizada" }, { status: 200 });
     } catch (error) {
-        const message = error instanceof Error ? error.message : "Error desconocido";
-        console.error("Reset Error:", message);
-        return NextResponse.json({ error: "Error interno" }, { status: 500 });
+        const message = error instanceof Error ? error.message : "Error interno";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
