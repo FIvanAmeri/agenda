@@ -5,16 +5,18 @@ export const usePatientLists = (patients: Patient[]) => {
   const data = useMemo(() => (Array.isArray(patients) ? patients : []), [patients]);
 
   return useMemo(() => {
-    const getUnique = (key: keyof Patient, clean: boolean = false) => {
+    const getUnique = (key: keyof Patient, clean: boolean = false): string[] => {
       const values = new Set<string>();
+      
       data.forEach((p) => {
-        const raw = p[key] as string;
-        if (raw) {
+        const raw = p[key];
+        if (typeof raw === "string" && raw.trim() !== "") {
           const val = clean ? raw.replace(" (U)", "") : raw;
-          if (val) values.add(val);
+          if (val) values.add(val.trim());
         }
       });
-      return Array.from(values).filter(Boolean).sort();
+
+      return Array.from(values).sort((a, b) => a.localeCompare(b));
     };
 
     return {

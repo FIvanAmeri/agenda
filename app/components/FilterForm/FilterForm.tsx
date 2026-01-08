@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useEffect } from "react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { Patient } from "../interfaz/interfaz"
-import { FaFilter, FaRedo, FaTimesCircle } from "react-icons/fa"
+import { FaFilter, FaRedo, FaTimesCircle, FaChevronDown } from "react-icons/fa"
 import AutocompleteInput from "./AutocompleteInput"
 import { useFilterDropdowns, FilterFieldKey } from "../../hooks/Filtro/useFilterDropdowns"
 import { usePatientLists } from "../../hooks/Filtro/usePatientLists"
@@ -86,7 +86,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
 
     const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>): void => {
         const target = e.target as HTMLElement
-        if (target.closest('.autocomplete-container')) {
+        if (target.closest(".autocomplete-container")) {
             return
         }
         closeAllDropdowns()
@@ -147,7 +147,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
         <div 
             ref={formRef} 
             onClick={handleContainerClick}
-            className="bg-[#0F2A35] p-4 md:p-5 rounded-xl shadow-2xl w-full border border-[#1f3b47] relative z-20"
+            className="bg-[#0F2A35] p-4 md:p-6 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full border border-[#1f3b47] relative z-20"
         >
             <style>
                 {`
@@ -162,66 +162,74 @@ const FilterForm: React.FC<FilterFormProps> = ({
                     }
                     .react-datepicker {
                         background-color: #0F2A35 !important;
-                        border-color: #1f3b47 !important;
-                        color: white !important;
+                        border: 1px solid #1f3b47 !important;
+                        border-radius: 12px !important;
+                        overflow: hidden;
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
                     }
                     .react-datepicker__header {
-                        background-color: #164e63 !important;
-                        border-bottom-color: #1f3b47 !important;
+                        background-color: #1a3a4a !important;
+                        border-bottom: 1px solid #1f3b47 !important;
                     }
                     .react-datepicker__current-month, .react-datepicker__day-name, .react-datepicker__day {
-                        color: white !important;
+                        color: #e2e8f0 !important;
                     }
                     .react-datepicker__day:hover {
                         background-color: #0891b2 !important;
+                        border-radius: 6px !important;
                     }
                     .react-datepicker__day--selected {
                         background-color: #06b6d4 !important;
+                        border-radius: 6px !important;
                     }
                 `}
             </style>
             
-            <div className="flex items-center mb-4 text-white border-b border-[#1f3b47] pb-3">
-                <FaFilter className="mr-3 text-cyan-400 text-lg md:text-xl" />
-                <h3 className="font-extrabold text-lg md:text-xl tracking-wide uppercase">Filtros de búsqueda</h3>
+            <div className="flex items-center justify-between mb-6 text-white border-b border-[#1f3b47] pb-4">
+                <div className="flex items-center">
+                    <div className="bg-[#1a3a4a] p-2 rounded-lg mr-3">
+                        <FaFilter className="text-cyan-400 text-lg" />
+                    </div>
+                    <h3 className="font-black text-lg md:text-xl tracking-tighter uppercase italic">Panel de Filtros</h3>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 items-end">
                 <div className="flex flex-col w-full relative">
-                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Desde</label>
-                    <div className="relative">
+                    <label className="text-[11px] uppercase font-black text-cyan-500/70 mb-1.5 ml-1 tracking-widest">Desde</label>
+                    <div className="relative group">
                         <DatePicker
                             selected={parseISO(selectedDateFrom)}
                             onChange={(d: Date | null) => setSelectedDateFrom(parseDatePickerValue(d))}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="DD/MM/AAAA"
-                            className="p-2 bg-[#1a3a4a] border border-gray-600 rounded-lg text-sm text-white w-full h-10 focus:ring-2 focus:ring-cyan-500 outline-none pr-8"
+                            className="p-2.5 bg-[#1a3a4a]/50 border border-[#2d4a57] rounded-xl text-sm text-white w-full h-11 focus:border-cyan-500 focus:bg-[#1a3a4a] transition-all duration-300 outline-none pr-9 shadow-inner"
                             wrapperClassName="w-full"
                             portalId="root-portal"
                         />
                         {selectedDateFrom && (
-                            <button onClick={() => setSelectedDateFrom("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700">
-                                <FaTimesCircle size={14} />
+                            <button onClick={() => setSelectedDateFrom("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400 transition-colors">
+                                <FaTimesCircle size={16} />
                             </button>
                         )}
                     </div>
                 </div>
 
                 <div className="flex flex-col w-full relative">
-                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Hasta</label>
-                    <div className="relative">
+                    <label className="text-[11px] uppercase font-black text-cyan-500/70 mb-1.5 ml-1 tracking-widest">Hasta</label>
+                    <div className="relative group">
                         <DatePicker
                             selected={parseISO(selectedDateTo)}
                             onChange={(d: Date | null) => setSelectedDateTo(parseDatePickerValue(d))}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="DD/MM/AAAA"
-                            className="p-2 bg-[#1a3a4a] border border-gray-600 rounded-lg text-sm text-white w-full h-10 focus:ring-2 focus:ring-cyan-500 outline-none pr-8"
+                            className="p-2.5 bg-[#1a3a4a]/50 border border-[#2d4a57] rounded-xl text-sm text-white w-full h-11 focus:border-cyan-500 focus:bg-[#1a3a4a] transition-all duration-300 outline-none pr-9 shadow-inner"
                             wrapperClassName="w-full"
                             portalId="root-portal"
                         />
                         {selectedDateTo && (
-                            <button onClick={() => setSelectedDateTo("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700">
-                                <FaTimesCircle size={14} />
+                            <button onClick={() => setSelectedDateTo("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-400 transition-colors">
+                                <FaTimesCircle size={16} />
                             </button>
                         )}
                     </div>
@@ -234,7 +242,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                         setValue={setSelectedPatientName}
                         fieldKey={"patient" as FilterFieldKey}
                         filteredNames={fPatients}
-                        placeholder="Nombre..."
+                        placeholder="Buscar nombre..."
                         dataTestId="filter-paciente"
                         isShowing={showStates.patient}
                         setter={showSetters.patient}
@@ -250,7 +258,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                         setValue={setSelectedPractice}
                         fieldKey={"practice" as FilterFieldKey}
                         filteredNames={fPractices}
-                        placeholder="Estudio..."
+                        placeholder="Tipo estudio..."
                         dataTestId="filter-practice"
                         isShowing={showStates.practice}
                         setter={showSetters.practice}
@@ -266,7 +274,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                         setValue={setSelectedObraSocial}
                         fieldKey={"obraSocial" as FilterFieldKey}
                         filteredNames={fObrasSociales}
-                        placeholder="Entidad..."
+                        placeholder="Entidad OS..."
                         dataTestId="filter-obrasocial"
                         isShowing={showStates.obraSocial}
                         setter={showSetters.obraSocial}
@@ -282,7 +290,7 @@ const FilterForm: React.FC<FilterFormProps> = ({
                         setValue={setSelectedInstitucion}
                         fieldKey={"institucion" as FilterFieldKey}
                         filteredNames={fInstituciones}
-                        placeholder="Lugar..."
+                        placeholder="Sede / Centro..."
                         dataTestId="filter-institucion"
                         isShowing={showStates.institucion}
                         setter={showSetters.institucion}
@@ -291,25 +299,28 @@ const FilterForm: React.FC<FilterFormProps> = ({
                     />
                 </div>
 
-                <div className="flex flex-col w-full">
-                    <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Estado</label>
-                    <select
-                        value={selectedStatus}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedStatus(e.target.value)}
-                        className="p-2 border border-gray-600 bg-[#1a3a4a] rounded-lg text-sm text-white w-full h-10 appearance-none focus:ring-2 focus:ring-cyan-500 outline-none cursor-pointer"
-                    >
-                        <option value="" className="bg-[#0F2A35]">Todos</option>
-                        <option value="Pagado" className="bg-[#0F2A35]">Pagado</option>
-                        <option value="No Pagado" className="bg-[#0F2A35]">No Pagado</option>
-                    </select>
+                <div className="flex flex-col w-full relative">
+                    <label className="text-[11px] uppercase font-black text-cyan-500/70 mb-1.5 ml-1 tracking-widest">Estado</label>
+                    <div className="relative">
+                        <select
+                            value={selectedStatus}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedStatus(e.target.value)}
+                            className="p-2.5 border border-[#2d4a57] bg-[#1a3a4a]/50 rounded-xl text-sm text-white w-full h-11 appearance-none focus:border-cyan-500 focus:bg-[#1a3a4a] transition-all duration-300 outline-none cursor-pointer pr-10 shadow-inner"
+                        >
+                            <option value="" className="bg-[#0F2A35]">Todos</option>
+                            <option value="Pagado" className="bg-[#0F2A35]">Pagado</option>
+                            <option value="No Pagado" className="bg-[#0F2A35]">No Pagado</option>
+                        </select>
+                        <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none size-3" />
+                    </div>
                 </div>
         
                 <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="flex items-center justify-center p-2 h-10 w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition duration-200 sm:col-span-2 lg:col-span-1 xl:col-span-1 uppercase text-xs"
+                    className="flex items-center justify-center p-2.5 h-11 w-full bg-linear-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black rounded-xl transition-all duration-300 sm:col-span-2 lg:col-span-1 xl:col-span-1 uppercase text-[10px] tracking-widest active:scale-95 shadow-lg shadow-red-900/20"
                 >
-                    <FaRedo className="mr-2" /> Limpiar
+                    <FaRedo className="mr-2 text-xs" /> Limpiar
                 </button>
             </div>
         </div>

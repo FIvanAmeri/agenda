@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useState, useEffect } from "react";
 import AutocompleteDropdown from "./AutocompleteDropdown";
 import { FilterFieldKey } from "../../hooks/Filtro/useFilterDropdowns";
 import { FaChevronDown, FaTimesCircle } from "react-icons/fa";
@@ -32,10 +32,47 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = memo(({
   handleOpen,
   handleSuggestionClick,
 }) => {
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
+
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [value, isShowing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (!isShowing) {
+      if (e.key === "ArrowDown") handleOpen(fieldKey);
+      return;
+    }
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex(prev => (prev < filteredNames.length - 1 ? prev + 1 : prev));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex(prev => (prev > 0 ? prev - 1 : 0));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (activeIndex >= 0 && activeIndex < filteredNames.length) {
+          handleSuggestionClick(filteredNames[activeIndex]);
+          setter(false);
+        }
+        break;
+      case "Escape":
+        setter(false);
+        break;
+      case "Tab":
+        setter(false);
+        break;
+    }
+  };
+
   return (
     <div className="flex flex-col w-full relative">
-      <label className="text-xs font-medium text-gray-400 mb-1">{label}</label>
-      <div className="relative w-full">
+      <label className="text-[11px] uppercase font-black text-cyan-500/70 mb-1.5 ml-1 tracking-widest">{label}</label>
+      <div className="relative w-full group">
         <input
           key={`stable-input-${fieldKey}`}
           type="text"
@@ -44,12 +81,13 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = memo(({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
           onFocus={() => handleOpen(fieldKey)}
           onClick={() => handleOpen(fieldKey)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           data-testid={dataTestId}
-          className="p-2 border border-gray-600 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-inner w-full h-10 pr-16"
+          className="p-2.5 bg-[#1a3a4a]/50 border border-[#2d4a57] rounded-xl text-sm text-white w-full h-11 focus:border-cyan-500 focus:bg-[#1a3a4a] transition-all duration-300 outline-none pr-16 shadow-inner"
         />
         
-        <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-2">
           {value && (
             <button
               type="button"
@@ -59,9 +97,9 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = memo(({
                 setValue("");
                 handleOpen(fieldKey);
               }}
-              className="text-red-500 hover:text-red-700 transition-colors p-1"
+              className="text-gray-400 hover:text-red-400 transition-colors"
             >
-              <FaTimesCircle />
+              <FaTimesCircle size={14} />
             </button>
           )}
           
@@ -77,16 +115,17 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = memo(({
                 handleOpen(fieldKey);
               }
             }}
-            className="text-gray-400 hover:text-cyan-400 p-1"
+            className="text-gray-500 hover:text-cyan-400 transition-colors border-l border-[#2d4a57] pl-2"
           >
-            <FaChevronDown className={`transform transition-transform duration-200 ${isShowing ? "rotate-180" : "rotate-0"}`} />
+            <FaChevronDown size={12} className={`transform transition-transform duration-300 ${isShowing ? "rotate-180" : "rotate-0"}`} />
           </button>
         </div>
 
-        {isShowing && (
-          <div className="absolute z-50 w-full">
+        {isShowing && filteredNames.length > 0 && (
+          <div className="absolute z-50 w-full mt-2 shadow-[0_10px_25px_rgba(0,0,0,0.5)] rounded-xl overflow-hidden border border-[#1f3b47]">
             <AutocompleteDropdown
               filteredNames={filteredNames}
+              activeIndex={activeIndex}
               onSelect={(name: string) => {
                 handleSuggestionClick(name);
                 setter(false);
