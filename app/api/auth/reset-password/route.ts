@@ -5,7 +5,9 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { token, newContrasena } = await req.json();
+    const body = await req.json();
+    const token = body.token as string;
+    const newContrasena = body.newContrasena as string;
 
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
@@ -19,7 +21,9 @@ export async function POST(req: Request) {
     }
 
     const ahora = new Date();
-    if (!user.resetTokenExpires || new Date(user.resetTokenExpires) < ahora) {
+    const expires = user.resetTokenExpires ? new Date(user.resetTokenExpires) : null;
+
+    if (!expires || expires < ahora) {
       return NextResponse.json({ error: "Token expirado" }, { status: 400 });
     }
 
