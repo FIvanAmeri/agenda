@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { authenticateUser } from "@/app/repositories/auth.repo";
 import { AppDataSource } from "@/app/lib/data-source";
-import { User } from "@/app/entities/User.entity";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,21 +9,21 @@ export async function POST(req: NextRequest) {
       await AppDataSource.initialize();
     }
 
-    const body: { usuario: string; contrasena: string } = await req.json();
+    const rawBody = await req.json();
+    const usuario = rawBody.usuario || rawBody.Usuario || rawBody.identifier;
+    const contrasena = rawBody.contrasena || rawBody.Contrasena || rawBody.password;
 
-    if (!body.usuario || !body.contrasena) {
+    if (!usuario || !contrasena) {
       return NextResponse.json(
-        { error: "Faltan datos" },
+        { error: "Faltan credenciales en el body" },
         { status: 400 }
       );
     }
 
-    const user: User = await authenticateUser(body.usuario, body.contrasena);
+    const user = await authenticateUser(usuario, contrasena);
 
     const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error("JWT_SECRET no configurado.");
-    }
+    if (!secret) throw new Error("JWT_SECRET missing");
 
     const token = jwt.sign(
       { userId: user.id },
@@ -32,21 +31,19 @@ export async function POST(req: NextRequest) {
       { expiresIn: "8h" }
     );
 
-    const userResponse = {
-      id: user.id,
-      usuario: user.usuario,
-      email: user.email
-    };
-
     return NextResponse.json(
-      { message: "Usuario autenticado", user: userResponse, token },
+      { 
+        message: "Usuario autenticado", 
+        user: { id: user.id, usuario: user.usuario, email: user.email }, 
+        token 
+      },
       { status: 200 }
     );
-  } catch (error: unknown) {
+  } catch (error) {
     const message = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       { error: message },
-      { status: 400 }
+      { status: 401 }
     );
   }
 }
