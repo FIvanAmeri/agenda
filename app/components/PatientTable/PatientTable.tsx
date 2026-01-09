@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo, useEffect } from "react";
 import type { Patient } from "../interfaz/interfaz";
 import BotonPago from "../Pago/boton-pago";
 import type { PacienteParaPago } from "../interfaz/pago-interfaces";
 import { FaTimes } from "react-icons/fa";
+import Pusher from "pusher-js";
 
 interface PatientTableProps {
     filteredPatients: Patient[];
     onEditClick: (patient: Patient) => void;
     onDeleteClick: (patientId: number) => void;
     setPatients: React.Dispatch<React.SetStateAction<Patient[]>>;
+    currentUserId: number | string;
 }
 
 const formatDateForDisplay = (isoDate?: string | null): string => {
@@ -38,13 +40,49 @@ const PatientTable: React.FC<PatientTableProps> = ({
     onEditClick,
     onDeleteClick,
     setPatients,
+    currentUserId
 }) => {
     const [selectedPatientGroup, setSelectedPatientGroup] = useState<Patient[] | null>(null);
+
+    useEffect(() => {
+        if (!currentUserId) return;
+
+        const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+            cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+        });
+
+        const channel = pusher.subscribe(`user-${currentUserId}`);
+
+        channel.bind("paciente-update", (data: Patient) => {
+            setPatients((prev) =>
+                prev.map((p) => (p.id === data.id ? data : p))
+            );
+            
+            setSelectedPatientGroup((prev) => {
+                if (!prev) return null;
+                return prev.map((p) => (p.id === data.id ? data : p));
+            });
+        });
+
+        channel.bind("paciente-delete", (data: { id: number }) => {
+            setPatients((prev) => prev.filter((p) => p.id !== data.id));
+            setSelectedPatientGroup((prev) => {
+                if (!prev) return null;
+                const updated = prev.filter((p) => p.id !== data.id);
+                return updated.length > 0 ? updated : null;
+            });
+        });
+
+        return () => {
+            pusher.unsubscribe(`user-${currentUserId}`);
+            pusher.disconnect();
+        };
+    }, [currentUserId, setPatients]);
 
     const formatDate = useCallback((dateString: string) => {
         const pureDate = dateString.split('T')[0];
         const [year, month, day] = pureDate.split('-');
-        return `${day}-${month}-${year}`;
+        return `${day}-${year}-${month}`;
     }, []);
 
     const formatTime = useCallback((timeString: string) => {
@@ -93,21 +131,20 @@ const PatientTable: React.FC<PatientTableProps> = ({
             })
         );
         
-        if (selectedPatientGroup) {
-            setSelectedPatientGroup(prev => 
-                prev ? prev.map(p => p.id === pacienteActualizado.id ? {
-                    ...p,
-                    estadoPago: pacienteActualizado.estadoPagoActual,
-                    montoPagado: pacienteActualizado.montoPagadoActual,
-                    montoTotal: pacienteActualizado.montoTotalActual,
-                    fechaPagoParcial: pacienteActualizado.fechaPagoParcial || p.fechaPagoParcial,
-                    fechaPagoTotal: pacienteActualizado.fechaPagoTotal || p.fechaPagoTotal,
-                    ultimoPagoParcial: pacienteActualizado.ultimoPagoParcial,
-                    ultimoPagoTotal: pacienteActualizado.ultimoPagoTotal,
-                } : p) : null
-            );
-        }
-    }, [setPatients, selectedPatientGroup]);
+        setSelectedPatientGroup(prev => {
+            if (!prev) return null;
+            return prev.map(p => p.id === pacienteActualizado.id ? {
+                ...p,
+                estadoPago: pacienteActualizado.estadoPagoActual,
+                montoPagado: pacienteActualizado.montoPagadoActual,
+                montoTotal: pacienteActualizado.montoTotalActual,
+                fechaPagoParcial: pacienteActualizado.fechaPagoParcial || p.fechaPagoParcial,
+                fechaPagoTotal: pacienteActualizado.fechaPagoTotal || p.fechaPagoTotal,
+                ultimoPagoParcial: pacienteActualizado.ultimoPagoParcial,
+                ultimoPagoTotal: pacienteActualizado.ultimoPagoTotal,
+            } : p);
+        });
+    }, [setPatients]);
 
     const sortedPatients = useMemo(() => {
         return [...filteredPatients].sort((a, b) => b.id - a.id);
@@ -259,8 +296,6 @@ const PatientTable: React.FC<PatientTableProps> = ({
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onDeleteClick(patient.id);
-                                                        const updatedGroup = selectedPatientGroup.filter(p => p.id !== patient.id);
-                                                        setSelectedPatientGroup(updatedGroup.length > 0 ? updatedGroup : null);
                                                     }}
                                                     className="px-4 py-2 bg-red-600 text-white rounded font-bold text-[10px] hover:bg-red-500 transition-all uppercase tracking-wider cursor-pointer"
                                                 >

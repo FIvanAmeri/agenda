@@ -64,6 +64,8 @@ export default function PrincipalContent({
         setSelectedStatus
     } = usePatientFilters(patients);
 
+    const safeUserId = user.id ?? "0";
+
     return (
         <div className="flex flex-col flex-1 p-4 md:p-8 w-full max-w-full overflow-x-hidden">
             <h1 className="text-center text-xl md:text-2xl font-semibold mb-6 text-gray-50">Agenda de Turnos</h1>
@@ -98,6 +100,7 @@ export default function PrincipalContent({
                     onEditClick={handleEditPatient}
                     onDeleteClick={handleConfirmDelete}
                     setPatients={setPatients}
+                    currentUserId={safeUserId}
                 />
             </div>
 
