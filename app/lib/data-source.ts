@@ -12,7 +12,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     synchronize: false, 
-    logging: true,
+    logging: process.env.NODE_ENV !== "production",
     entities: [Paciente, User, Cirugia],
     subscribers: [],
     migrations: [],
@@ -21,14 +21,25 @@ export const AppDataSource = new DataSource({
         : false,
 });
 
+let initializationPromise: Promise<DataSource> | null = null;
+
 export const initializeDatabase = async (): Promise<DataSource> => {
-    if (!AppDataSource.isInitialized) {
-        try {
-            return await AppDataSource.initialize();
-        } catch (error) {
-            console.error("Error inicializando la base de datos:", error);
-            throw error;
-        }
+    if (AppDataSource.isInitialized) {
+        return AppDataSource;
     }
-    return AppDataSource;
+
+    if (!initializationPromise) {
+        initializationPromise = AppDataSource.initialize()
+            .then((ds) => {
+                console.log("Data Source inicializado correctamente");
+                return ds;
+            })
+            .catch((error) => {
+                initializationPromise = null;
+                console.error("Error inicializando la base de datos:", error);
+                throw error;
+            });
+    }
+
+    return initializationPromise;
 };

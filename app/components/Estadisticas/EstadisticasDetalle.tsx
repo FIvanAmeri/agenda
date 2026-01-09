@@ -139,8 +139,8 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
         if (!stats?.distribucionEdades) return []
         return Object.entries(stats.distribucionEdades).map(([rango, info]) => ({
             name: rango,
-            value: info.cantidad,
-            pacientes: info.pacientes.map(p => ({ nombre: p, fecha: "N/A", monto: 0 }))
+            value: info.pacientes.length,
+            pacientes: info.pacientes.map(p => ({ nombre: p, fecha: "Consulta", monto: 0 }))
         }))
     }, [stats])
 
@@ -148,8 +148,8 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
         if (!stats?.porObraSocial) return []
         return Object.entries(stats.porObraSocial).map(([nombre, info]) => ({
             name: nombre,
-            value: info.cantidad,
-            pacientes: info.pacientes.map(p => ({ nombre: p, fecha: "N/A", monto: 0 }))
+            value: info.pacientes.length,
+            pacientes: info.pacientes.map(p => ({ nombre: p, fecha: "Consulta", monto: 0 }))
         }))
     }, [stats])
 
@@ -165,7 +165,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
             const obrasMap = institucionesMap.get(inst)!
             if (!obrasMap.has(obra)) obrasMap.set(obra, { pagados: 0, pendientes: 0, pacientesPagados: [], pacientesPendientes: [] })
             const data = obrasMap.get(obra)!
-            data.pagados += info.cantidad
+            data.pagados += info.pacientes.length
             const nuevosPacientes = info.pacientes.map(p => ({ nombre: p, fecha: "Pagado", monto: 0 }))
             data.pacientesPagados = [...data.pacientesPagados, ...nuevosPacientes]
         })
@@ -178,7 +178,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
             const obrasMap = institucionesMap.get(inst)!
             if (!obrasMap.has(obra)) obrasMap.set(obra, { pagados: 0, pendientes: 0, pacientesPagados: [], pacientesPendientes: [] })
             const data = obrasMap.get(obra)!
-            data.pendientes += info.cantidad
+            data.pendientes += info.pacientes.length
             const nuevosPacientes = info.pacientes.map(p => ({ nombre: p, fecha: "Pendiente", monto: 0 }))
             data.pacientesPendientes = [...data.pacientesPendientes, ...nuevosPacientes]
         })
@@ -223,7 +223,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
         })
 
         autoTable(doc, {
-            head: [["INSTITUCIÓN", "PRÁCTICA", "PAGADOS", "PENDIENTES", "TOTAL"]],
+            head: [["INSTITUCIÓN", "PRÁCTICA", "PAGADOS (CONSULTAS)", "PENDIENTES", "TOTAL"]],
             body: tableData,
             startY: 80,
             theme: "grid",
@@ -261,9 +261,9 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                 Array.from(obras.entries()).map(([obra, data]) => ({
                     Institucion: inst,
                     ObraSocial: obra,
-                    Pagados: data.pagados,
-                    Pendientes: data.pendientes,
-                    Total: data.pagados + data.pendientes
+                    ConsultasPagadas: data.pagados,
+                    ConsultasPendientes: data.pendientes,
+                    TotalConsultas: data.pagados + data.pendientes
                 }))
             )
         const ws = XLSX.utils.json_to_sheet(excelData)
@@ -362,7 +362,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                                     {dataEdades.map((_, index) => <Cell key={`cell-${index}`} fill={COLORES[index % COLORES.length]} />)}
                                 </Pie>
                                 <Tooltip 
-                                    formatter={(value: number | string | (string | number)[] | undefined) => [value || 0, "Pacientes"]}
+                                    formatter={(value: number | string | (string | number)[] | undefined) => [value || 0, "Consultas"]}
                                 />
                                 <Legend />
                             </PieChart>
@@ -415,7 +415,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                                     <span className="text-[10px] font-bold text-cyan-300 uppercase truncate">{clave.split(" - ")[0]}</span>
                                     <span className="text-sm font-medium text-gray-200 truncate leading-tight">{clave.split(" - ")[1]}</span>
                                 </div>
-                                <span className="text-xl font-black text-green-400 ml-4">{info.cantidad}</span>
+                                <span className="text-xl font-black text-green-400 ml-4">{info.pacientes.length}</span>
                             </div>
                         ))}
                     </div>
@@ -432,7 +432,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
                                     <span className="text-[10px] font-bold text-red-300 uppercase truncate">{clave.split(" - ")[0]}</span>
                                     <span className="text-sm font-medium text-gray-200 truncate leading-tight">{clave.split(" - ")[1]}</span>
                                 </div>
-                                <span className="text-xl font-black text-red-400 ml-4">{info.cantidad}</span>
+                                <span className="text-xl font-black text-red-400 ml-4">{info.pacientes.length}</span>
                             </div>
                         ))}
                     </div>
@@ -440,7 +440,7 @@ const EstadisticasDetalle: React.FC<EstadisticasDetalleProps> = ({ onSelectPatie
             </div>
 
             <div className="mt-8 bg-cyan-950 p-5 rounded-xl border border-gray-700">
-                <h3 className="text-lg font-semibold mb-3 text-cyan-100 border-b border-gray-700 pb-2 text-center">Obras Sociales Atendidas</h3>
+                <h3 className="text-lg font-semibold mb-3 text-cyan-100 border-b border-gray-700 pb-2 text-center">Obras Sociales Atendidas (Consultas)</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     {dataObras.map((item, idx) => (
                         <div key={idx} onClick={() => openModal(`Obra Social: ${item.name}`, item.pacientes)} className="flex justify-between items-center p-2 bg-cyan-900/30 rounded border border-gray-800 cursor-pointer hover:bg-cyan-900 transition-colors">

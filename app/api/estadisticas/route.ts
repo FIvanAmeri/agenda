@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { EstadisticasService } from "../../server/estadisticas/estadisticas.service";
-import {AppDataSource} from "../../lib/data-source";
-
-const service = new EstadisticasService();
+import { AppDataSource } from "../../lib/data-source";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
     try {
@@ -10,6 +8,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             await AppDataSource.initialize();
         }
 
+        const service = new EstadisticasService();
         const { searchParams } = new URL(req.url);
         const usuarioId = parseInt(searchParams.get("usuarioId") || "0");
         const anio = parseInt(searchParams.get("anio") || new Date().getFullYear().toString());

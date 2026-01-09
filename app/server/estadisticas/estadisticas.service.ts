@@ -1,4 +1,4 @@
-import {AppDataSource} from "../../lib/data-source";
+import { AppDataSource } from "../../lib/data-source";
 import { Paciente, EstadoPago } from "../../entities/paciente.entity";
 
 interface DetalleEstadistica {
