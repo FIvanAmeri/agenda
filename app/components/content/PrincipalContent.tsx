@@ -122,16 +122,24 @@ export default function PrincipalContent({
                 />
             )}
 
-            <ConfirmDeleteModal 
-                show={deleteConfirm.show} 
-                onClose={() => setDeleteConfirm({ show: false, id: null })} 
-                onConfirm={deletePatient} 
-            />
+            {(deleteConfirm.show || notification.show) && (
+                <div className="fixed inset-0 z-99999 flex items-center justify-center pointer-events-auto bg-black/50 backdrop-blur-sm">
+                    {deleteConfirm.show && (
+                        <ConfirmDeleteModal 
+                            show={deleteConfirm.show} 
+                            onClose={() => setDeleteConfirm({ show: false, id: null })} 
+                            onConfirm={deletePatient} 
+                        />
+                    )}
 
-            <NotificationModal 
-                notification={notification} 
-                onClose={closeNotification} 
-            />
+                    {notification.show && (
+                        <NotificationModal 
+                            notification={notification} 
+                            onClose={closeNotification} 
+                        />
+                    )}
+                </div>
+            )}
         </div>
     );
 }
