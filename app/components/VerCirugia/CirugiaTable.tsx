@@ -11,7 +11,7 @@ interface CirugiaTableProps {
     onEditClick: (c: Cirugia) => void;
     onDeleteClick: (c: Cirugia) => void;
 }
-
+    
 const calcularEdad = (fecha: string | null): string => {
     if (!fecha) return "N/A";
     const hoy = new Date();
