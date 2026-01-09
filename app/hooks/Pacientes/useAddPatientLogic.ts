@@ -9,7 +9,7 @@ interface UseAddPatientLogicProps {
     onAdd: (newPatient: Patient) => void;
     onClose: () => void;
     existingPatients: Patient[];
-}
+} 
 
 export const useAddPatientLogic = ({
     user,
